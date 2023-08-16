@@ -25,18 +25,23 @@ class TestNode(TestCase):
         with self.assertRaises(KeyError):
             self.tree["South-America"]
 
+        self.tree._check_integrity()
+
     def test_item_update_dict(self):
         self.tree.update({"Antarctica": Node()})
         self.assertEqual(self.tree["Antarctica"].identifier, "Antarctica")
+        self.tree._check_integrity()
 
     def test_item_update_iterable(self):
         self.tree.update([Node(identifier="Antarctica")])
         self.assertEqual(self.tree["Antarctica"].identifier, "Antarctica")
+        self.tree._check_integrity()
 
     def test_item_update_swap(self):
         # Swap Europe and Africa. This is crazy!
         self.tree["Europe"], self.tree["Africa"] = self.tree["Africa"].detach(), self.tree["Europe"].detach()
         self.assertEqual("Norway", self.tree.path("Africa", "Norway").identifier)
+        self.tree._check_integrity()
 
     def test_iter_children(self):
         result = [str(child.path) for child in self.tree.iter_children()]
@@ -57,6 +62,20 @@ class TestNode(TestCase):
             '/world/Europe/Finland/Helsinki/Helsinki',
             '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
             '/world/Africa'
+        ]
+        self.assertEqual(expected, result)
+
+    def test_iter_tree_first(self):
+        """Iterate only through nodes which are first-child."""
+        def is_first_child(index, **_):
+            return index == 0
+
+        result = [str(child.path) for child in self.tree.iter_tree(is_first_child)]
+        expected = [
+            '/world',
+            '/world/Europe',
+            '/world/Europe/Norway',
+            '/world/Europe/Norway/Oslo',
         ]
         self.assertEqual(expected, result)
 

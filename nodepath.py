@@ -1,32 +1,35 @@
 from fnmatch import fnmatchcase
+from typing import Optional, TypeVar, Set, Iterable
+
+NodeType = TypeVar("NodeType", bound="Node")
 
 
 class NodePath:
     __slots__ = "_node"
 
-    def __init__(self, node):
+    def __init__(self, node: NodeType):
         self._node = node
 
-    def __call__(self, *path):
+    def __call__(self, *path) -> "Node":
         node = self._node
         for segment in path:
             node = node[segment]
 
         return node
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[str]:
         return (segment.identifier for segment in self._node.iter_path())
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "/" + "/".join(tuple(self))
 
-    def get(self, *path):
+    def get(self, *path) -> Optional[NodeType]:
         try:
             return self(*path)
         except KeyError:
             return None
 
-    def create(self, *path, factory=None):
+    def create(self, *path, factory=None) -> NodeType:
         if factory is None:
             factory = self._node.__class__
 
@@ -44,8 +47,10 @@ class NodePath:
 
         return node
 
-    def glob(self, path_str, separator="/") -> set:
-        """Find nodes by globbing patterns.
+    def glob(self, path_str, separator="/") -> Set[NodeType]:
+        """
+        Find nodes by globbing patterns.
+        This only works if all the nodes have a string identifier.
 
         If path_string starts with separator, start from root.
         Otherwise, start from self.
@@ -84,6 +89,6 @@ class NodePath:
         return nodes
 
     @staticmethod
-    def _is_pattern(path):
+    def _is_pattern(path) -> bool:
         """Check if path is a pattern. If not direct access is much faster."""
         return any(char in path for char in "*?[")
