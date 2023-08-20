@@ -14,3 +14,12 @@ class DuplicateChild(Exception):
 
     def __str__(self):
         return f"{self.identifier} is already present in {self.node}"
+
+
+class LoopError(Exception):
+    def __init__(self, node, ancestor):
+        self.node = node
+        self.ancestor = ancestor
+
+    def __str__(self):
+        return f"{self.node} can't become parent of {self.ancestor}"

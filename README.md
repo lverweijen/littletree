@@ -17,7 +17,7 @@ tree["America"] = Node()
 tree["Europe"] = Node()
 
 print(tree.to_string())
-tree.to_image('world.png')  # Works if graphviz is on path
+tree.to_image('world.png')  # Works if dot(graphviz) is on path
 ```
 
 The resulting tree looks like this:
@@ -31,7 +31,7 @@ The resulting tree looks like this:
 
 ![world](world.png)
 
-The Node class is very simple and it's possible to inherit from to create something more complex.
+The Node class is very simple but it's possible to create something more complex by inheritance.
 
 ## Limitations ##
 - Each node has a single parent
@@ -43,7 +43,7 @@ Before creating this, I looked at some other libraries.
 Each had some things I liked and disliked.
 None of them was exactly how I wanted it, so I decided to create something new.
 
-- [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but implementation uses lists, which slows some operations down.
-- [bigtree](https://github.com/kayjan/bigtree) - Very similar to anytree. Has slightly more features.
-- [itertree](https://github.com/BR1py/itertree) - Has many features, but its design is complex.
-- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree in a single dict, which makes some operations harder to achieve.
+- [anytree](https://github.com/c0fec0de/anytree) - Also very hackable, but implementation uses lists, which slows some operations down.
+- [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree. Has slightly more features.
+- [itertree](https://github.com/BR1py/itertree) - Has many features and is fast, but its design is complex.
+- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree in a single dict, which makes some operations harder to achieve, such as splitting trees.

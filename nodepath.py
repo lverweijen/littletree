@@ -1,37 +1,47 @@
+import itertools
 from fnmatch import fnmatchcase
-from typing import Optional, TypeVar, Set, Iterable
+from typing import Optional, TypeVar, Iterable, Set
 
-NodeType = TypeVar("NodeType", bound="Node")
+TNode = TypeVar("NodeType", bound="BaseNode")
 
 
 class NodePath:
     __slots__ = "_node"
 
-    def __init__(self, node: NodeType):
+    # Can be overriden by child classes
+    separator = "/"
+
+    def __init__(self, node: TNode):
         self._node = node
 
-    def __call__(self, *path) -> "Node":
+    def __call__(self, path) -> TNode:
+        if isinstance(path, str):
+            path = path.split(self.separator)
         node = self._node
         for segment in path:
-            node = node[segment]
-
+            node = node._cdict[segment]
         return node
 
+    def __len__(self):
+        return 1 + sum(1 for _ in self._node.iter_ancestors())
+
     def __iter__(self) -> Iterable[str]:
-        return (segment.identifier for segment in self._node.iter_path())
+        node = self._node
+        return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
 
     def __str__(self) -> str:
-        return "/" + "/".join(tuple(self))
+        separator = self.separator
+        return separator + separator.join([node.identifier for node in self])
 
-    def get(self, *path) -> Optional[NodeType]:
+    def get(self, path) -> Optional[TNode]:
         try:
-            return self(*path)
+            return self(path)
         except KeyError:
             return None
 
-    def create(self, *path, factory=None) -> NodeType:
-        if factory is None:
-            factory = self._node.__class__
+    def create(self, path) -> TNode:
+        if isinstance(path, str):
+            path = path.split(self.separator)
 
         node = self._node
         path = iter(path)
@@ -40,55 +50,43 @@ class NodePath:
             for segment in path:
                 node = node[segment]
         except KeyError:
-            node = factory(identifier=segment, parent=node)
+            node = self._create_node(identifier=segment, parent=node)
 
             for segment in path:
-                node = factory(identifier=segment, parent=node)
+                node = self._create_node(identifier=segment, parent=node)
 
         return node
 
-    def glob(self, path_str, separator="/") -> Set[NodeType]:
+    def _create_node(self, identifier, parent: TNode) -> TNode:
+        """Subclasses can overwrite this if the construction of a Node is different."""
+        node = self._node.__class__()
+        node.identifier = identifier
+        node.parent = parent
+        return node
+
+    def glob(self, path) -> Set[TNode]:
         """
         Find nodes by globbing patterns.
-        This only works if all the nodes have a string identifier.
 
-        If path_string starts with separator, start from root.
-        Otherwise, start from self.
+        For example to find all nodes that start with 'a':
+            node.path.glob("**/a*")
         """
-        segments = path_str.split(separator)
 
-        if len(segments) >= 2 and not segments[0]:
-            root = self.root
-            root_candidate = segments[1]
+        if isinstance(path, str):
+            path = path.split(self.separator)
 
-            if root_candidate == root.identifier:
-                nodes = {root}
-                segments = segments[2:]
-            else:
-                raise ValueError(f"Root is {root.identifier}, not {root_candidate}")
-        else:
-            nodes = {self._node}
-
-        for segment in segments:
-            if segment in (".", ""):
-                continue
-            elif segment == "..":
-                nodes = {candidate.parent for candidate in nodes
-                         if not candidate.is_root}
-            elif segment == "**":
-                nodes = {node for candidate in nodes
-                         for node in candidate.iter_tree()}
+        nodes = {self._node}
+        for segment in path:
+            if segment == "**":
+                nodes = {node for candidate in nodes for node in candidate.iter_tree()}
             elif self._is_pattern(segment):
-                nodes = {node for candidate in nodes
-                         for node in candidate.children
-                         if fnmatchcase(node.identifier, segment)}
+                nodes = {node for candidate in nodes for node in candidate.children
+                         if fnmatchcase(str(node.identifier), segment)}
             else:
-                nodes = {candidate[segment] for candidate in nodes
-                         if segment in candidate}
-
+                nodes = {candidate[segment] for candidate in nodes if segment in candidate}
         return nodes
 
     @staticmethod
-    def _is_pattern(path) -> bool:
-        """Check if path is a pattern. If not direct access is much faster."""
-        return any(char in path for char in "*?[")
+    def _is_pattern(segment) -> bool:
+        """Check if segment is a pattern. If not direct access is much faster."""
+        return isinstance(segment, str) and any(char in segment for char in "*?[")
