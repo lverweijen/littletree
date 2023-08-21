@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from export.dictserializer import DictSerializer
+from serializers.dictserializer import DictSerializer
+
 from node import Node
 
 

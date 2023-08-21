@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from export.rowserializer import RowSerializer
+from serializers.rowserializer import RowSerializer
 from node import Node
 
 
