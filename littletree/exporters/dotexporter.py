@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import Mapping, Callable, Any, Union, TypeVar
 
-from basenode import BaseNode
+from ..basenode import BaseNode
 
 TNode = TypeVar("TNode", bound=BaseNode)
 

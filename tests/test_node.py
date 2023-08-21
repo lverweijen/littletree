@@ -1,7 +1,7 @@
 import copy
 from unittest import TestCase
 
-from node import Node
+from littletree import Node
 
 
 class TestNode(TestCase):

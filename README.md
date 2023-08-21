@@ -1,5 +1,3 @@
-Tree implementation backed by `dict`.
-
 LittleTree is a library that provides trees.
 The package is purely written in python and tries to be easy to use, but operations are generally implemented in an efficient way.
 It was created because all other tree implementations were either too basic, slow or complicated.
@@ -34,9 +32,9 @@ The resulting tree looks like this:
  └── Europe
 ```
 
-![world](world.png)
+![world](https://github.com/lverweijen/tree/main/world.png)
 
-The Node class is very simple but it's possible to create something more complex by inheritance.
+See [tutorial](https://github.com/lverweijen/tree/main/tutorial.md) for more information.
 
 ## Limitations ##
 - Each node has a single parent
@@ -48,7 +46,7 @@ Before creating this, I looked at some other libraries.
 Each had some things I liked and disliked.
 None of them was exactly how I wanted it, so I decided to create something new.
 
-- [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but implementation uses lists, which slows some operations down.
-- [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree. Has slightly more features.
+- [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but implementation uses lists, which makes lookups slow.
+- [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree, but has more features.
 - [itertree](https://github.com/BR1py/itertree) - Has many features and is fast, but its design is complex.
-- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree in a single dict, which makes some operations harder to achieve (and some easier)
+- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree into a single flat dict.

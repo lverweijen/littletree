@@ -1,6 +1,8 @@
 from typing import Sequence, Mapping, TypeVar, Callable
 
-TNode = TypeVar("NodeType", bound="BaseNode")
+from ..basenode import BaseNode
+
+TNode = TypeVar("NodeType", bound=BaseNode)
 
 
 class RowSerializer:

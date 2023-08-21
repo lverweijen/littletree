@@ -4,14 +4,15 @@ from collections.abc import ValuesView
 from typing import Mapping, Iterable, Optional, Union, Any, Callable, Iterator, Generic, TypeVar, \
     Hashable
 
-from exceptions import DuplicateParentError, DuplicateChildError, LoopError
-from nodepath import NodePath
+from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
+from .nodepath import NodePath
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
 class BaseNode(Generic[TIdentifier]):
+    """This can serve as a base class (or even be used directly)"""
     __slots__ = "_identifier", "_parent", "_cdict", "_cvalues", "_path"
 
     # These can be changed in child classes

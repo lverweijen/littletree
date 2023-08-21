@@ -3,7 +3,7 @@ import operator
 from collections import namedtuple
 from typing import Union, Callable
 
-from basenode import BaseNode
+from ..basenode import BaseNode
 
 
 class StringExporter:

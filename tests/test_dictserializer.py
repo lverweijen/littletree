@@ -1,8 +1,7 @@
 from unittest import TestCase
 
-from serializers.dictserializer import DictSerializer
-
-from node import Node
+from littletree import Node
+from littletree.serializers import DictSerializer
 
 
 class TestDictSerializer(TestCase):

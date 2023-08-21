@@ -1,6 +1,7 @@
 from typing import Mapping, TypeVar, Type
+from ..basenode import BaseNode
 
-TNode = TypeVar("NodeType", bound="BaseNode")
+TNode = TypeVar("NodeType", bound=BaseNode)
 
 
 class DictSerializer:

@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from serializers.rowserializer import RowSerializer
-from node import Node
+from littletree import Node
+from littletree.serializers import RowSerializer
 
 
 class TestRowSerializer(TestCase):
