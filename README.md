@@ -2,10 +2,6 @@ LittleTree is a library that provides trees.
 The package is purely written in python and tries to be easy to use, but operations are generally implemented in an efficient way.
 It was created because all other tree implementations were either too basic, slow or complicated.
 
-The package has taken much inspiration from anytree and itertree.
-Compared to anytree, it should generally have better performance.
-Compared to itertree, its implementation is much simpler and minimalistic.
-
 ## Installing ##
 
 - Use [pip](https://pip.pypa.io/en/stable/getting-started/) to install littletree:

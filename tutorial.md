@@ -23,7 +23,7 @@ You can also supply children or a parent in the constructor:
 # Create with nodes added to self
 tree = Node({"population": 7.909}, identifier="World",
             children={
-                "Asia": Node({"population": 4.694})
+                "Asia": Node({"population": 4.694}),
                 "Africa": Node({"population": 1.393})
             })
 
