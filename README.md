@@ -6,7 +6,14 @@ The package has taken much inspiration from anytree and itertree.
 Compared to anytree, it should generally have better performance.
 Compared to itertree, its implementation is much simpler and minimalistic.
 
-## Example ##
+## Installing ##
+
+- Use [pip](https://pip.pypa.io/en/stable/getting-started/) to install littletree:
+
+```sh
+$ pip install --upgrade littletree
+```
+## Usage ##
 
 A tree can be used in a similar way as a `dict`:
 
@@ -32,9 +39,10 @@ The resulting tree looks like this:
  └── Europe
 ```
 
-![world](https://github.com/lverweijen/blob/main/world.png)
+![world](world.png)
 
-See [tutorial](https://github.com/lverweijen/tree/main/tutorial.md) for more information.
+See [tutorial](https://github.com/lverweijen/littletree/blob/main/tutorial.md) for more information.
+
 
 ## Limitations ##
 - Each node has a single parent
