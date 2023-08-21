@@ -4,7 +4,7 @@ from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Unio
 from basenode import BaseNode
 from export.dictserializer import DictSerializer
 from export.dotexporter import DotExporter
-from export.pathserializer import PathSerializer
+from export.rowserializer import RowSerializer
 from export.stringexporter import StringExporter
 
 TNode = TypeVar("TNode", bound="Node")
@@ -65,7 +65,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     @classmethod
     def from_paths(cls, rows, **kwargs) -> TNode:
-        return PathSerializer(cls, fields=["data"], **kwargs).from_path(rows)
+        return RowSerializer(cls, fields=["data"], **kwargs).from_rows(rows)
 
     def to_string(self, file=None, keep=None, **kwargs) -> Optional[str]:
         def str_factory(node):
@@ -88,8 +88,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def to_dict(self, **kwargs) -> Mapping:
         return DictSerializer(self.__class__, fields=["data"], **kwargs).to_dict(self)
 
-    def to_paths(self, **kwargs) -> Iterator[Mapping]:
-        return PathSerializer(self.__class__, fields=["data"], **kwargs).to_path(self)
+    def to_rows(self, **kwargs) -> Iterator[Mapping]:
+        return RowSerializer(self.__class__, fields=["data"], **kwargs).to_rows(self)
 
     def _graphviz_label(self):
         if self.data is None:
