@@ -30,23 +30,27 @@ class TestNode(TestCase):
         self.tree._check_integrity()
 
     def test_update_dict(self):
+        """Test with a dictionary."""
         self.tree.update({"Antarctica": Node()})
         self.assertEqual(self.tree["Antarctica"].identifier, "Antarctica")
         self.tree._check_integrity()
 
     def test_update_iterable(self):
+        """Test with an iterable."""
         self.tree.update([Node(identifier="Antarctica")])
         self.assertEqual(self.tree["Antarctica"].identifier, "Antarctica")
         self.tree._check_integrity()
 
-    def test_update_node_copy(self):
+    def test_update_node1(self):
+        """Test with another node."""
+        tree = self.tree
         other_tree = Node(identifier='rest_of_world')
         other_tree['America'] = Node()
         other_tree['Asia'] = Node()
         other_tree['Australia'] = Node()
 
-        self.tree.update(other_tree, consume=False)
-        self.tree._check_integrity()
+        tree.update(other_tree, mode="copy")
+        tree._check_integrity()
         other_tree._check_integrity()
 
         result = [child.identifier for child in self.tree.children]
@@ -56,20 +60,41 @@ class TestNode(TestCase):
         self.assertEqual(expected, result)
 
     def test_update_node_consume(self):
+        tree = self.tree
         other_tree = Node(identifier='rest_of_world')
         other_tree['America'] = Node()
         other_tree['Asia'] = Node()
         other_tree['Australia'] = Node()
 
         # Now that other world is going to collapse into ours
-        self.tree.update(other_tree, consume=True)
-        self.tree._check_integrity()
+        tree.update(other_tree, mode="detach")
+        tree._check_integrity()
         other_tree._check_integrity()
 
         result = [child.identifier for child in self.tree.children]
         expected = ['Europe', 'Africa', 'America', 'Asia', 'Australia']
 
         self.assertTrue(other_tree.is_leaf)
+        self.assertEqual(expected, result)
+
+    def test_sort_children1(self):
+        tree = self.tree
+        tree.sort_children()
+        tree._check_integrity()
+        result = [str(child.path) for child in tree.children]
+        expected = ['/world/Africa', '/world/Europe']
+        self.assertEqual(expected, result)
+
+    def test_sort_children2(self):
+        tree = self.tree
+        tree.sort_children(key=lambda node: len(node.children), recursive=True)
+        tree._check_integrity()
+        result = [str(child.path) for child in tree.iter_descendants()][:5]
+        expected = ['/world/Africa',
+                    '/world/Europe',
+                    '/world/Europe/Norway',
+                    '/world/Europe/Norway/Oslo',
+                    '/world/Europe/Sweden']
         self.assertEqual(expected, result)
 
     def test_item_update_swap(self):
@@ -85,11 +110,11 @@ class TestNode(TestCase):
         self.assertTrue(self.tree.is_leaf)
 
     def test_iter_children(self):
-        result = [str(child.path) for child in self.tree.iter_children()]
+        result = [str(child.path) for child in self.tree.children]
         expected = ['/world/Europe', '/world/Africa']
         self.assertEqual(expected, result)
 
-    def test_iter_tree(self):
+    def test_iter_tree1(self):
         result = [str(child.path) for child in self.tree.iter_tree()]
         expected = [
             '/world',
@@ -106,7 +131,7 @@ class TestNode(TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_iter_tree_first(self):
+    def test_iter_tree2(self):
         """Iterate only through nodes which are first-child."""
         def is_first_child(_, item):
             return item.index == 0
@@ -120,15 +145,22 @@ class TestNode(TestCase):
         ]
         self.assertEqual(expected, result)
 
+    def test_iter_tree3(self):
+        target = self.tree
+        result = [child.identifier for child in target.iter_tree(keep=lambda _, it: it.level < 3,
+                                                                 order="level")]
+        expected = ['world', 'Europe', 'Africa', 'Norway', 'Sweden', 'Finland']
+        self.assertEqual(expected, result)
+
     def test_iter_ancestors(self):
         target = self.tree.path(["Europe", "Norway", "Oslo"])
         result = [str(child.path) for child in target.iter_ancestors()]
         expected = ['/world/Europe/Norway', '/world/Europe', "/world"]
         self.assertEqual(expected, result)
 
-    def test_iter_descendants(self):
+    def test_iter_descendants1(self):
         target = self.tree.path(["Europe", "Finland"])
-        result = [str(child.path) for child in target.iter_descendants()]
+        result = [str(child.path) for child in target.iter_descendants(order="pre")]
         expected = [
             '/world/Europe/Finland/Helsinki',
             '/world/Europe/Finland/Helsinki/Helsinki',
@@ -136,13 +168,24 @@ class TestNode(TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_iter_descendants_postorder(self):
+    def test_iter_descendants2(self):
         target = self.tree.path(["Europe", "Finland"])
-        result = [str(child.path) for child in target.iter_descendants(post_order=True)]
+        result = [str(child.path) for child in target.iter_descendants(order="post")]
         expected = [
             '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
             '/world/Europe/Finland/Helsinki/Helsinki',
             '/world/Europe/Finland/Helsinki',
+        ]
+        self.assertEqual(expected, result)
+
+
+    def test_iter_descendants3(self):
+        target = self.tree.path(["Europe", "Finland"])
+        result = [str(child.path) for child in target.iter_descendants(order="level")]
+        expected = [
+            '/world/Europe/Finland/Helsinki',
+            '/world/Europe/Finland/Helsinki/Helsinki',
+            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
         ]
         self.assertEqual(expected, result)
 
@@ -162,12 +205,6 @@ class TestNode(TestCase):
         target = self.tree.path(["Europe"])
         result = [child.identifier for child in target.iter_leaves()]
         expected = ['Oslo', 'Stockholm', 'Helsinki']
-        self.assertEqual(expected, result)
-
-    def test_iter_levels(self):
-        target = self.tree
-        result = [child.identifier for child in target.iter_levels(keep=lambda _, it: it.level < 3)]
-        expected = ['world', 'Europe', 'Africa', 'Norway', 'Sweden', 'Finland']
         self.assertEqual(expected, result)
 
     def test_copy(self):

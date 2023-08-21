@@ -1,4 +1,4 @@
-class DuplicateParent(Exception):
+class DuplicateParentError(Exception):
     def __init__(self, node):
         self.node = node
 
@@ -7,7 +7,7 @@ class DuplicateParent(Exception):
                f"Consider node.copy(), node.detach() or node.link instead."
 
 
-class DuplicateChild(Exception):
+class DuplicateChildError(Exception):
     def __init__(self, node, identifier):
         self.node = node
         self.identifier = identifier

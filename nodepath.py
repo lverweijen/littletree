@@ -79,6 +79,8 @@ class NodePath:
         for segment in path:
             if segment == "**":
                 nodes = {node for candidate in nodes for node in candidate.iter_tree()}
+            elif segment == "":
+                nodes = {node for node in nodes if not node.is_leaf}
             elif self._is_pattern(segment):
                 nodes = {node for candidate in nodes for node in candidate.children
                          if fnmatchcase(str(node.identifier), segment)}

@@ -1,15 +1,19 @@
 Tree implementation backed by `dict`.
 
-This is simple tree library based on anytree and itertree.
-Compared to anytree, key-based operations should generally execute much faster.
-Compared to itertree, its implementation is much simpler.
+LittleTree is a library that provides trees.
+The package is purely written in python and tries to be easy to use, but operations are generally implemented in an efficient way.
+It was created because all other tree implementations were either too basic, slow or complicated.
+
+The package has taken much inspiration from anytree and itertree.
+Compared to anytree, it should generally have better performance.
+Compared to itertree, its implementation is much simpler and minimalistic.
 
 ## Example ##
 
-A tree is used in a similar way as a `dict`:
+A tree can be used in a similar way as a `dict`:
 
 ```python
-from dictree import Node
+from littletree import Node
 
 tree = Node(identifier="World")
 tree["Africa"] = Node()
@@ -23,10 +27,11 @@ tree.to_image('world.png')  # Works if dot(graphviz) is on path
 The resulting tree looks like this:
 
 ```
- Node('World')
- ├── Node('Africa')
- ├── Node('America')
- └── Node('Europe')
+ World
+ ├── Asia
+ ├── Africa
+ ├── America
+ └── Europe
 ```
 
 ![world](world.png)
@@ -43,7 +48,7 @@ Before creating this, I looked at some other libraries.
 Each had some things I liked and disliked.
 None of them was exactly how I wanted it, so I decided to create something new.
 
-- [anytree](https://github.com/c0fec0de/anytree) - Also very hackable, but implementation uses lists, which slows some operations down.
+- [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but implementation uses lists, which slows some operations down.
 - [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree. Has slightly more features.
 - [itertree](https://github.com/BR1py/itertree) - Has many features and is fast, but its design is complex.
-- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree in a single dict, which makes some operations harder to achieve, such as splitting trees.
+- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree in a single dict, which makes some operations harder to achieve (and some easier)

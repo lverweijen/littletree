@@ -4,7 +4,7 @@ from collections.abc import ValuesView
 from typing import Mapping, Iterable, Optional, Union, Any, Callable, Iterator, Generic, TypeVar, \
     Hashable
 
-from exceptions import DuplicateParent, DuplicateChild, LoopError
+from exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from nodepath import NodePath
 
 TNode = TypeVar("TNode", bound="BaseNode")
@@ -21,8 +21,8 @@ class BaseNode(Generic[TIdentifier]):
     def __init__(
         self: TNode,
         identifier: TIdentifier = "node",
-        parent: Optional[TNode] = None,
         children: Union[Mapping[TIdentifier, TNode], Iterable[TNode]] = (),
+        parent: Optional[TNode] = None,
     ):
         """
         Create a Node
@@ -35,15 +35,19 @@ class BaseNode(Generic[TIdentifier]):
         self._parent = parent
         self._cdict = self.dict_class()
 
+        if children:
+            if parent is not None:
+                parent._check_loop2(children)
+                if identifier in parent._cdict:
+                    raise DuplicateChildError(parent, identifier)
+            self.update(children, check_loop=False)
+
         if parent is not None:
             pdict = parent._cdict
             if identifier not in pdict:
                 pdict[identifier] = self
             else:
-                raise DuplicateChild(parent, identifier)
-
-        if children:
-            self.update(children, check_loop=False)
+                raise DuplicateChildError(parent, identifier)
 
     def __repr__(self) -> str:
         output = [self.__class__.__name__, f"({self.identifier!r})"]
@@ -74,7 +78,7 @@ class BaseNode(Generic[TIdentifier]):
         old_node = self._cdict.get(new_identifier)
         if not new_node.is_root:
             if old_node is not new_node:
-                raise DuplicateParent(new_node)
+                raise DuplicateParentError(new_node)
         else:
             self._check_loop1(new_node)
             if old_node is not None:
@@ -93,6 +97,8 @@ class BaseNode(Generic[TIdentifier]):
         """Check if node with identifier exists."""
         return identifier in self._cdict
 
+    __iter__ = None
+
     @property
     def identifier(self) -> Any:
         return self._identifier
@@ -103,7 +109,7 @@ class BaseNode(Generic[TIdentifier]):
         old_identifier = self.identifier
         if p is not None:
             if new_identifier in p._cdict:
-                raise DuplicateChild(new_identifier, p)
+                raise DuplicateChildError(new_identifier, p)
             else:
                 del p._cdict[old_identifier]
                 p._cdict[new_identifier] = self
@@ -121,7 +127,7 @@ class BaseNode(Generic[TIdentifier]):
             if new_parent is None:
                 self._parent = None
             elif t in new_parent:
-                raise DuplicateChild(t, new_parent)
+                raise DuplicateChildError(t, new_parent)
             else:
                 self._check_loop1(new_parent)
                 new_parent._cdict[t] = self
@@ -168,7 +174,7 @@ class BaseNode(Generic[TIdentifier]):
     def update(
         self,
         other: Union[Mapping[TIdentifier, TNode], Iterable[TNode], TNode],
-        consume: bool = False,
+        mode: str = "copy",
         check_loop: bool = True,
     ) -> TNode:
         """
@@ -188,16 +194,18 @@ class BaseNode(Generic[TIdentifier]):
         - mapping Keys will become new identifiers
         - iterable Nodes will be added
         - node Same as self.update(other.children) but implemented more efficiently.
-        :param consume: How to handle nodes that already have a parent
-        - True: Children are moved over from old tree to self
-        - False: Children are copied if they are already part of a tree
+        :param mode: How to handle nodes that already have a parent
+        - "copy": These nodes will be copied and remain in old tree
+        - "detach": These nodes will be detached from old tree
         :param check_loop: If True, raises LoopError if a cycle is created.
         :return: self
         """
+        if mode not in ("copy", "detach"):
+            raise ValueError('mode should be "copy" or "detach"')
         if isinstance(other, Mapping):
             if check_loop:
                 self._check_loop2(other.values())
-            if consume:
+            if mode == "detach":
                 for node in other.values():
                     node.detach()
             else:
@@ -214,7 +222,7 @@ class BaseNode(Generic[TIdentifier]):
             other_dict = dict()
             for node in other:
                 if node._parent is not None:
-                    node = node.detach() if consume else node.copy()
+                    node = node.copy() if mode == "copy" else node.detach()
                 other_dict[node.identifier] = node
             if check_loop:
                 self._check_loop2(other_dict.values())
@@ -222,7 +230,7 @@ class BaseNode(Generic[TIdentifier]):
         elif isinstance(other, BaseNode):
             if check_loop:
                 self._check_loop1(other)
-            if not consume:
+            if mode == "copy":
                 other = other.copy()
             other = other._cdict
             self._update(other)
@@ -272,7 +280,6 @@ class BaseNode(Generic[TIdentifier]):
         if p is not None:
             del p._cdict[self._identifier]
             self._parent = None
-
         return self
 
     def clear(self) -> TNode:
@@ -282,8 +289,51 @@ class BaseNode(Generic[TIdentifier]):
         self._cdict.clear()
         return self
 
-    def iter_children(self) -> Iterator[TNode]:
-        return iter(self._cdict.values())
+    def sort_children(
+        self,
+        key: Optional[Callable[[TNode], Any]] = None,
+        recursive: bool = False
+    ) -> TNode:
+        """
+        Sort children
+        :param key: Function to sort by. If not given, sort on identifier.
+        :param recursive: Whether all descendants should be sorted or just children.
+        :return: self
+        """
+        if key:
+            nodes = sorted(self.children, key=key)
+            self._cdict.clear()
+            self._cdict.update((n.identifier, n) for n in nodes)
+        else:
+            nodes = sorted(self._cdict.items())
+            self._cdict.clear()
+            self._cdict.update(nodes)
+        if recursive:
+            for c in self.children:
+                c.sort_children(key=key, recursive=recursive)
+        return self
+
+    def iter_tree(
+        self,
+        keep: Optional[Callable] = None,
+        order: str = "pre",
+        node_only: bool = True
+    ) -> Iterator[Union[TNode, "NodeItem"]]:
+        """
+        Iterate through all nodes of tree
+
+        :param keep: Predicate whether to continue iterating at node
+        :param order: Whether to iterate in pre/post or level-order
+        :param node_only: Whether to return Node or (Node, NodeItem)
+        :return: All nodes.
+        """
+        item = NodeItem(0, 0)
+        if not keep or keep(self, item):
+            if order in ("pre", "level"):
+                yield self if node_only else (self, item)
+            yield from self.iter_descendants(keep, order=order, node_only=node_only)
+            if order == "post":
+                yield self if node_only else (self, item)
 
     def iter_ancestors(self) -> Iterator[TNode]:
         p = self.parent
@@ -294,53 +344,35 @@ class BaseNode(Generic[TIdentifier]):
     def iter_descendants(
         self,
         keep: Optional[Callable] = None,
-        post_order: bool = False,
+        order: str = "pre",
         node_only: bool = True,
     ) -> Iterator[Union[TNode, "NodeItem"]]:
         """
         Iterate through descendants
 
         :param keep: Predicate whether to continue iterating at node
-        :param post_order: Whether to iterate in post-order instead of pre-order
-        :param node_only: Whether to return Node or NodeItem
+        :param order: Whether to iterate in pre/post or level-order
+        :param node_only: Whether to return Node or (Node, NodeItem)
         :return: All descendants.
         """
-        if post_order:
-            descendants = self._iter_descendants_post(keep)
-        else:
+        if order == "pre":
             descendants = self._iter_descendants_pre(keep)
+        elif order == "post":
+            descendants = self._iter_descendants_post(keep)
+        elif order == "level":
+            descendants = self._iter_descendants_level(keep)
+        else:
+            raise ValueError('order should be "pre", "post" or "level"')
 
         if node_only:
             return (node for (node, item) in descendants)
         else:
             return descendants
 
-    def iter_tree(
-        self,
-        keep: Optional[Callable] = None,
-        post_order: bool = False,
-        node_only: bool = True
-    ) -> Iterator[Union[TNode, "NodeItem"]]:
-        """
-        Iterate through all nodes of tree
-
-        :param keep: Predicate whether to continue iterating at node
-        :param post_order: Whether to iterate in post-order instead of pre-order
-        :param node_only: Whether to return Node or NodeItem
-        :return: All nodes.
-        """
-        item = NodeItem(0, 0)
-        if not keep or keep(self, item):
-            if not post_order:
-                yield self if node_only else (self, item)
-            yield from self.iter_descendants(keep, post_order=post_order, node_only=node_only)
-            if post_order:
-                yield self if node_only else (self, item)
-
     def iter_siblings(self) -> Iterator[TNode]:
         """Return siblings."""
         if self.parent is not None:
-            return (child for child in self._parent.iter_children() if child != self)
+            return (child for child in self._parent.children if child != self)
         else:
             return iter(())
 
@@ -350,29 +382,9 @@ class BaseNode(Generic[TIdentifier]):
             if node.is_leaf:
                 yield node
 
-    def iter_levels(
-            self,
-            keep: Optional[Callable] = None,
-            node_only: bool = True
-    ) -> Iterator[Union[TNode, "NodeItem"]]:
-        """Iterate through all nodes in level-order."""
-        item = NodeItem(0, 0)
-        nodes = iter([(self, item)])
-
-        try:
-            while True:
-                node, item = next(nodes)
-                if not keep or keep(node, item):
-                    yield node if node_only else (node, item)
-                    next_nodes = [(child, NodeItem(index, item.level + 1))
-                                  for index, child in enumerate(node.children)]
-                    nodes = itertools.chain(nodes, next_nodes)
-        except StopIteration:
-            pass
-
     def _iter_descendants_pre(self, keep, _depth=0):
         _depth += 1
-        for index, child in enumerate(self.iter_children()):
+        for index, child in enumerate(self.children):
             item = NodeItem(index, _depth)
             if not keep or keep(child, item):
                 yield child, item
@@ -380,11 +392,24 @@ class BaseNode(Generic[TIdentifier]):
 
     def _iter_descendants_post(self, keep, _depth=0):
         _depth += 1
-        for index, child in enumerate(self.iter_children()):
+        for index, child in enumerate(self.children):
             item = NodeItem(index, _depth)
             if not keep or keep(child, item):
                 yield from child._iter_descendants_post(keep=keep, _depth=_depth)
                 yield child, item
+
+    def _iter_descendants_level(self, keep):
+        nodes = ((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))
+        try:
+            while True:
+                node, item = next(nodes)
+                if not keep or keep(node, item):
+                    yield node, item
+                    next_nodes = [(child, NodeItem(index, item.level + 1))
+                                  for index, child in enumerate(node.children)]
+                    nodes = itertools.chain(nodes, next_nodes)
+        except StopIteration:
+            pass
 
     def _check_integrity(self):
         """Recursively check integrity of each parent with its children.

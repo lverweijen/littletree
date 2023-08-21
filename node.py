@@ -19,8 +19,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         self,
         data: TData = None,
         identifier: TIdentifier = "node",
-        parent: Optional[TNode] = None,
         children: Union[Mapping[TIdentifier, TNode], Iterable[TNode]] = (),
+        parent: Optional[TNode] = None,
     ):
         """
         Create a Node
@@ -29,7 +29,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         :param parent: Immediately assign a parent
         :param children: Children to add
         """
-        super().__init__(identifier, parent, children)
+        super().__init__(identifier, children, parent)
         self.data = data
 
     def __repr__(self) -> str:
@@ -67,19 +67,23 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def from_paths(cls, rows, **kwargs) -> TNode:
         return PathSerializer(cls, fields=["data"], **kwargs).from_path(rows)
 
-    def to_string(self, file=None, **kwargs) -> Optional[str]:
+    def to_string(self, file=None, keep=None, **kwargs) -> Optional[str]:
         def str_factory(node):
-            return f"{node.identifier}: {node.data}"
+            if node.data is not None:
+                return f"{node.identifier}: {node.data}"
+            else:
+                return f"{node.identifier}"
+
         exporter = StringExporter(str_factory=str_factory, **kwargs)
-        return exporter.to_string(self, file)
+        return exporter.to_string(self, file, keep=keep)
 
-    def to_image(self, file=None, **kwargs):
+    def to_image(self, file=None, keep=None, **kwargs):
         exporter = DotExporter(node_attributes={"label": Node._graphviz_label}, **kwargs)
-        return exporter.to_image(self, file)
+        return exporter.to_image(self, file, keep=keep)
 
-    def to_dot(self, file=None, **kwargs) -> Optional[str]:
+    def to_dot(self, file=None, keep=None, **kwargs) -> Optional[str]:
         exporter = DotExporter(node_attributes={"label": Node._graphviz_label}, **kwargs)
-        return exporter.to_dot(self, file)
+        return exporter.to_dot(self, file, keep=keep)
 
     def to_dict(self, **kwargs) -> Mapping:
         return DictSerializer(self.__class__, fields=["data"], **kwargs).to_dict(self)
