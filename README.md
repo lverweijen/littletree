@@ -32,7 +32,7 @@ The resulting tree looks like this:
  └── Europe
 ```
 
-![world](https://github.com/lverweijen/tree/main/world.png)
+![world](https://github.com/lverweijen/blob/main/world.png)
 
 See [tutorial](https://github.com/lverweijen/tree/main/tutorial.md) for more information.
 
