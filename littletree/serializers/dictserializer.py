@@ -1,11 +1,18 @@
-from typing import Mapping, TypeVar, Type
+from typing import Mapping, TypeVar, Type, Hashable, Optional
 from ..basenode import BaseNode
 
-TNode = TypeVar("NodeType", bound=BaseNode)
+TNode = TypeVar("TNode", bound=BaseNode)
+TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
 class DictSerializer:
-    def __init__(self, factory: Type[TNode], identifier=None, children="children", fields=()):
+    def __init__(
+        self,
+        factory: Type[TNode] = None,
+        identifier: TIdentifier = None,
+        children: Optional[str] = "children",
+        fields=(),
+    ):
         """
         Read / write tree from nested dictonary
 
@@ -14,6 +21,9 @@ class DictSerializer:
         :param fields: Which fields from data to pass to constructor as named arguments.
         :param factory: Factory method for Node construction
         """
+        if factory is None:
+            from ..node import Node
+            factory = Node
 
         self.factory = factory
         self.identifier = identifier

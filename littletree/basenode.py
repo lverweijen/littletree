@@ -2,7 +2,7 @@ import itertools
 from collections import namedtuple
 from collections.abc import ValuesView
 from typing import Mapping, Iterable, Optional, Union, Any, Callable, Iterator, Generic, TypeVar, \
-    Hashable
+    Hashable, Tuple
 
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from .nodepath import NodePath
@@ -57,7 +57,7 @@ class BaseNode(Generic[TIdentifier]):
     def __eq__(self: TNode, other: TNode):
         if self is other:
             return True
-        return self.identifier == other.identifier and self.children == other.children
+        return self.identifier == other.identifier and self._cdict == other._cdict
 
     def __getitem__(self, identifier: TIdentifier) -> TNode:
         """Get child by identifier."""
@@ -318,23 +318,23 @@ class BaseNode(Generic[TIdentifier]):
         self,
         keep: Optional[Callable] = None,
         order: str = "pre",
-        node_only: bool = True
-    ) -> Iterator[Union[TNode, "NodeItem"]]:
+        item: bool = False,
+    ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
         """
         Iterate through all nodes of tree
 
         :param keep: Predicate whether to continue iterating at node
         :param order: Whether to iterate in pre/post or level-order
-        :param node_only: Whether to return Node or (Node, NodeItem)
+        :param item: Whether to yield (node, node_item) instead of just the node
         :return: All nodes.
         """
-        item = NodeItem(0, 0)
-        if not keep or keep(self, item):
+        node_item = NodeItem(0, 0)
+        if not keep or keep(self, node_item):
             if order in ("pre", "level"):
-                yield self if node_only else (self, item)
-            yield from self.iter_descendants(keep, order=order, node_only=node_only)
+                yield (self, node_item) if item else self
+            yield from self.iter_descendants(keep, order=order, item=item)
             if order == "post":
-                yield self if node_only else (self, item)
+                yield (self, item) if item else self
 
     def iter_ancestors(self) -> Iterator[TNode]:
         p = self.parent
@@ -346,14 +346,14 @@ class BaseNode(Generic[TIdentifier]):
         self,
         keep: Optional[Callable] = None,
         order: str = "pre",
-        node_only: bool = True,
-    ) -> Iterator[Union[TNode, "NodeItem"]]:
+        item: bool = False,
+    ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
         """
         Iterate through descendants
 
         :param keep: Predicate whether to continue iterating at node
         :param order: Whether to iterate in pre/post or level-order
-        :param node_only: Whether to return Node or (Node, NodeItem)
+        :param item: Whether to yield (node, node_item) instead of just the node
         :return: All descendants.
         """
         if order == "pre":
@@ -365,10 +365,9 @@ class BaseNode(Generic[TIdentifier]):
         else:
             raise ValueError('order should be "pre", "post" or "level"')
 
-        if node_only:
-            return (node for (node, item) in descendants)
-        else:
+        if item:
             return descendants
+        return (node for (node, item) in descendants)
 
     def iter_siblings(self) -> Iterator[TNode]:
         """Return siblings."""

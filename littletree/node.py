@@ -57,8 +57,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     @classmethod
     def from_dict(cls, data, **kwargs) -> TNode:
         """
-        Load tree from dictionary
-        :param data: Dictionary in which tree is stored
+        Load tree from Dict.
+        :param data: Dict in which tree is stored
         :return: Root node of new tree
         """
         return DictSerializer(cls, fields=["data"], **kwargs).from_dict(data)
@@ -67,12 +67,13 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def from_paths(cls, rows, **kwargs) -> TNode:
         return RowSerializer(cls, fields=["data"], **kwargs).from_rows(rows)
 
-    def to_string(self, file=None, keep=None, **kwargs) -> Optional[str]:
-        def str_factory(node):
-            if node.data is not None:
-                return f"{node.identifier}: {node.data}"
-            else:
-                return f"{node.identifier}"
+    def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
+        if str_factory is None:
+            def str_factory(node):
+                if node.data is not None:
+                    return f"{node.identifier}: {node.data}"
+                else:
+                    return f"{node.identifier}"
 
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)

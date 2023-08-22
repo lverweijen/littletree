@@ -2,18 +2,22 @@ from typing import Sequence, Mapping, TypeVar, Callable
 
 from ..basenode import BaseNode
 
-TNode = TypeVar("NodeType", bound=BaseNode)
+TNode = TypeVar("TNode", bound=BaseNode)
 
 
 class RowSerializer:
     """Serializes a tree to a list of dicts containing path and data."""
-    def __init__(self, factory: Callable[[], TNode], path_name="path", fields=()):
+    def __init__(self, factory: Callable[[], TNode] = None, path_name="path", fields=()):
         """
         Create path serializer. Useful to convert to/from csv-like formats.
         :param factory: How to create a node
         :param path_name: Attribute (or attributes) to store path in
         :param fields: Fields to save from node
         """
+        if factory is None:
+            from ..node import Node
+            factory = Node
+
         self.factory = factory
         self.path_name = path_name
         self.fields = fields
@@ -23,11 +27,16 @@ class RowSerializer:
         if not isinstance(self.fields, Sequence):
             raise TypeError("fields should be a sequence")
 
-    def from_rows(self, rows: Sequence[Mapping]):
+    def from_rows(self, rows: Sequence[Mapping], root=None):
         factory = self.factory
         path_name = self.path_name
 
-        root = factory()
+        # Special case for pandas data frame (and similar apis)
+        if hasattr(rows, "itertuples"):
+            rows = rows.itertuples(index=False)
+
+        if root is None:
+            root = factory()
         for row in rows:
             if path_name is None:
                 path = row

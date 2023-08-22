@@ -7,14 +7,16 @@ from typing import Mapping, Callable, Any, Union, TypeVar
 from ..basenode import BaseNode
 
 TNode = TypeVar("TNode", bound=BaseNode)
+NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Union[str, Mapping]], str]
+EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Union[str, Mapping]], str]
 
 
 class DotExporter:
     def __init__(
         self,
         name_factory: Union[str, Callable[[TNode], Any]] = "path",
-        node_attributes: Callable[[TNode], Union[str, Mapping]] = None,
-        edge_attributes: Callable[[TNode], Union[str, Mapping]] = None,
+        node_attributes: NodeAttributes = None,
+        edge_attributes: EdgeAttributes = None,
         separator: str = "/",
         dot_path: Path = "dot"
     ):
@@ -89,7 +91,7 @@ class DotExporter:
 
     @classmethod
     def _handle_attributes(cls, attributes: Callable[[TNode], Union[str, Mapping]], *args):
-        if attributes is None:
+        if not attributes:
             return ""
         elif callable(attributes):
             attributes = attributes(*args)
@@ -100,7 +102,6 @@ class DotExporter:
                     v = v(*args)
                 options.append(f"{k}={cls._escape_string(v)}")
             attributes = "[" + " ".join(options) + "]"
-
         return attributes
 
     @staticmethod
