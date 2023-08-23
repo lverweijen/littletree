@@ -318,23 +318,23 @@ class BaseNode(Generic[TIdentifier]):
         self,
         keep: Optional[Callable] = None,
         order: str = "pre",
-        item: bool = False,
+        with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
         """
         Iterate through all nodes of tree
 
         :param keep: Predicate whether to continue iterating at node
         :param order: Whether to iterate in pre/post or level-order
-        :param item: Whether to yield (node, node_item) instead of just the node
+        :param with_item: Whether to yield (node, node_item) instead of just the node
         :return: All nodes.
         """
-        node_item = NodeItem(0, 0)
-        if not keep or keep(self, node_item):
+        item = NodeItem(0, 0)
+        if not keep or keep(self, item):
             if order in ("pre", "level"):
-                yield (self, node_item) if item else self
-            yield from self.iter_descendants(keep, order=order, item=item)
+                yield (self, item) if with_item else self
+            yield from self.iter_descendants(keep, order=order, with_item=with_item)
             if order == "post":
-                yield (self, item) if item else self
+                yield (self, with_item) if with_item else self
 
     def iter_ancestors(self) -> Iterator[TNode]:
         p = self.parent
@@ -346,14 +346,14 @@ class BaseNode(Generic[TIdentifier]):
         self,
         keep: Optional[Callable] = None,
         order: str = "pre",
-        item: bool = False,
+        with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
         """
         Iterate through descendants
 
         :param keep: Predicate whether to continue iterating at node
         :param order: Whether to iterate in pre/post or level-order
-        :param item: Whether to yield (node, node_item) instead of just the node
+        :param with_item: Whether to yield (node, node_item) instead of just the node
         :return: All descendants.
         """
         if order == "pre":
@@ -365,9 +365,9 @@ class BaseNode(Generic[TIdentifier]):
         else:
             raise ValueError('order should be "pre", "post" or "level"')
 
-        if item:
+        if with_item:
             return descendants
-        return (node for (node, item) in descendants)
+        return (node for (node, with_item) in descendants)
 
     def iter_siblings(self) -> Iterator[TNode]:
         """Return siblings."""

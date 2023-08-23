@@ -68,7 +68,7 @@ tree["child"] = tree  # LoopError
 ## Bulk adding
 
 To add multiple children at once to a tree, `update` should be used.
-It can be feed either a dictonary, an iterable or nodes or another node whose children will be copied.
+It can be feed either a dictonary, an iterable of nodes or another node whose children will be added to ours.
 
 ```python
 tree.update({
@@ -95,20 +95,21 @@ tree2.update([tree1["Asia"]], mode="detach")
 ## Iterators
 
 There are a few functions for iteration.
-Most return an iterator but can be converted to list by using `list`.
+They all return an iterator but can be converted to list using `list`.
 
-| Iterator                          | Function                            |
-|-----------------------------------|-------------------------------------|
-| iter(tree.children)               | Iterate over children               |
-| iter(tree.path)                   | Iterator from root to self          |
-| tree.iter_siblings()              | Iterate over nodes with same parent |
-| tree.iter_tree(order="pre")       | Iterate over all nodes              |
-| tree.iter_ancestors()             | Iterate over ancestors              |
-| tree.iter_descendants(order="pre) | Iterate over descendants            |
+| Iterator                | Function                            |
+|-------------------------|-------------------------------------|
+| iter(tree.children)     | Iterator over children              |
+| iter(tree.path)         | Iterator from root to self          |
+| tree.iter_tree()        | Iterate over all nodes              |
+| tree.iter_ancestors()   | Iterate over ancestors              |
+| tree.iter_descendants() | Iterate over descendants            |
+| tree.iter_siblings()    | Iterate over nodes with same parent |
 
-Most iterators can be controlled with parameters such as:
-- `order` - In what order to iterate over nodes (pre, post, level)
-- `keep` - Exclude this node and descendants from iteration if not keep(node)
+Some iterators can be controlled with parameters such as:
+- `order` - In what order to iterate over nodes (default: `"pre"`)
+- `with_item` - Whether to also yield an item with index and level of the iterated node (default: `False`)
+- `keep` - Exclude this node and its descendants from iteration `if not keep(node)`
 
 ## Path operations
 
