@@ -14,7 +14,7 @@ EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Union[str, Ma
 class DotExporter:
     def __init__(
         self,
-        name_factory: Union[str, Callable[[TNode], Any]] = "path",
+        name_factory: Union[str, Callable[[TNode], str]] = "path",
         node_attributes: NodeAttributes = None,
         edge_attributes: EdgeAttributes = None,
         separator: str = "/",

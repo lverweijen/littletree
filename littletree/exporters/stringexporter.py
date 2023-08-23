@@ -1,16 +1,21 @@
 import io
 import operator
-from collections import namedtuple
-from typing import Union, Callable, Optional, Mapping
+from typing import Union, Callable, TypedDict
 
 from ..basenode import BaseNode
+
+
+class Style(TypedDict):
+    continued: str
+    vertical: str
+    end: str
 
 
 class StringExporter:
     def __init__(
         self,
         str_factory: Union[str, Callable[[BaseNode], str]] = None,
-        style: Optional[Mapping[str, str]] = None,
+        style: Style = None,
     ):
         """
         :param str_factory: How to display each node
@@ -28,11 +33,8 @@ class StringExporter:
             raise TypeError("str_factory should be callable")
 
         if style is None:
-            style = dict(continued="├──",
-                         vertical="│  ",
-                         end="└──")
-
-        if not(len(style["continued"]) == len(style["vertical"]) == len(style["end"])):
+            style = dict(continued="├─", vertical="│ ", end="└─")
+        elif not(len(style["continued"]) == len(style["vertical"]) == len(style["end"])):
             raise ValueError("continued, vertical and end should have same length")
 
         self.str_factory = str_factory
@@ -51,53 +53,40 @@ class StringExporter:
 
     def _to_string(self, node, file, keep):
         str_factory = self.str_factory
-        for indent, fill, node in self._to_string_iter(node, keep=keep):
+        write_indent = self._write_indent
+        style = self.style
+        empty_style = len(style["end"]) * " "
+        lookup1 = [empty_style, style["vertical"]]
+        lookup2 = [style["end"], style["continued"]]
+
+        for pattern, node in self._iterate_patterns(node, keep=keep):
             for i, line in enumerate(str_factory(node).splitlines()):
-                if i == 0:
-                    file.write(f"{indent} {line}\n")
-                else:
-                    file.write(f"{fill} {line}\n")
+                if not node.is_root:
+                    if i == 0:
+                        write_indent(file, pattern, lookup1, lookup2)
+                    else:
+                        write_indent(file, pattern, lookup1, lookup1)
+                    file.write(" ")
+                file.write(line)
+                file.write("\n")
 
-    def _to_string_iter(self, root, keep):
-        path = list()
-        indent = []
+    @staticmethod
+    def _iterate_patterns(root, keep):
+        # Yield for each node a list of continuation indicators.
+        # The continuation indicator tells us whether the branch at a certain level is continued.
+        pattern = []
+        yield pattern, root
+        for node, item in root.iter_descendants(keep=keep, with_item=True):
+            del pattern[item.level - 1:]
+            is_continued = item.index < len(node.parent.children) - 1
+            pattern.append(is_continued)
+            yield pattern, node
 
-        continued = self.style["continued"]
-        vertical = self.style["vertical"]
-        end = self.style["end"]
-        empty = " " * len(continued)
-
-        last_nodes = {id(root)}
-
-        for node, item in root.iter_tree(keep=keep, with_item=True):
-            level, index = item.level, item.index
-
-            if level + 1 > len(path):
-                path.append(node)
-
-                if level > 1:
-                    indent[-1] = empty if id(node.parent) in last_nodes else vertical
-
-                indent.append("")
-            else:
-                path[level] = node
-                del path[level + 1:]
-                del indent[level + 1:]
-
-            fill = indent[:]
-
-            if level > 0:
-                if index == len(node.parent.children) - 1:
-                    indent[-1] = end
-                    fill[-1] = empty
-                    last_nodes.add(id(node))
-                else:
-                    indent[-1] = continued
-                    fill[-1] = vertical
-
-            indent_str = " ".join(indent)
-            fill_str = " ".join(fill)
-            yield StringItem(indent_str, fill_str, node)
-
-
-StringItem = namedtuple("StringItem", ["indent", "fill", "node"])
+    @staticmethod
+    def _write_indent(file, pattern, lookup1, lookup2):
+        # Based on calculated patterns, this will substitute an indent line
+        if pattern:
+            for is_continued in pattern[:-1]:
+                file.write(lookup1[is_continued])
+                file.write(" ")
+            file.write(lookup2[pattern[-1]])

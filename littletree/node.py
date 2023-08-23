@@ -36,6 +36,12 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         output = [self.__class__.__name__, f"({self.data!r}, identifier={self.identifier!r})"]
         return "".join(output)
 
+    def __str__(self):
+        if self.data is None:
+            return f"{self.identifier}"
+        else:
+            return f"{self.identifier}\n{self.data}"
+
     def __eq__(self: TNode, other: TNode):
         if self is other:
             return True
@@ -68,25 +74,18 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return RowSerializer(cls, fields=["data"], **kwargs).from_rows(rows)
 
     def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
-        if str_factory is None:
-            def str_factory(node):
-                if node.data is not None:
-                    return f"{node.identifier}: {node.data}"
-                else:
-                    return f"{node.identifier}"
-
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)
 
     def to_image(self, file=None, keep=None, node_attributes=None, **kwargs):
         if node_attributes is None:
-            node_attributes = {"label": Node._graphviz_label}
+            node_attributes = {"label": str}
         exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_image(self, file, keep=keep)
 
     def to_dot(self, file=None, keep=None, node_attributes=None, **kwargs) -> Optional[str]:
         if node_attributes is None:
-            node_attributes = {"label": Node._graphviz_label}
+            node_attributes = {"label": str}
         exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_dot(self, file, keep=keep)
 
@@ -95,9 +94,3 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     def to_rows(self, fields=("data",), **kwargs) -> Iterator[Mapping]:
         return RowSerializer(self.__class__, fields=fields, **kwargs).to_rows(self)
-
-    def _graphviz_label(self):
-        if self.data is None:
-            return f"{self.identifier}"
-        else:
-            return f"{self.identifier}\n{self.data}"

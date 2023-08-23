@@ -28,11 +28,11 @@ tree.to_image('world.png')  # Works if dot(graphviz) is on path
 The resulting tree looks like this:
 
 ```
- World
- ├── Asia
- ├── Africa
- ├── America
- └── Europe
+World
+├─ Asia
+├─ Africa
+├─ America
+└─ Europe
 ```
 
 ![world](world.png)
@@ -54,3 +54,4 @@ None of them was exactly how I wanted it, so I decided to create something new.
 - [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree, but has more features.
 - [itertree](https://github.com/BR1py/itertree) - Has many features and is fast, but its design is complex.
 - [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree into a single flat dict.
+- [networkx](https://networkx.org/) - A tree is a special kind of graph
