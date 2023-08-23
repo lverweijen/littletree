@@ -164,3 +164,32 @@ tree.to_image('world_graph.png')  # Requires dot(graphviz) to be on path
 ```
 
 ![world](world_graph.png)
+
+## Tricks
+
+### Nodes by index
+
+If in addition to accessing nodes by identifier, access based on index is needed,
+[IndexedDict](https://pypi.org/project/indexed/) can be used.
+
+Install using:
+
+```shell
+pip install indexed
+```
+
+Use like this:
+
+```python
+import indexed
+
+class IndexedNode(Node):
+    __slots__ = ()
+    dict_class = indexed.Dict
+
+
+tree = IndexedNode()
+tree["Asia"] = IndexedNode()
+
+assert tree.children[0] == tree["Asia"]
+```
