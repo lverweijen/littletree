@@ -145,7 +145,7 @@ lisbon_nodes = tree.path.glob("**/Lisbon")
 
 ## Exporting and serialization
 
-Nodes have a basic import and exports options with many parameters:
+Nodes have basic import and exports options with many parameters:
 
 | Format | Function                | Use                                        |
 |--------|-------------------------|--------------------------------------------|

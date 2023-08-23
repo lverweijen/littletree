@@ -1,7 +1,7 @@
 import io
 import operator
 from collections import namedtuple
-from typing import Union, Callable
+from typing import Union, Callable, Optional, Mapping
 
 from ..basenode import BaseNode
 
@@ -10,15 +10,14 @@ class StringExporter:
     def __init__(
         self,
         str_factory: Union[str, Callable[[BaseNode], str]] = None,
-        continued="├──",
-        vertical="│  ",
-        end="└──"
+        style: Optional[Mapping[str, str]] = None,
     ):
         """
         :param str_factory: How to display each node
-        :param continued: Sign for continued branch
-        :param vertical: Sign for vertical line
-        :param end: Sign for last branch
+        :param style: Mapping with following keys:
+        - continued: Sign for continued branch
+        - vertical: Sign for vertical line
+        - end: Sign for last branch
         """
 
         if str_factory is None:
@@ -28,13 +27,16 @@ class StringExporter:
         elif not callable(str_factory):
             raise TypeError("str_factory should be callable")
 
-        if not(len(continued) == len(vertical) == len(end)):
-            raise ValueError("continued, vertical and end should have some length")
+        if style is None:
+            style = dict(continued="├──",
+                         vertical="│  ",
+                         end="└──")
+
+        if not(len(style["continued"]) == len(style["vertical"]) == len(style["end"])):
+            raise ValueError("continued, vertical and end should have same length")
 
         self.str_factory = str_factory
-        self.continued = continued
-        self.vertical = vertical
-        self.end = end
+        self.style = style
 
     def to_string(self, node, file=None, keep=None):
         if file is None:
@@ -57,20 +59,24 @@ class StringExporter:
                     file.write(f"{fill} {line}\n")
 
     def _to_string_iter(self, root, keep):
-        empty = " " * len(self.continued)
         path = list()
         indent = []
 
+        continued = self.style["continued"]
+        vertical = self.style["vertical"]
+        end = self.style["end"]
+        empty = " " * len(continued)
+
         last_nodes = {id(root)}
 
-        for node, item in root.iter_tree(keep=keep, node_only=False):
+        for node, item in root.iter_tree(keep=keep, with_item=True):
             level, index = item.level, item.index
 
             if level + 1 > len(path):
                 path.append(node)
 
                 if level > 1:
-                    indent[-1] = empty if id(node.parent) in last_nodes else self.vertical
+                    indent[-1] = empty if id(node.parent) in last_nodes else vertical
 
                 indent.append("")
             else:
@@ -82,12 +88,12 @@ class StringExporter:
 
             if level > 0:
                 if index == len(node.parent.children) - 1:
-                    indent[-1] = self.end
+                    indent[-1] = end
                     fill[-1] = empty
                     last_nodes.add(id(node))
                 else:
-                    indent[-1] = self.continued
-                    fill[-1] = self.vertical
+                    indent[-1] = continued
+                    fill[-1] = vertical
 
             indent_str = " ".join(indent)
             fill_str = " ".join(fill)

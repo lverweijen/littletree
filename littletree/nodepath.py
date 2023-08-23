@@ -1,8 +1,8 @@
 import itertools
 from fnmatch import fnmatchcase
-from typing import Optional, TypeVar, Iterable, Set
+from typing import Optional, TypeVar, Iterable
 
-TNode = TypeVar("NodeType", bound="BaseNode")
+TNode = TypeVar("TNode", bound="BaseNode")
 
 
 class NodePath:
@@ -25,7 +25,7 @@ class NodePath:
     def __len__(self):
         return 1 + sum(1 for _ in self._node.iter_ancestors())
 
-    def __iter__(self) -> Iterable[str]:
+    def __iter__(self) -> Iterable[TNode]:
         node = self._node
         return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
 
@@ -64,7 +64,7 @@ class NodePath:
         node.parent = parent
         return node
 
-    def glob(self, path) -> Set[TNode]:
+    def glob(self, path) -> Iterable[TNode]:
         """
         Find nodes by globbing patterns.
 
@@ -75,18 +75,27 @@ class NodePath:
         if isinstance(path, str):
             path = path.split(self.separator)
 
-        nodes = {self._node}
+        nodes = {id(self._node): self._node}
         for segment in path:
             if segment == "**":
-                nodes = {node for candidate in nodes for node in candidate.iter_tree()}
+                nodes = {id(node): node
+                         for candidate in nodes.values()
+                         for node in candidate.iter_tree()}
             elif segment == "":
-                nodes = {node for node in nodes if not node.is_leaf}
+                nodes = {id(node): node
+                         for node in nodes.values()
+                         if not node.is_leaf}
             elif self._is_pattern(segment):
-                nodes = {node for candidate in nodes for node in candidate.children
+                nodes = {id(node): node
+                         for candidate in nodes.values()
+                         for node in candidate.children
                          if fnmatchcase(str(node.identifier), segment)}
             else:
-                nodes = {candidate[segment] for candidate in nodes if segment in candidate}
-        return nodes
+                nodes = {id(candidate[segment]): candidate[segment]
+                         for candidate in nodes.values()
+                         if segment in candidate}
+
+        return nodes.values()
 
     @staticmethod
     def _is_pattern(segment) -> bool:
