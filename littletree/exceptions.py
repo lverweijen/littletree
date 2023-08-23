@@ -3,8 +3,8 @@ class DuplicateParentError(Exception):
         self.node = node
 
     def __str__(self):
-        return f"{self.node} already has a parent {self.node.parent}. " \
-               f"Consider node.copy(), node.detach() or node.link instead."
+        return (f"{self.node} already has a parent {self.node.parent}. "
+                f"Consider calling node.copy() or node.detach() first.")
 
 
 class DuplicateChildError(Exception):

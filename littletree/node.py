@@ -78,19 +78,23 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)
 
-    def to_image(self, file=None, keep=None, **kwargs):
-        exporter = DotExporter(node_attributes={"label": Node._graphviz_label}, **kwargs)
+    def to_image(self, file=None, keep=None, node_attributes=None, **kwargs):
+        if node_attributes is None:
+            node_attributes = {"label": Node._graphviz_label}
+        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_image(self, file, keep=keep)
 
-    def to_dot(self, file=None, keep=None, **kwargs) -> Optional[str]:
-        exporter = DotExporter(node_attributes={"label": Node._graphviz_label}, **kwargs)
+    def to_dot(self, file=None, keep=None, node_attributes=None, **kwargs) -> Optional[str]:
+        if node_attributes is None:
+            node_attributes = {"label": Node._graphviz_label}
+        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_dot(self, file, keep=keep)
 
-    def to_dict(self, **kwargs) -> Mapping:
-        return DictSerializer(self.__class__, fields=["data"], **kwargs).to_dict(self)
+    def to_dict(self, fields=("data",), **kwargs) -> Mapping:
+        return DictSerializer(self.__class__, fields=fields, **kwargs).to_dict(self)
 
-    def to_rows(self, **kwargs) -> Iterator[Mapping]:
-        return RowSerializer(self.__class__, fields=["data"], **kwargs).to_rows(self)
+    def to_rows(self, fields=("data",), **kwargs) -> Iterator[Mapping]:
+        return RowSerializer(self.__class__, fields=fields, **kwargs).to_rows(self)
 
     def _graphviz_label(self):
         if self.data is None:
