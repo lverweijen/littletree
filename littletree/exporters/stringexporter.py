@@ -6,23 +6,29 @@ from ..basenode import BaseNode
 
 
 class Style(TypedDict):
-    continued: str
+    branch: str
+    last: str
     vertical: str
-    end: str
+
+
+DEFAULT_STYLES = {
+    "constant": Style(branch="├─", last="└─", vertical="│ ", ),
+    "ascii": Style(branch="|--", last="`--", vertical="|  "),
+}
 
 
 class StringExporter:
     def __init__(
         self,
         str_factory: Union[str, Callable[[BaseNode], str]] = None,
-        style: Style = None,
+        style: Union[Style, str] = "constant",
     ):
         """
         :param str_factory: How to display each node
         :param style: Mapping with following keys:
-        - continued: Sign for continued branch
+        - branch: Sign for continued branch
+        - last: Sign for last branch
         - vertical: Sign for vertical line
-        - end: Sign for last branch
         """
 
         if str_factory is None:
@@ -32,10 +38,13 @@ class StringExporter:
         elif not callable(str_factory):
             raise TypeError("str_factory should be callable")
 
-        if style is None:
-            style = dict(continued="├─", vertical="│ ", end="└─")
-        elif not(len(style["continued"]) == len(style["vertical"]) == len(style["end"])):
-            raise ValueError("continued, vertical and end should have same length")
+        if isinstance(style, str):
+            if style in DEFAULT_STYLES:
+                style = DEFAULT_STYLES[style]
+            else:
+                raise ValueError("Available default styles are: " + ", ".join(DEFAULT_STYLES.keys()))
+        elif not(len(style["branch"]) == len(style["vertical"]) == len(style["last"])):
+            raise ValueError("branch, vertical and last should have same length")
 
         self.str_factory = str_factory
         self.style = style
@@ -55,9 +64,9 @@ class StringExporter:
         str_factory = self.str_factory
         write_indent = self._write_indent
         style = self.style
-        empty_style = len(style["end"]) * " "
+        empty_style = len(style["last"]) * " "
         lookup1 = [empty_style, style["vertical"]]
-        lookup2 = [style["end"], style["continued"]]
+        lookup2 = [style["last"], style["branch"]]
 
         for pattern, node in self._iterate_patterns(node, keep=keep):
             for i, line in enumerate(str_factory(node).splitlines()):
