@@ -86,7 +86,7 @@ class StringExporter:
         pattern = []
         yield pattern, root
         for node, item in root.iter_descendants(keep=keep, with_item=True):
-            del pattern[item.level - 1:]
+            del pattern[item.depth - 1:]
             is_continued = item.index < len(node.parent.children) - 1
             pattern.append(is_continued)
             yield pattern, node

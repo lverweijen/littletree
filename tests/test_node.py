@@ -147,7 +147,7 @@ class TestNode(TestCase):
 
     def test_iter_tree3(self):
         target = self.tree
-        result = [child.identifier for child in target.iter_tree(keep=lambda _, it: it.level < 3,
+        result = [child.identifier for child in target.iter_tree(keep=lambda _, it: it.depth < 3,
                                                                  order="level")]
         expected = ['world', 'Europe', 'Africa', 'Norway', 'Sweden', 'Finland']
         self.assertEqual(expected, result)
@@ -177,7 +177,6 @@ class TestNode(TestCase):
             '/world/Europe/Finland/Helsinki',
         ]
         self.assertEqual(expected, result)
-
 
     def test_iter_descendants3(self):
         target = self.tree.path(["Europe", "Finland"])

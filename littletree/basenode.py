@@ -9,6 +9,7 @@ from .nodepath import NodePath
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
+NodePredicate = Callable[[TNode, "NodeItem"], bool]
 
 
 class BaseNode(Generic[TIdentifier]):
@@ -293,30 +294,32 @@ class BaseNode(Generic[TIdentifier]):
     def sort_children(
         self,
         key: Optional[Callable[[TNode], Any]] = None,
-        recursive: bool = False
+        recursive: bool = False,
+        reverse: bool = False,
     ) -> TNode:
         """
         Sort children
         :param key: Function to sort by. If not given, sort on identifier.
         :param recursive: Whether all descendants should be sorted or just children.
+        :param reverse: Whether to sort in reverse order
         :return: self
         """
         if key:
-            nodes = sorted(self.children, key=key)
+            nodes = sorted(self.children, key=key, reverse=reverse)
             self._cdict.clear()
             self._cdict.update((n.identifier, n) for n in nodes)
         else:
-            nodes = sorted(self._cdict.items())
+            nodes = sorted(self._cdict.items(), reverse=reverse)
             self._cdict.clear()
             self._cdict.update(nodes)
         if recursive:
             for c in self.children:
-                c.sort_children(key=key, recursive=recursive)
+                c.sort_children(key=key, recursive=recursive, reverse=reverse)
         return self
 
     def iter_tree(
         self,
-        keep: Optional[Callable] = None,
+        keep: NodePredicate = None,
         order: str = "pre",
         with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
@@ -344,7 +347,7 @@ class BaseNode(Generic[TIdentifier]):
 
     def iter_descendants(
         self,
-        keep: Optional[Callable] = None,
+        keep: NodePredicate = None,
         order: str = "pre",
         with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
@@ -382,32 +385,31 @@ class BaseNode(Generic[TIdentifier]):
             if node.is_leaf:
                 yield node
 
-    def _iter_descendants_pre(self, keep, _depth=0):
-        _depth += 1
+    def _iter_descendants_pre(self, keep, _depth=1):
         for index, child in enumerate(self.children):
             item = NodeItem(index, _depth)
             if not keep or keep(child, item):
                 yield child, item
-                yield from child._iter_descendants_pre(keep=keep, _depth=_depth)
+                yield from child._iter_descendants_pre(keep=keep, _depth=_depth + 1)
 
-    def _iter_descendants_post(self, keep, _depth=0):
-        _depth += 1
+    def _iter_descendants_post(self, keep, _depth=1):
         for index, child in enumerate(self.children):
             item = NodeItem(index, _depth)
             if not keep or keep(child, item):
-                yield from child._iter_descendants_post(keep=keep, _depth=_depth)
+                yield from child._iter_descendants_post(keep=keep, _depth=_depth + 1)
                 yield child, item
 
     def _iter_descendants_level(self, keep):
+        chain = itertools.chain
         nodes = ((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))
         try:
             while True:
                 node, item = next(nodes)
                 if not keep or keep(node, item):
                     yield node, item
-                    next_nodes = [(child, NodeItem(index, item.level + 1))
+                    next_nodes = [(child, NodeItem(index, item.depth + 1))
                                   for index, child in enumerate(node.children)]
-                    nodes = itertools.chain(nodes, next_nodes)
+                    nodes = chain(nodes, next_nodes)
         except StopIteration:
             pass
 
@@ -437,4 +439,4 @@ class BaseNode(Generic[TIdentifier]):
             raise LoopError(self, ancestor)
 
 
-NodeItem = namedtuple("NodeItem", ["index", "level"])
+NodeItem = namedtuple("NodeItem", ["index", "depth"])
