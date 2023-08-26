@@ -168,13 +168,44 @@ class TestNode(TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_iter_descendants2(self):
+    def test_iter_descendants_post1(self):
+        target = self.tree
+        result = [str(child.path) for child in target.iter_descendants(order="post")]
+
+        expected = [
+            '/world/Europe/Norway/Oslo',
+            '/world/Europe/Norway',
+            '/world/Europe/Sweden/Stockholm',
+            '/world/Europe/Sweden',
+            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
+            '/world/Europe/Finland/Helsinki/Helsinki',
+            '/world/Europe/Finland/Helsinki',
+            '/world/Europe/Finland',
+            '/world/Europe',
+            '/world/Africa']
+        self.assertEqual(expected, result)
+
+    def test_iter_descendants_post2(self):
         target = self.tree.path(["Europe", "Finland"])
         result = [str(child.path) for child in target.iter_descendants(order="post")]
         expected = [
             '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
             '/world/Europe/Finland/Helsinki/Helsinki',
             '/world/Europe/Finland/Helsinki',
+        ]
+        self.assertEqual(expected, result)
+
+    def test_iter_descendants_post3(self):
+        def keep_square(_, item):
+            return item.index <= 2 and item.depth <= 2
+        target = self.tree
+        result = [str(child.path) for child in target.iter_descendants(keep_square, order="post")]
+        expected = [
+            '/world/Europe/Norway',
+            '/world/Europe/Sweden',
+            '/world/Europe/Finland',
+            '/world/Europe',
+            '/world/Africa',
         ]
         self.assertEqual(expected, result)
 

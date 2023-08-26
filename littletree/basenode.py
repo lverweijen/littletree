@@ -1,5 +1,4 @@
-import itertools
-from collections import namedtuple
+from collections import namedtuple, deque
 from collections.abc import ValuesView
 from typing import Mapping, Iterable, Optional, Union, Any, Callable, Iterator, Generic, TypeVar, \
     Hashable, Tuple
@@ -365,6 +364,8 @@ class BaseNode(Generic[TIdentifier]):
             descendants = self._iter_descendants_post(keep)
         elif order == "level":
             descendants = self._iter_descendants_level(keep)
+        elif order == "post_rec":  # For checking if post returns correct result
+            descendants = self._iter_descendants_post_rec(keep)
         else:
             raise ValueError('order should be "pre", "post" or "level"')
 
@@ -385,33 +386,62 @@ class BaseNode(Generic[TIdentifier]):
             if node.is_leaf:
                 yield node
 
-    def _iter_descendants_pre(self, keep, _depth=1):
-        for index, child in enumerate(self.children):
-            item = NodeItem(index, _depth)
-            if not keep or keep(child, item):
-                yield child, item
-                yield from child._iter_descendants_pre(keep=keep, _depth=_depth + 1)
+    def _iter_descendants_pre(self, keep):
+        nodes = deque((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))
+        while nodes:
+            node, item = nodes.popleft()
+            if not keep or keep(node, item):
+                yield node, item
+                next_nodes = [(child, NodeItem(index, item.depth + 1))
+                              for index, child in enumerate(node.children)]
+                nodes.extendleft(reversed(next_nodes))
 
-    def _iter_descendants_post(self, keep, _depth=1):
+    def _iter_descendants_post_rec(self, keep, _depth=1):
+        # Same as _iter_descendants_post (kept as reference implementation)
         for index, child in enumerate(self.children):
             item = NodeItem(index, _depth)
             if not keep or keep(child, item):
-                yield from child._iter_descendants_post(keep=keep, _depth=_depth + 1)
+                yield from child._iter_descendants_post_rec(keep=keep, _depth=_depth + 1)
                 yield child, item
 
     def _iter_descendants_level(self, keep):
-        chain = itertools.chain
-        nodes = ((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))
-        try:
-            while True:
-                node, item = next(nodes)
-                if not keep or keep(node, item):
-                    yield node, item
-                    next_nodes = [(child, NodeItem(index, item.depth + 1))
-                                  for index, child in enumerate(node.children)]
-                    nodes = chain(nodes, next_nodes)
-        except StopIteration:
-            pass
+        nodes = deque((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))
+        while nodes:
+            node, item = nodes.popleft()
+            if not keep or keep(node, item):
+                yield node, item
+                next_nodes = [(child, NodeItem(index, item.depth + 1))
+                              for index, child in enumerate(node.children)]
+                nodes.extend(next_nodes)
+
+    def _iter_descendants_post(self, keep, _depth=1):
+        nodes = iter([(child, NodeItem(index, 1))
+                      for (index, child) in enumerate(self.children)])
+        node, item = next(nodes, (None, None))
+        stack = []
+
+        while node or stack:
+            # Go down
+            keep_node = (keep is None or keep(node, item))
+            while keep_node and node.children:
+                children = iter([(child, NodeItem(index, item.depth + 1))
+                                 for (index, child) in enumerate(node.children)])
+                stack.append((item, nodes))
+                node, item = next(children)
+                nodes = children
+                keep_node = (keep is None or keep(node, item))
+            if keep_node:
+                yield node, item
+
+            # Go right or go up
+            parent = node.parent
+            node, item = next(nodes, (None, None))
+            while node is None and stack:
+                node = parent
+                item, nodes = stack.pop()
+                yield node, item
+                parent = node.parent
+                node, item = next(nodes, (None, None))
 
     def _check_integrity(self):
         """Recursively check integrity of each parent with its children.
