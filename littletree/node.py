@@ -48,17 +48,11 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return ((self.identifier, self.data, self._cdict)
                 == (other.identifier, other.data, other._cdict))
 
-    def __copy__(self):
-        return self.__class__(self.data,
-                              identifier=self.identifier,
-                              children={k: v.__copy__() for (k, v) in self._cdict.items()})
+    def _bare_copy(self):
+        return self.__class__(data=self.data)
 
-    def __deepcopy__(self, memo):
-        return self.__class__(copy.deepcopy(self.data, memo),
-                              identifier=self.identifier,
-                              children={k: v.__deepcopy__(memo) for (k, v) in self._cdict.items()})
-
-    copy = __copy__
+    def _bare_deepcopy(self, memo=None):
+        return self.__class__(data=copy.deepcopy(self.data, memo))
 
     @classmethod
     def from_dict(cls, data, **kwargs) -> TNode:

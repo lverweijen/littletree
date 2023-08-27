@@ -239,7 +239,7 @@ class TestNode(TestCase):
 
     def test_copy(self):
         europe = self.tree["Europe"]
-        shallow_copy = copy.deepcopy(europe)
+        shallow_copy = copy.copy(europe)
         deep_copy = copy.deepcopy(europe)
 
         shallow_copy._check_integrity()

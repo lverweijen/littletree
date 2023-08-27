@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
 import littletree
 
@@ -22,3 +22,22 @@ class TestRecursive(TestCase):
     def test_recursion3(self):
         for repeat in range(100):
             list(self.node.iter_tree(order='level'))
+
+    def test_copy(self):
+        for repeat in range(10):
+            self.node.copy()
+
+    def test_deepcopy(self):
+        for repeat in range(10):
+            self.node.deepcopy()
+
+    def test_to_rows(self):
+        for repeat in range(100):
+            self.node.to_rows()
+
+    @skip("too difficult")
+    def test_to_dict(self):
+        self.node.to_dict()
+
+    def test_to_string(self):
+        self.node.to_string()

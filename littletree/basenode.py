@@ -263,12 +263,32 @@ class BaseNode(Generic[TIdentifier]):
             node._parent = None
         return node
 
-    def copy(self, _=None):
-        return self.__class__(identifier=self.identifier,
-                              children={k: v.copy() for (k, v) in self._cdict.items()})
+    def _bare_copy(self, memo=None):
+        """Make a copy without identifier, parent or children."""
+        return self.__class__()
+
+    _bare_deepcopy = _bare_copy
+
+    def copy(self) -> TNode:
+        """Shallow copy of a node."""
+        other = self._bare_copy()
+        for n1, n2 in zip(self.iter_tree(), other.iter_tree()):
+            n2._identifier, n2._parent = n1._identifier, n1._parent
+            n2._cdict = {i: c._bare_copy() for (i, c) in n1._cdict.items()}
+        return other
+
+    def deepcopy(self, memo=None) -> TNode:
+        """Deep copy of a node."""
+        if memo is None:
+            memo = dict()
+        other = self._bare_deepcopy()
+        for n1, n2 in zip(self.iter_tree(), other.iter_tree()):
+            n2._identifier, n2._parent = n1._identifier, n1._parent
+            n2._cdict = {i: c._bare_deepcopy(memo) for (i, c) in n1._cdict.items()}
+        return other
 
     __copy__ = copy
-    __deepcopy__ = copy
+    __deepcopy__ = deepcopy
 
     def detach(self) -> TNode:
         """
