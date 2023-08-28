@@ -336,6 +336,10 @@ class BaseNode(Generic[TIdentifier]):
                 c.sort_children(key=key, recursive=recursive, reverse=reverse)
         return self
 
+    def height(self, keep=None) -> int:
+        """Return maximum depth of tree."""
+        return max(item.depth for (_, item) in self.iter_tree(keep, with_item=True))
+
     def iter_tree(
         self,
         keep: NodePredicate = None,
