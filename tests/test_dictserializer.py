@@ -38,20 +38,20 @@ class TestDictSerializer(TestCase):
 
         Note that identifier "world" is lost from output.
         """
-        serializer = DictSerializer(Node, children=None)
+        serializer = DictSerializer(Node, children_name=None)
         result = serializer.to_dict(self.tree)
         expected = self.compact_dict
         self.assertEqual(expected, result)
 
     def test_to_dict2(self):
         """Verbose but extensible serialization."""
-        serializer = DictSerializer(Node, identifier="name", children="children")
+        serializer = DictSerializer(Node, node_name="name", children_name="children")
         result = serializer.to_dict(self.tree)
         expected = self.verbose_dict
         self.assertEqual(expected, result)
 
     def test_from_dict1(self):
-        serializer = DictSerializer(Node, children=None)
+        serializer = DictSerializer(Node, children_name=None)
         result = serializer.from_dict(self.compact_dict)
         result.identifier = "world"  # Needs to be updated by hand
         expected = self.tree
@@ -61,7 +61,7 @@ class TestDictSerializer(TestCase):
     def test_from_dict2(self):
         """Verbose but extensible serialization."""
 
-        serializer = DictSerializer(Node, identifier="name", children="children")
+        serializer = DictSerializer(Node, node_name="name", children_name="children")
         result = serializer.from_dict(self.verbose_dict)
         expected = self.tree
         result._check_integrity()

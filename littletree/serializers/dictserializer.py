@@ -9,15 +9,15 @@ class DictSerializer:
     def __init__(
         self,
         factory: Type[TNode] = None,
-        identifier: TIdentifier = None,
-        children: Optional[str] = "children",
+        node_name: TIdentifier = None,
+        children_name: Optional[str] = "children",
         fields=(),
     ):
         """
         Read / write tree from nested dictonary
 
-        :param identifier: How to find identifier in dict. If none, assume key-value pairs.
-        :param children: How to find children in dict. If none, use complete dict.
+        :param node_name: How to find identifier in dict. If none, assume key-value pairs.
+        :param children_name: How to find children in dict. If none, use complete dict.
         :param fields: Which fields from data to pass to constructor as named arguments.
         :param factory: Factory method for Node construction
         """
@@ -26,8 +26,8 @@ class DictSerializer:
             factory = Node
 
         self.factory = factory
-        self.identifier = identifier
-        self.children = children
+        self.node_name = node_name
+        self.children_name = children_name
         self.fields = fields
 
     def from_dict(self, data: Mapping) -> TNode:
@@ -37,11 +37,16 @@ class DictSerializer:
         :param data: Dictionary in which tree is stored
         :return: Root node of new tree
         """
-        identifier = self.identifier
+        identifier = self.node_name
         fields = self.fields
-        children = self.children
+        children = self.children_name
 
-        field_data = {k: v for (k, v) in data.items() if k in fields}
+        if isinstance(fields, str):
+            field_data = {k: v for (k, v) in getattr(data, fields).items()
+                          if k not in (identifier, children)}
+        else:
+            field_data = {k: v for (k, v) in data.items() if k in fields}
+
         node = self.factory(**field_data)
 
         if identifier is not None and identifier not in fields:
@@ -64,8 +69,8 @@ class DictSerializer:
         :return: Nested dictionary of node and children
         """
 
-        identifier = self.identifier
-        children = self.children
+        identifier = self.node_name
+        children = self.children_name
         fields = self.fields
 
         if identifier is None:
@@ -78,7 +83,10 @@ class DictSerializer:
         if not children and (identifier or fields):
             raise ValueError("If children is None, identifier and fields should also be None")
         elif children is not None:
-            data.update({field: getattr(node, field) for field in fields})
+            if isinstance(fields, str):
+                data.update(getattr(node, fields))
+            else:
+                data.update({field: getattr(node, field) for field in fields})
 
             if child_data:
                 data[children] = child_data

@@ -143,11 +143,9 @@ class TestRowSerializer(TestCase):
         result.identifier = "world"  # Set root identifier
 
         # We didn't have data, so delete it from expected
-        expected = {'data': {},
-                    'children': {'Africa': {'data': {}},
-                                 'Europe': {'data': {},
-                                            'children': {'Norway': {"data": {'Capital': "Oslo"}},
-                                                         'Sweden': {"data": {'Capital': "Stockholm"}}}}} }
+        expected = {'children': {'Africa': {},
+                                 'Europe': {'children': {'Norway': {'Capital': 'Oslo'},
+                                                         'Sweden': {'Capital': 'Stockholm'}}}}}
 
         self.assertEqual(expected, result.to_dict())
 
@@ -165,14 +163,11 @@ class TestRowSerializer(TestCase):
         result.identifier = "world"  # Set root identifier
 
         # Pandas would always have the same depth on every sibling
-        expected = {'children': {'Africa': {'children': {None: {'data': {}}}, 'data': {}},
-                                 'Europe': {'children': {None: {'data': {}},
-                                                         'Finland': {'data': {}},
-                                                         'Norway': {'data': {}},
-                                                         'Sweden': {'data': {}}},
-                                            'data': {}}},
-                    'data': {}}
-
+        expected = {'children': {'Africa': {'children': {None: {}}},
+                                 'Europe': {'children': {None: {},
+                                                         'Finland': {},
+                                                         'Norway': {},
+                                                         'Sweden': {}}}}}
         self.assertEqual(expected, result.to_dict())
 
     def test_from_df2(self):
@@ -196,11 +191,8 @@ class TestRowSerializer(TestCase):
                 node.identifier = "<empty>"
 
         # Same depth everywhere
-        expected = {
-            'children': {'Africa': {'children': {"<empty>": {'data': {}}}, 'data': {}},
-                         'Europe': {'children': {'Norway': {'data': {'Capital': 'Oslo'}},
-                                                 'Sweden': {'data': {'Capital': 'Stockholm'}}},
-                                    'data': {}}},
-            'data': {}}
+        expected = {'children': {'Africa': {'children': {'<empty>': {}}},
+                                 'Europe': {'children': {'Norway': {'Capital': 'Oslo'},
+                                                         'Sweden': {'Capital': 'Stockholm'}}}}}
 
         self.assertEqual(expected, result.to_dict())
