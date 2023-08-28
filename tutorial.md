@@ -8,6 +8,16 @@ from littletree import Node
 tree = Node({"population": 7.909}, identifier="World")
 ```
 
+The tree is represented by a node.
+All nodes have the following attributes:
+
+| Attribute  | Use                                                 |
+|------------|-----------------------------------------------------|
+| identifier | Indentifier of this node. Unique amongst siblings.  |
+| parent     | Node which is the parent. For root, this is `None`. |
+| children   | Nodes that are children.                            |
+| data       | Dictionary in which data can be stored.             |
+
 ## Adding nodes
 
 Adding nodes can be done as follows:
@@ -17,7 +27,7 @@ tree["Asia"] = Node({"population": 4.694})
 tree["Africa"] = Node({"population": 1.393})
 ```
 
-You can also supply children or a parent in the constructor:
+Children and / or parent can be supplied in the constructor:
 
 ```python
 # Create with nodes added to self
@@ -67,7 +77,7 @@ tree["child"] = tree  # LoopError
 
 ## Bulk adding
 
-To add multiple children at once to a tree, `update` should be used.
+To add multiple children at once to a tree, `update` can be used.
 It can be feed either a dictonary, an iterable of nodes or another node whose children will be added to ours.
 
 ```python
@@ -147,12 +157,13 @@ lisbon_nodes = tree.path.glob("**/Lisbon")
 
 Nodes have basic import and exports options with many parameters:
 
-| Format | Function                | Use                                        |
-|--------|-------------------------|--------------------------------------------|
-| Text   | to_string()             | Pretty print the tree                      | 
-| Image  | to_dot(), to_image()    | For exports to image (requires graphviz)   | 
-| Nested | from_dict() / to_dict() | For converting to / from json-like formats |
-| Rows   | from_rows() / to_rows() | For converting to / from csv-like formats  |
+| Format | Function                          | Use                                         |
+|--------|-----------------------------------|---------------------------------------------|
+| Text   | to_string()                       | Pretty print the tree                       |
+| Image  | to_dot(), to_image()              | For exports to image (requires graphviz)    |
+| Nested | from_dict() / to_dict()           | For converting to / from json-like formats  |
+| Rows   | from_rows() / to_rows()           | For converting to / from path lists         |
+| Rows   | from_relations() / to_relations() | For converting to / from parent-child lists |
 
 ```python
 tree = Node({"population": 7.909}, identifier="World")

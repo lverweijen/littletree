@@ -20,14 +20,14 @@ class TestRowSerializer(TestCase):
         self.rows = [
             {"path": ('Europe',), "data": {"abbrev": "EU"}},
             {"path": ('Europe', 'Norway'), "data": {"abbrev": "NO"}},
-            {"path": ('Europe', 'Norway', 'Oslo'), "data": None},
-            {"path": ('Europe', 'Sweden'), "data": None},
-            {"path": ('Europe', 'Sweden', 'Stockholm'), "data": None},
-            {"path": ('Europe', 'Finland'), "data": None},
-            {"path": ('Europe', 'Finland', 'Helsinki'), "data": None},
-            {"path": ('Europe', 'Finland', 'Helsinki', 'Helsinki'), "data": None},
-            {"path": ('Europe', 'Finland', 'Helsinki', 'Helsinki', 'Helsinki'), "data": None},
-            {"path": ('Africa',), "data": None},
+            {"path": ('Europe', 'Norway', 'Oslo'), "data": {}},
+            {"path": ('Europe', 'Sweden'), "data": {}},
+            {"path": ('Europe', 'Sweden', 'Stockholm'), "data": {}},
+            {"path": ('Europe', 'Finland'), "data": {}},
+            {"path": ('Europe', 'Finland', 'Helsinki'), "data": {}},
+            {"path": ('Europe', 'Finland', 'Helsinki', 'Helsinki'), "data": {}},
+            {"path": ('Europe', 'Finland', 'Helsinki', 'Helsinki', 'Helsinki'), "data": {}},
+            {"path": ('Africa',), "data": {}},
         ]
 
     def test_to_rows1(self):
@@ -79,18 +79,31 @@ class TestRowSerializer(TestCase):
         expected = [
             {'Continent': 'Europe', 'data': {'abbrev': 'EU'}},
             {'Continent': 'Europe', 'Country': 'Norway', 'data': {'abbrev': 'NO'}},
-            {'Capital': 'Oslo', 'Continent': 'Europe', 'Country': 'Norway', 'data': None},
-            {'Continent': 'Europe', 'Country': 'Sweden', 'data': None},
+            {'Capital': 'Oslo', 'Continent': 'Europe', 'Country': 'Norway', 'data': {}},
+            {'Continent': 'Europe', 'Country': 'Sweden', 'data': {}},
             {'Capital': 'Stockholm',
              'Continent': 'Europe',
              'Country': 'Sweden',
-             'data': None},
-            {'Continent': 'Europe', 'Country': 'Finland', 'data': None},
+             'data': {}},
+            {'Continent': 'Europe', 'Country': 'Finland', 'data': {}},
             {'Capital': 'Helsinki',
              'Continent': 'Europe',
              'Country': 'Finland',
-             'data': None},
-            {'Continent': 'Africa', 'data': None}
+             'data': {}},
+            {'Continent': 'Africa', 'data': {}}
+        ]
+        self.assertEqual(expected, result)
+
+    def test_to_rows6(self):
+        """Test with path name as tuple, leaves only"""
+        serializer = RowSerializer(Node, path_name=["Continent", "Country"], fields="data")
+        result = list(serializer.to_rows(self.tree))
+        expected = [
+            {'Continent': 'Europe', 'abbrev': 'EU'},
+            {'Continent': 'Europe', 'Country': 'Norway', 'abbrev': 'NO'},
+            {'Continent': 'Europe', 'Country': 'Sweden'},
+            {'Continent': 'Europe', 'Country': 'Finland'},
+            {'Continent': 'Africa'},
         ]
         self.assertEqual(expected, result)
 
@@ -104,7 +117,7 @@ class TestRowSerializer(TestCase):
         # We didn't have data, so delete it from expected
         expected = self.tree
         for node in expected.iter_tree():
-            node.data = None
+            node.data = {}
 
         self.assertEqual(expected.to_dict(), result.to_dict())
 
@@ -124,16 +137,70 @@ class TestRowSerializer(TestCase):
         rows = [
             {'Continent': 'Europe', 'Country': 'Norway', "data": {"Capital": 'Oslo'}},
             {'Continent': 'Europe', 'Country': 'Sweden', "data": {"Capital": 'Stockholm'}},
-            {'Continent': 'Africa', "data": None}
+            {'Continent': 'Africa', "data": {}}
         ]
         result = serializer.from_rows(rows)
         result.identifier = "world"  # Set root identifier
 
         # We didn't have data, so delete it from expected
-        expected = {'data': None,
-                    'children': {'Africa': {'data': None},
-                                 'Europe': {'data': None,
+        expected = {'data': {},
+                    'children': {'Africa': {'data': {}},
+                                 'Europe': {'data': {},
                                             'children': {'Norway': {"data": {'Capital': "Oslo"}},
                                                          'Sweden': {"data": {'Capital': "Stockholm"}}}}} }
+
+        self.assertEqual(expected, result.to_dict())
+
+    def test_from_df(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            self.skipTest("Pandas not installed")
+            return
+
+        serializer = RowSerializer(Node, path_name=None)
+        paths = pd.DataFrame([row["path"] for row in self.rows])
+        paths = paths.iloc[:, :2]
+        result = serializer.from_rows(paths)
+        result.identifier = "world"  # Set root identifier
+
+        # Pandas would always have the same depth on every sibling
+        expected = {'children': {'Africa': {'children': {None: {'data': {}}}, 'data': {}},
+                                 'Europe': {'children': {None: {'data': {}},
+                                                         'Finland': {'data': {}},
+                                                         'Norway': {'data': {}},
+                                                         'Sweden': {'data': {}}},
+                                            'data': {}}},
+                    'data': {}}
+
+        self.assertEqual(expected, result.to_dict())
+
+    def test_from_df2(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            self.skipTest("Pandas not installed")
+            return
+
+        serializer = RowSerializer(Node, path_name=["Continent", "Country"], fields=["data"])
+        rows = pd.DataFrame([
+            {'Continent': 'Europe', 'Country': 'Norway', "data": {"Capital": 'Oslo'}},
+            {'Continent': 'Europe', 'Country': 'Sweden', "data": {"Capital": 'Stockholm'}},
+            {'Continent': 'Africa', "data": {}}
+        ])
+        result = serializer.from_rows(rows)
+        result.identifier = "world"  # Set root identifier
+
+        for node in result.iter_tree():
+            if pd.isna(node.identifier):
+                node.identifier = "<empty>"
+
+        # Same depth everywhere
+        expected = {
+            'children': {'Africa': {'children': {"<empty>": {'data': {}}}, 'data': {}},
+                         'Europe': {'children': {'Norway': {'data': {'Capital': 'Oslo'}},
+                                                 'Sweden': {'data': {'Capital': 'Stockholm'}}},
+                                    'data': {}}},
+            'data': {}}
 
         self.assertEqual(expected, result.to_dict())

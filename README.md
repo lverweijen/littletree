@@ -17,6 +17,7 @@ A tree can be used in a similar way as a `dict`:
 from littletree import Node
 
 tree = Node(identifier="World")
+tree["Asia"] = Node()
 tree["Africa"] = Node()
 tree["America"] = Node()
 tree["Europe"] = Node()

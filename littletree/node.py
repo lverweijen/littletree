@@ -2,14 +2,17 @@ import copy
 from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Union, Iterable
 
 from .basenode import BaseNode
-from .exporters.dotexporter import DotExporter
-from .exporters.stringexporter import StringExporter
-from .serializers.dictserializer import DictSerializer
-from .serializers.rowserializer import RowSerializer
+from .exporters import DotExporter
+from .exporters import StringExporter
+from .serializers import DictSerializer
+from .serializers import RelationSerializer
+from .serializers import RowSerializer
 
 TNode = TypeVar("TNode", bound="Node")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 TData = TypeVar("TData")
+
+MISSING = object()
 
 
 class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
@@ -17,7 +20,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     def __init__(
         self,
-        data: TData = None,
+        data: TData = MISSING,
         identifier: TIdentifier = "node",
         children: Union[Mapping[TIdentifier, TNode], Iterable[TNode]] = (),
         parent: Optional[TNode] = None,
@@ -30,6 +33,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         :param children: Children to add
         """
         super().__init__(identifier, children, parent)
+        if data is MISSING:
+            data = {}
         self.data = data
 
     def __repr__(self) -> str:
@@ -37,7 +42,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return "".join(output)
 
     def __str__(self):
-        if self.data is None:
+        if not self.data:
             return f"{self.identifier}"
         else:
             return f"{self.identifier}\n{self.data}"
@@ -53,19 +58,6 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     def _bare_deepcopy(self, memo=None):
         return self.__class__(data=copy.deepcopy(self.data, memo))
-
-    @classmethod
-    def from_dict(cls, data, **kwargs) -> TNode:
-        """
-        Load tree from Dict.
-        :param data: Dict in which tree is stored
-        :return: Root node of new tree
-        """
-        return DictSerializer(cls, fields=["data"], **kwargs).from_dict(data)
-
-    @classmethod
-    def from_paths(cls, rows, **kwargs) -> TNode:
-        return RowSerializer(cls, fields=["data"], **kwargs).from_rows(rows)
 
     def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
         exporter = StringExporter(str_factory=str_factory, **kwargs)
@@ -83,8 +75,29 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_dot(self, file, keep=keep)
 
+    @classmethod
+    def from_dict(cls, data, fields=("data",), **kwargs) -> TNode:
+        """
+        Load tree from Dict.
+        :param fields: Fields to export
+        :param data: Dict in which tree is stored
+        :return: Root node of new tree
+        """
+        return DictSerializer(cls, fields=fields, **kwargs).from_dict(data)
+
     def to_dict(self, fields=("data",), **kwargs) -> Mapping:
         return DictSerializer(self.__class__, fields=fields, **kwargs).to_dict(self)
 
+    @classmethod
+    def from_rows(cls, rows, root=None, fields=("data",), **kwargs) -> TNode:
+        return RowSerializer(cls, fields=fields, **kwargs).from_rows(rows, root)
+
     def to_rows(self, fields=("data",), **kwargs) -> Iterator[Mapping]:
         return RowSerializer(self.__class__, fields=fields, **kwargs).to_rows(self)
+
+    @classmethod
+    def from_relations(self, root=None, fields=("data",), **kwargs) -> TNode:
+        return RelationSerializer(self.__class__, fields=fields, **kwargs).from_relations(root)
+
+    def to_relations(self, fields=("data",), **kwargs):
+        return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)

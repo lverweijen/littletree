@@ -30,10 +30,14 @@ class RowSerializer:
     def from_rows(self, rows: Sequence[Mapping], root=None):
         factory = self.factory
         path_name = self.path_name
+        fields = self.fields
 
         # Special case for pandas data frame (and similar apis)
-        if hasattr(rows, "itertuples"):
-            rows = rows.itertuples(index=False)
+        if hasattr(rows, "itertuples") and hasattr(rows, "to_dict"):
+            if path_name is None:
+                rows = rows.itertuples(index=False)
+            else:
+                rows = rows.to_dict("records")
 
         if root is None:
             root = factory()
@@ -42,16 +46,29 @@ class RowSerializer:
                 path = row
             elif isinstance(path_name, str):
                 path = row[path_name]
+                if isinstance(path, str):
+                    path = path.split(root.path.separator)
             else:
                 path = [row[segment] for segment in path_name if segment in row]
 
-            data = {field: row[field] for field in self.fields}
             parent = root.path.create(path[:-1])
-            parent[path[-1]] = factory(**data)
+            node = parent[path[-1]] = factory()
+
+            if fields:
+                if isinstance(fields, str):
+                    data = {}
+                    for field, value in row.items():
+                        if field != path_name:
+                            data[field] = value
+                    node.data = data
+                else:
+                    for field in fields:
+                        setattr(node, field, row[field])
+
 
         return root
 
-    def to_rows(self, root: TNode, leaves_only: bool = False, path_prefix=()):
+    def to_rows(self, tree: TNode, leaves_only: bool = False, path_prefix=()):
         path_name = self.path_name
         fields = self.fields
 
@@ -59,7 +76,7 @@ class RowSerializer:
         if path_name and not isinstance(path_name, str) and len(path_prefix) == len(path_name):
             return
 
-        for child in root.children:
+        for child in tree.children:
             path = path_prefix + (child.identifier,)
             if path_name is None:
                 row = path
@@ -68,8 +85,13 @@ class RowSerializer:
             else:
                 row = {name: segment for name, segment in zip(path_name, path)}
 
-            for field in fields:
-                row[field] = getattr(child, field)
+            if fields:
+                if isinstance(fields, str):
+                    data = getattr(child, fields)
+                    if data:
+                        row.update(data)
+                else:
+                    row.update({field: getattr(child, field) for field in fields})
 
             if not leaves_only or child.is_leaf:
                 yield row
