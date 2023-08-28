@@ -76,7 +76,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return exporter.to_dot(self, file, keep=keep)
 
     @classmethod
-    def from_dict(cls, data, fields=("data",), **kwargs) -> TNode:
+    def from_dict(cls, data, fields="data", **kwargs) -> TNode:
         """
         Load tree from Dict.
         :param fields: Fields to export
@@ -85,19 +85,19 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         """
         return DictSerializer(cls, fields=fields, **kwargs).from_dict(data)
 
-    def to_dict(self, fields=("data",), **kwargs) -> Mapping:
+    def to_dict(self, fields="data", **kwargs) -> Mapping:
         return DictSerializer(self.__class__, fields=fields, **kwargs).to_dict(self)
 
     @classmethod
-    def from_rows(cls, rows, root=None, fields=("data",), **kwargs) -> TNode:
+    def from_rows(cls, rows, root=None, fields="data", **kwargs) -> TNode:
         return RowSerializer(cls, fields=fields, **kwargs).from_rows(rows, root)
 
-    def to_rows(self, fields=("data",), **kwargs) -> Iterator[Mapping]:
+    def to_rows(self, fields="data", **kwargs) -> Iterator[Mapping]:
         return RowSerializer(self.__class__, fields=fields, **kwargs).to_rows(self)
 
     @classmethod
-    def from_relations(self, root=None, fields=("data",), **kwargs) -> TNode:
+    def from_relations(self, root=None, fields="data", **kwargs) -> TNode:
         return RelationSerializer(self.__class__, fields=fields, **kwargs).from_relations(root)
 
-    def to_relations(self, fields=("data",), **kwargs):
+    def to_relations(self, fields="data", **kwargs):
         return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)
