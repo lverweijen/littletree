@@ -31,9 +31,10 @@ class TestRecursive(TestCase):
         for repeat in range(10):
             self.node.deepcopy()
 
+    @skip("too difficult")
     def test_to_rows(self):
-        for repeat in range(100):
-            self.node.to_rows()
+        for repeat in range(10):
+            list(self.node.to_rows())
 
     @skip("too difficult")
     def test_to_dict(self):

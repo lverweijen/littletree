@@ -33,6 +33,16 @@ class TestDictSerializer(TestCase):
                          {'name': 'Africa'}]
         }
 
+    def test_to_dict_error(self):
+        node = Node('data')
+        try:
+            node.to_dict()
+        except ValueError as e:
+            self.assertEqual("data might not be a dictionary. "
+                             "Consider node.to_dict(fields=['data']) instead.", str(e))
+        else:
+            self.fail("Exception was expected")
+
     def test_to_dict1(self):
         """Compact serialization.
 

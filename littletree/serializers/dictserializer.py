@@ -84,7 +84,13 @@ class DictSerializer:
             raise ValueError("If children is None, identifier and fields should also be None")
         elif children is not None:
             if isinstance(fields, str):
-                data.update(getattr(node, fields))
+                mapping = getattr(node, fields)
+                try:
+                    data.update(mapping)
+                except ValueError as e:
+                    msg = (f"{fields} might not be a dictionary. "
+                           f"Consider node.to_dict(fields=['{fields}']) instead.")
+                    raise ValueError(msg) from e
             else:
                 data.update({field: getattr(node, field) for field in fields})
 
