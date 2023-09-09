@@ -1,7 +1,7 @@
 from collections import namedtuple, deque
 from collections.abc import ValuesView
 from typing import Mapping, Iterable, Optional, Union, Any, Callable, Iterator, Generic, TypeVar, \
-    Hashable, Tuple
+    Hashable, Tuple, List
 
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from .nodepath import NodePath
@@ -12,7 +12,7 @@ NodePredicate = Callable[[TNode, "NodeItem"], bool]
 
 
 class BaseNode(Generic[TIdentifier]):
-    """This can serve as a base class (or even be used directly)"""
+    """This can serve as a base class but direct use is possible."""
     __slots__ = "_identifier", "_parent", "_cdict", "_cvalues", "_path"
 
     # These can be changed in child classes
@@ -25,8 +25,7 @@ class BaseNode(Generic[TIdentifier]):
         children: Union[Mapping[TIdentifier, TNode], Iterable[TNode]] = (),
         parent: Optional[TNode] = None,
     ):
-        """
-        Create a Node
+        """Create a Node
 
         :param identifier: Identifier for this node
         :param parent: Immediately assign a parent
@@ -64,8 +63,7 @@ class BaseNode(Generic[TIdentifier]):
         return self._cdict[identifier]
 
     def __setitem__(self, new_identifier: TIdentifier, new_node: TNode):
-        """
-        Add child to this tree.
+        """Add child to this tree.
 
         If new_node already has a parent, throws UniqueParentError.
         To move an existing node use newtree["node"] = bound_node.detach()
@@ -178,8 +176,7 @@ class BaseNode(Generic[TIdentifier]):
         mode: str = "copy",
         check_loop: bool = True,
     ) -> TNode:
-        """
-        Add multiple nodes at once and return self.
+        """Add multiple nodes at once and return self.
 
         This is much faster than setitem when adding multiple children at once.
 
@@ -241,8 +238,7 @@ class BaseNode(Generic[TIdentifier]):
         return self
 
     def _update(self, other: Mapping[TIdentifier, TNode]):
-        """
-        Low-level update. Never use directly.
+        """Low-level update. Never use directly.
 
         Assumptions:
         - key, identifier already matches
@@ -272,9 +268,11 @@ class BaseNode(Generic[TIdentifier]):
     def copy(self) -> TNode:
         """Shallow copy of a node."""
         other = self._bare_copy()
+        other._identifier = self._identifier
         for n1, n2 in zip(self.iter_tree(), other.iter_tree()):
-            n2._identifier, n2._parent = n1._identifier, n1._parent
-            n2._cdict = {i: c._bare_copy() for (i, c) in n1._cdict.items()}
+            for i, c in n1._cdict.items():
+                c2 = c._bare_copy()
+                c2._identifier, c2.parent = c._identifier, n2
         return other
 
     def deepcopy(self, memo=None) -> TNode:
@@ -282,17 +280,18 @@ class BaseNode(Generic[TIdentifier]):
         if memo is None:
             memo = dict()
         other = self._bare_deepcopy()
+        other._identifier = self._identifier
         for n1, n2 in zip(self.iter_tree(), other.iter_tree()):
-            n2._identifier, n2._parent = n1._identifier, n1._parent
-            n2._cdict = {i: c._bare_deepcopy(memo) for (i, c) in n1._cdict.items()}
+            for i, c in n1._cdict.items():
+                c2 = c._bare_deepcopy(memo)
+                c2._identifier, c2.parent = c._identifier, n2
         return other
 
     __copy__ = copy
     __deepcopy__ = deepcopy
 
     def detach(self) -> TNode:
-        """
-        Remove node from its parent.
+        """Remove node from its parent.
 
         This is especially useful when moving the node to a different tree or branch.
         :return: self
@@ -316,8 +315,8 @@ class BaseNode(Generic[TIdentifier]):
         recursive: bool = False,
         reverse: bool = False,
     ) -> TNode:
-        """
-        Sort children
+        """Sort children
+
         :param key: Function to sort by. If not given, sort on identifier.
         :param recursive: Whether all descendants should be sorted or just children.
         :param reverse: Whether to sort in reverse order
@@ -336,18 +335,13 @@ class BaseNode(Generic[TIdentifier]):
                 c.sort_children(key=key, recursive=recursive, reverse=reverse)
         return self
 
-    def height(self, keep=None) -> int:
-        """Return maximum depth of tree."""
-        return max(item.depth for (_, item) in self.iter_tree(keep, with_item=True))
-
     def iter_tree(
         self,
         keep: NodePredicate = None,
         order: str = "pre",
         with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
-        """
-        Iterate through all nodes of tree
+        """Iterate through all nodes of tree
 
         :param keep: Predicate whether to continue iterating at node
         :param order: Whether to iterate in pre/post or level-order
@@ -360,7 +354,7 @@ class BaseNode(Generic[TIdentifier]):
                 yield (self, item) if with_item else self
             yield from self.iter_descendants(keep, order=order, with_item=with_item)
             if order == "post":
-                yield (self, with_item) if with_item else self
+                yield (self, item) if with_item else self
 
     def iter_ancestors(self) -> Iterator[TNode]:
         p = self.parent
@@ -374,8 +368,7 @@ class BaseNode(Generic[TIdentifier]):
         order: str = "pre",
         with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
-        """
-        Iterate through descendants
+        """Iterate through descendants
 
         :param keep: Predicate whether to continue iterating at node
         :param order: Whether to iterate in pre/post or level-order
@@ -409,6 +402,18 @@ class BaseNode(Generic[TIdentifier]):
         for node in self.iter_descendants():
             if node.is_leaf:
                 yield node
+
+    def iter_levels(self) -> Iterator[List[TNode]]:
+        """Iterate levels.
+
+        The caller can modify level inplace and only the nodes remaining will be recursed on.
+        This can be used to prune the search.
+        Calling level.reverse() during the iteration step would get the levels in zigzag order.
+        """
+        level = [self]
+        while level:
+            yield level
+            level = [child for node in level for child in node.children]
 
     def _iter_descendants_pre(self, keep):
         nodes = deque((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))
@@ -474,7 +479,7 @@ class BaseNode(Generic[TIdentifier]):
         """
         for child_identifier, child in self._cdict.items():
             assert child.identifier == child_identifier
-            assert child.parent == self
+            assert child.parent is self
             child._check_integrity()
 
     def _check_loop1(self, other: TNode):

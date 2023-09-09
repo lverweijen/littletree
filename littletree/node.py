@@ -7,6 +7,7 @@ from .exporters import StringExporter
 from .serializers import DictSerializer
 from .serializers import RelationSerializer
 from .serializers import RowSerializer
+from .serializers import NewickSerializer
 
 TNode = TypeVar("TNode", bound="Node")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
@@ -21,7 +22,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def __init__(
         self,
         data: TData = MISSING,
-        identifier: TIdentifier = "node",
+        identifier: TIdentifier = MISSING,
         children: Union[Mapping[TIdentifier, TNode], Iterable[TNode]] = (),
         parent: Optional[TNode] = None,
     ):
@@ -32,10 +33,9 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         :param parent: Immediately assign a parent
         :param children: Children to add
         """
+        identifier = id(self) if identifier is MISSING else identifier
         super().__init__(identifier, children, parent)
-        if data is MISSING:
-            data = {}
-        self.data = data
+        self.data = {} if data is MISSING else data
 
     def __repr__(self) -> str:
         output = [self.__class__.__name__, f"({self.data!r}, identifier={self.identifier!r})"]
@@ -96,8 +96,24 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return RowSerializer(self.__class__, fields=fields, **kwargs).to_rows(self)
 
     @classmethod
-    def from_relations(self, root=None, fields="data", **kwargs) -> TNode:
-        return RelationSerializer(self.__class__, fields=fields, **kwargs).from_relations(root)
+    def from_relations(cls, relations, root=None, fields="data", **kwargs) -> TNode:
+        serializer = RelationSerializer(cls, fields=fields, **kwargs)
+        return serializer.from_relations(relations, root)
 
     def to_relations(self, fields="data", **kwargs):
         return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)
+
+    @classmethod
+    def from_newick(cls, file=None, text=None, root=None, fields="data", **kwargs) -> TNode:
+        serializer = NewickSerializer(cls, fields=fields, **kwargs)
+        if text:
+            return serializer.loads(text, root)
+        else:
+            return serializer.load(file, root)
+
+    def to_newick(self, file=None, fields="data", **kwargs) -> Optional[str]:
+        serializer = NewickSerializer(self.__class__, fields=fields, **kwargs)
+        if file:
+            return serializer.dump(self, file)
+        else:
+            return serializer.dumps(self)

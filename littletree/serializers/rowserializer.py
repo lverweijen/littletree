@@ -65,7 +65,6 @@ class RowSerializer:
                     for field in fields:
                         setattr(node, field, row[field])
 
-
         return root
 
     def to_rows(self, tree: TNode, leaves_only: bool = False, path_prefix=()):

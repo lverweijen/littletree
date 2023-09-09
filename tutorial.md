@@ -107,14 +107,15 @@ tree2.update([tree1["Asia"]], mode="detach")
 There are a few functions for iteration.
 They all return an iterator but can be converted to list using `list`.
 
-| Iterator                | Function                            |
-|-------------------------|-------------------------------------|
-| iter(tree.children)     | Iterator over children              |
-| iter(tree.path)         | Iterator from root to self          |
-| tree.iter_tree()        | Iterate over all nodes              |
-| tree.iter_ancestors()   | Iterate over ancestors              |
-| tree.iter_descendants() | Iterate over descendants            |
-| tree.iter_siblings()    | Iterate over nodes with same parent |
+| Iterator                   | Function                            |
+|----------------------------|-------------------------------------|
+| iter(tree.children)        | Iterate over children               |
+| iter(tree.path)            | Iterate from root to self           |
+| tree.iter_tree()           | Iterate over all nodes              |
+| tree.iter_ancestors()      | Iterate over ancestors              |
+| tree.iter_descendants()    | Iterate over descendants            |
+| tree.iter_siblings()       | Iterate over nodes with same parent |
+| iter(node1.path.to(node2)) | Iterate from one node to another    |
 
 Some iterators can be controlled with parameters such as:
 - `order` - In what order to iterate over nodes (default: `"pre"`)
@@ -153,28 +154,72 @@ It can also be searched for:
 lisbon_nodes = tree.path.glob("**/Lisbon")
 ```
 
+Path from one node to another:
+```python
+madrid = tree.path.create("Europe/Spain/Madrid")
+madrid_to_lisbon = list(madrid.path.to(lisbon))
+# => [madrid, spain, europe, portugal, lisbon]
+```
+
+## Miscellaneous tree operations
+
+Find level of a node:
+```python
+level = len(node.path) - 1
+```
+
+Get (edge) distance between two nodes:
+```python
+distance = len(node1.path.to(node2)) - 1
+```
+
+Calculate height (maximum depth) of a tree
+```python
+height = max([item.depth for (_, item) in tree.iter_tree(with_item=True)])
+```
+
+Calculate degree (maximum number of children) of a tree
+```python
+degree = 1 + max([item.index for (_, item) in tree.iter_tree(with_item=True)])
+```
+
+Find lowest common ancestor of two nodes:
+```python
+europe = madrid.path.to(lisbon).lca
+```
+
 ## Exporting and serialization
 
 Nodes have basic import and exports options with many parameters:
 
-| Format | Function                          | Use                                         |
-|--------|-----------------------------------|---------------------------------------------|
-| Text   | to_string()                       | Pretty print the tree                       |
-| Image  | to_dot(), to_image()              | For exports to image (requires graphviz)    |
-| Nested | from_dict() / to_dict()           | For converting to / from json-like formats  |
-| Rows   | from_rows() / to_rows()           | For converting to / from path lists         |
-| Rows   | from_relations() / to_relations() | For converting to / from parent-child lists |
+| Format | Function                          | Use                                     |
+|--------|-----------------------------------|-----------------------------------------|
+| Text   | to_string()                       | Pretty print the tree                   |
+| Image  | to_dot(), to_image()              | Exports to image (requires graphviz)    |
+| Nested | from_dict() / to_dict()           | Converting to / from json-like formats  |
+| Rows   | from_rows() / to_rows()           | Converting to / from path lists         |
+| Rows   | from_relations() / to_relations() | Converting to / from parent-child lists |
+| Text   | from_newick() / to_newick()       | Converting to / from newick-format      |
 
 ```python
-tree = Node({"population": 7.909}, identifier="World")
-tree["Asia"] = Node({"population": 4.694})
-tree["Africa"] = Node({"population": 1.393})
-tree["America"] = Node({"population": 1.029})
-tree["Europe"] = Node({"population": 0.745})
-tree.to_image('world_graph.png')  # Requires dot(graphviz) to be on path
+family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"
+family_tree = Node.from_newick(text=newick_str)
+print(family_tree.to_string())
+family_tree.to_image('royals.png')
 ```
 
-![world](world_graph.png)
+```text
+Charles III
+{'born': '1948'}
+├─ William
+│  ├─ George
+│  ├─ Charlotte
+│  └─ Louis
+└─ Harry
+   ├─ Archie
+   └─ Lilibet
+```
+![royals](royals.png)
 
 ## Tricks
 
@@ -183,13 +228,9 @@ tree.to_image('world_graph.png')  # Requires dot(graphviz) to be on path
 If in addition to accessing nodes by identifier, access based on index is needed,
 [IndexedDict](https://pypi.org/project/indexed/) can be used.
 
-Install using:
-
 ```shell
 pip install indexed
 ```
-
-Use like this:
 
 ```python
 import indexed
@@ -203,4 +244,57 @@ tree = IndexedNode()
 tree["Asia"] = IndexedNode()
 
 assert tree.children[0] == tree["Asia"]
+```
+
+### Always sorted children
+
+Similarly, a node can be constructed where the children are always sorted by identifier.
+
+```shell
+pip install sortedcontainers
+```
+```python
+from sortedcontainers import SortedDict
+
+class SortedNode(Node):
+    __slots__ = ()
+    dict_class = SortedDict
+    
+    def sort_children(self):
+        # This has now become a no-op
+        return self  
+```
+
+### Symlinks
+
+It's possible to create nodes that share the same data, but have different parents or children.
+Below it is shown how these nodes can be made aware of each other.
+
+```python
+class AliasNode(Node):
+    __slots__ = "_aliases"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._aliases = dict()
+        
+    def make_alias(self):
+        new_alias = AliasNode(self.data)
+        self._aliases[id(new_alias)] = new_alias
+        new_alias._aliases = self._aliases
+        return new_alias
+    
+    @property
+    def aliases(self):
+        return [alias for alias in self._aliases.values()
+                if alias not is self]
+
+node1 = AliasNode({'info': 5})
+node2 = node1.make_alias()
+
+node2.data["more_info"] = 6
+print(node2.data['info'])  # => 5
+print(node1.data['more_info'])  # => 6
+
+print(node1.aliases)  # => [node2]
+print(node2.aliases)  # => [node1]
 ```

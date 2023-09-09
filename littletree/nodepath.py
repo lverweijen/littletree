@@ -1,6 +1,6 @@
 import itertools
 from fnmatch import fnmatchcase
-from typing import Optional, TypeVar, Iterable
+from typing import Optional, TypeVar, Iterable, Iterator
 
 TNode = TypeVar("TNode", bound="BaseNode")
 
@@ -12,6 +12,7 @@ class NodePath:
     separator = "/"
 
     def __init__(self, node: TNode):
+        """Do not instantiate directly, use node.path instead."""
         self._node = node
 
     def __call__(self, path) -> TNode:
@@ -25,7 +26,7 @@ class NodePath:
     def __len__(self):
         return 1 + sum(1 for _ in self._node.iter_ancestors())
 
-    def __iter__(self) -> Iterable[TNode]:
+    def __iter__(self) -> Iterator[TNode]:
         node = self._node
         return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
 
@@ -34,12 +35,14 @@ class NodePath:
         return separator + separator.join([node.identifier for node in self])
 
     def get(self, path) -> Optional[TNode]:
+        """Like calling path, but return None if node is missing."""
         try:
             return self(path)
         except KeyError:
             return None
 
     def create(self, path) -> TNode:
+        """Like get, but create missing nodes."""
         if isinstance(path, str):
             path = path.split(self.separator)
 
@@ -101,3 +104,56 @@ class NodePath:
     def _is_pattern(segment) -> bool:
         """Check if segment is a pattern. If not direct access is much faster."""
         return isinstance(segment, str) and any(char in segment for char in "*?[")
+
+    def to(self, other) -> Optional["PathTo"]:
+        """Return the path if nodes are in the same tree, else None"""
+        s_path, o_path = tuple(self), tuple(other.path)
+
+        n_common = 0
+        n_max = min(len(s_path), len(o_path))
+        while n_common < n_max and s_path[n_common] == o_path[n_common]:
+            n_common += 1
+
+        if n_common:
+            return PathTo(s_path, o_path, n_common)
+
+
+class PathTo:
+    __slots__ = "_path1", "_path2", "_ncommon"
+
+    def __init__(self, path1, path2, n_common):
+        """Do not instantiate directly. Use node1.path.to(node2) instead."""
+        self._path1 = path1
+        self._path2 = path2
+        self._ncommon = n_common
+
+    def __iter__(self) -> Iterator[TNode]:
+        n_common = self._ncommon
+        n_up = len(self._path1) - n_common
+        up = itertools.islice(reversed(self._path1), n_up)
+        down = itertools.islice(self._path2, n_common - 1, None)
+        return itertools.chain(up, down)
+
+    def __reversed__(self) -> Iterable[TNode]:
+        n_common = self._ncommon
+        n_up = len(self._path2) - n_common
+        up = itertools.islice(reversed(self._path2), n_up)
+        down = itertools.islice(self._path1, n_common - 1, None)
+        return itertools.chain(up, down)
+
+    def __len__(self):
+        return len(self._path1) + len(self._path2) - 2 * self._ncommon + 1
+
+    def __str__(self):
+        sep = self.lca.path.separator
+        output = []
+        n_up = len(self._path1) - self._ncommon
+        down = itertools.islice(self._path2, self._ncommon, None)
+        output.extend(n_up * [".."])
+        output.extend([node.identifier for node in down])
+        return sep.join(output)
+
+    @property
+    def lca(self) -> TNode:
+        """Find the lowest common ancestor of both nodes."""
+        return self._path1[self._ncommon - 1]
