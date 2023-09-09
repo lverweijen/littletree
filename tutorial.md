@@ -203,7 +203,7 @@ Nodes have basic import and exports options with many parameters:
 
 ```python
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"
-family_tree = Node.from_newick(text=newick_str)
+family_tree = Node.from_newick(text=family_newick)
 print(family_tree.to_string())
 family_tree.to_image('royals.png')
 ```
