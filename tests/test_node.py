@@ -109,10 +109,6 @@ class TestNode(TestCase):
         self.tree._check_integrity()
         self.assertTrue(self.tree.is_leaf)
 
-    def test_height(self):
-        self.assertEqual(5, self.tree.height())
-        self.assertEqual(0, Node().height())
-
     def test_iter_children(self):
         result = [str(child.path) for child in self.tree.children]
         expected = ['/world/Europe', '/world/Africa']

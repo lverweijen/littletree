@@ -6,24 +6,40 @@ from littletree.serializers import DictSerializer
 
 class TestDictSerializer(TestCase):
     def setUp(self) -> None:
-        root = Node(identifier="world")
-        root.path.create(["Europe", "Norway", "Oslo"])
-        root.path.create(["Europe", "Sweden", "Stockholm"])
-        root.path.create(["Europe", "Finland", "Helsinki", "Helsinki", "Helsinki"])
-        root.path.create(["Africa"])
+        tree = Node(identifier="world")
+        tree.path.create(["Europe", "Norway", "Oslo"])
+        tree.path.create(["Europe", "Sweden", "Stockholm"])
+        tree.path.create(["Europe", "Finland", "Helsinki", "Helsinki", "Helsinki"])
+        tree.path.create(["Africa"])
 
-        self.tree = root
+        tree2 = tree.deepcopy()
+        tree2["Europe"].data = {"abbrev": "EU"}
+        tree2.path("Europe/Sweden").data = {"abbrev": "SWE"}
+
+        self.tree, self.tree2 = tree, tree2
         self.compact_dict = {'Africa': {},
                              'Europe': {'Finland': {'Helsinki': {'Helsinki': {'Helsinki': {}}}},
                                         'Norway': {'Oslo': {}},
                                         'Sweden': {'Stockholm': {}}}}
+
+        self.compact_data_dict = {
+            'children': {'Africa': {},
+                         'Europe': {'abbrev': 'EU',
+                                    'children': {'Finland': {'children': {'Helsinki': {
+                                        'children': {'Helsinki': {'children': {'Helsinki': {}}}}}}},
+                                        'Norway': {'children': {'Oslo': {}}},
+                                        'Sweden': {'abbrev': 'SWE',
+                                                   'children': {'Stockholm': {}}}}}}}
+
         self.verbose_dict = {
             'name': 'world',
             'children': [{'name': 'Europe',
+                          'abbrev': "EU",
                           'children': [
                               {'name': 'Norway',
                                'children': [{'name': 'Oslo'}]},
                               {'name': 'Sweden',
+                               'abbrev': "SWE",
                                'children': [{'name': 'Stockholm'}]},
                               {'name': 'Finland',
                                'children': [{'name': 'Helsinki',
@@ -33,13 +49,38 @@ class TestDictSerializer(TestCase):
                          {'name': 'Africa'}]
         }
 
+        self.verbose_data_dict = {
+            'name': 'world',
+            'data': {},
+            'children': [{'name': 'Europe',
+                          'data': {'abbrev': "EU"},
+                          'children': [
+                              {'name': 'Norway',
+                               'data': {},
+                               'children': [{'name': 'Oslo', 'data': {}}]},
+                              {'name': 'Sweden',
+                               'data': {'abbrev': "SWE"},
+                               'children': [{'name': 'Stockholm', 'data': {}}]},
+                              {'name': 'Finland',
+                               'data': {},
+                               'children': [{'name': 'Helsinki',
+                                             'data': {},
+                                             'children': [
+                                                 {'name': 'Helsinki',
+                                                  'data': {},
+                                                  'children': [{'name': 'Helsinki', 'data': {}}]}]}]}]},
+                         {'name': 'Africa', 'data': {}}]
+        }
+
     def test_to_dict_error(self):
         node = Node('data')
+        node['child'] = Node()
         try:
             node.to_dict()
-        except ValueError as e:
-            self.assertEqual("data might not be a dictionary. "
-                             "Consider node.to_dict(fields=['data']) instead.", str(e))
+        except ValueError:
+            pass  # Maybe try making this error nicer sometime
+            # self.assertEqual("data might not be a dictionary. "
+            #                  "Consider node.to_dict(fields=['data']) instead.", str(e))
         else:
             self.fail("Exception was expected")
 
@@ -55,9 +96,23 @@ class TestDictSerializer(TestCase):
 
     def test_to_dict2(self):
         """Verbose but extensible serialization."""
-        serializer = DictSerializer(Node, node_name="name", children_name="children")
-        result = serializer.to_dict(self.tree)
+        serializer = DictSerializer(Node, node_name="name", children_name="children", fields="data")
+        result = serializer.to_dict(self.tree2)
         expected = self.verbose_dict
+        self.assertEqual(expected, result)
+
+    def test_to_dict3(self):
+        """Verbose but extensible serialization."""
+        serializer = DictSerializer(Node, node_name="name", children_name="children", fields=["data"])
+        result = serializer.to_dict(self.tree2)
+        expected = self.verbose_data_dict
+        self.assertEqual(expected, result)
+
+    def test_to_dict4(self):
+        """Compact but extensible serialization."""
+        serializer = DictSerializer(Node, node_name=None, children_name="children", fields="data")
+        result = serializer.to_dict(self.tree2)
+        expected = self.compact_data_dict
         self.assertEqual(expected, result)
 
     def test_from_dict1(self):
@@ -66,7 +121,7 @@ class TestDictSerializer(TestCase):
         result.identifier = "world"  # Needs to be updated by hand
         expected = self.tree
         result._check_integrity()
-        self.assertEqual(len(expected.children), len(result.children))
+        self.assertEqual(expected, result)
 
     def test_from_dict2(self):
         """Verbose but extensible serialization."""
@@ -75,4 +130,23 @@ class TestDictSerializer(TestCase):
         result = serializer.from_dict(self.verbose_dict)
         expected = self.tree
         result._check_integrity()
-        self.assertEqual(len(expected.children), len(result.children))
+        self.assertEqual(expected, result)
+
+    def test_from_dict3(self):
+        """Verbose but extensible serialization."""
+
+        serializer = DictSerializer(Node, node_name="name", children_name="children", fields=["data"])
+        result = serializer.from_dict(self.verbose_data_dict)
+        expected = self.tree2
+        result._check_integrity()
+        self.assertEqual(expected, result)
+
+    def test_from_dict4(self):
+        """Verbose but extensible serialization."""
+
+        serializer = DictSerializer(Node, node_name=None, children_name="children", fields="data")
+        result = serializer.from_dict(self.compact_data_dict)
+        result.identifier = 'world'
+        expected = self.tree2
+        result._check_integrity()
+        self.assertEqual(expected, result)

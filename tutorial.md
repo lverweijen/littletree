@@ -192,24 +192,34 @@ europe = madrid.path.to(lisbon).lca
 
 Nodes have basic import and exports options with many parameters:
 
-| Format | Function                          | Use                                         |
-|--------|-----------------------------------|---------------------------------------------|
-| Text   | to_string()                       | Pretty print the tree                       |
-| Image  | to_dot(), to_image()              | For exports to image (requires graphviz)    |
-| Nested | from_dict() / to_dict()           | For converting to / from json-like formats  |
-| Rows   | from_rows() / to_rows()           | For converting to / from path lists         |
-| Rows   | from_relations() / to_relations() | For converting to / from parent-child lists |
+| Format | Function                          | Use                                     |
+|--------|-----------------------------------|-----------------------------------------|
+| Text   | to_string()                       | Pretty print the tree                   |
+| Image  | to_dot(), to_image()              | Exports to image (requires graphviz)    |
+| Nested | from_dict() / to_dict()           | Converting to / from json-like formats  |
+| Rows   | from_rows() / to_rows()           | Converting to / from path lists         |
+| Rows   | from_relations() / to_relations() | Converting to / from parent-child lists |
+| Text   | from_newick() / to_newick()       | Converting to / from newick-format      |
 
 ```python
-tree = Node({"population": 7.909}, identifier="World")
-tree["Asia"] = Node({"population": 4.694})
-tree["Africa"] = Node({"population": 1.393})
-tree["America"] = Node({"population": 1.029})
-tree["Europe"] = Node({"population": 0.745})
-tree.to_image('world_graph.png')  # Requires dot(graphviz) to be on path
+family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"
+family_tree = Node.from_newick(text=newick_str)
+print(family_tree.to_string())
+family_tree.to_image('royals.png')
 ```
 
-![world](world_graph.png)
+```text
+Charles III
+{'born': '1948'}
+├─ William
+│  ├─ George
+│  ├─ Charlotte
+│  └─ Louis
+└─ Harry
+   ├─ Archie
+   └─ Lilibet
+```
+![royals](royals.png)
 
 ## Tricks
 
