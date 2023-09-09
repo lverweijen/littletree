@@ -22,7 +22,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def __init__(
         self,
         data: TData = MISSING,
-        identifier: TIdentifier = "node",
+        identifier: TIdentifier = MISSING,
         children: Union[Mapping[TIdentifier, TNode], Iterable[TNode]] = (),
         parent: Optional[TNode] = None,
     ):
@@ -33,10 +33,9 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         :param parent: Immediately assign a parent
         :param children: Children to add
         """
+        identifier = id(self) if identifier is MISSING else identifier
         super().__init__(identifier, children, parent)
-        if data is MISSING:
-            data = {}
-        self.data = data
+        self.data = {} if data is MISSING else data
 
     def __repr__(self) -> str:
         output = [self.__class__.__name__, f"({self.data!r}, identifier={self.identifier!r})"]

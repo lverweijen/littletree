@@ -1,3 +1,4 @@
+import re
 from unittest import TestCase
 
 from littletree import Node
@@ -112,12 +113,17 @@ class TestNewickSerializer(TestCase):
         for letter in "ABCD":
             self.assertIn(letter, [d.identifier for d in descendants])
 
+    @staticmethod
+    def remove_anonymous(line):
+        return re.sub(r"\d{7,}", '', line)
+
     def test_from_newick3(self):
         # wikipedia example
         serializer = NewickSerializer()
         tree = serializer.loads("(,,(,));")
         lines = tree.to_string().splitlines()
-        result = [line.split('0x')[0] for line in lines]
+        # result = [line.split('0x')[0] for line in lines]
+        result = [self.remove_anonymous(line) for line in lines]
         expected = ['', '├─ ', '├─ ', '└─ ', '   ├─ ', '   └─ ']
         self.assertEqual(expected, result)
 
@@ -127,7 +133,9 @@ class TestNewickSerializer(TestCase):
         serializer = NewickSerializer(fields="data")
         tree = serializer.loads(newick)
         lines = tree.to_string().splitlines()
-        result = [line.split('0x')[0] for line in lines]
+        # result = [line.split('0x')[0] for line in lines]
+        # result = [re.sub(r"\d.*$", '', line) for line in lines]
+        result = [self.remove_anonymous(line) for line in lines]
         expected = ['',
                     '├─ A',
                     "│  {'distance': 0.1}",
@@ -139,4 +147,12 @@ class TestNewickSerializer(TestCase):
                     "   │  {'distance': 0.3}",
                     '   └─ D',
                     "      {'distance': 0.4}"]
+        self.assertEqual(expected, result)
+
+    def test_from_newick_quoted(self):
+        newick = "why''node('this''node')"
+        serializer = NewickSerializer(fields="data")
+        tree = serializer.loads(newick)
+        result = tree.to_string()
+        expected = "why''node\n└─ this'node\n"
         self.assertEqual(expected, result)
