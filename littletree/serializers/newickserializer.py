@@ -1,7 +1,7 @@
 import io
 import os
 import re
-from typing import TypeVar, Optional, Sequence, Callable
+from typing import TypeVar, Optional, Sequence, Callable, Union
 
 from littletree import BaseNode
 
@@ -50,8 +50,10 @@ class NewickSerializer:
         self.distance_field = distance_field
         self.comment_field = comment_field
 
-    def loads(self, text: str, root: TNode = None) -> TNode:
-        file = io.BytesIO(text.encode('utf-8'))
+    def loads(self, text: Union[str, bytes, bytearray], root: TNode = None) -> TNode:
+        if isinstance(text, str):
+            text = text.encode('utf-8')
+        file = io.BytesIO(text)
         return self.load(file, root)
 
     def load(self, file, root: TNode = None) -> TNode:

@@ -1,3 +1,15 @@
+## Version 0.2.3 ##
+- Streamline DotExporter.
+  Create temporary files in memory.
+  Add option `as_bytes` to `to_image()`.
+  Remove unused parameter `separator`.
+- Add more default styles to StringExporter.
+  Some have been renamed. `const` has been renamed to `square`.
+- Simplify signature of `from_newick`. It accepts a string.
+  For files a Path or file object should be passed.
+- Add `tree.show()` for quickly rendering a tree to console.
+  Same as `print(tree.to_string())`.
+
 ## Version 0.2.2 ##
 - Make dictserialization work on large trees.
 

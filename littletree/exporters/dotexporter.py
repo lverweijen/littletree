@@ -1,10 +1,17 @@
+import io
 import operator
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import Mapping, Callable, Any, Union, TypeVar
 
+try:
+    from PIL import Image
+    _HAS_PILLOW = True
+except ImportError:
+    _HAS_PILLOW = False
+
 from ..basenode import BaseNode
+
 
 TNode = TypeVar("TNode", bound=BaseNode)
 NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Union[str, Mapping]], str]
@@ -17,7 +24,6 @@ class DotExporter:
         name_factory: Union[str, Callable[[TNode], str]] = "path",
         node_attributes: NodeAttributes = None,
         edge_attributes: EdgeAttributes = None,
-        separator: str = "/",
         dot_path: Path = "dot"
     ):
         if name_factory is None:
@@ -30,64 +36,66 @@ class DotExporter:
         self.name_factory = name_factory
         self.node_attributes = node_attributes
         self.edge_attributes = edge_attributes
-        self.separator = separator
         self.dot_path = Path(dot_path)
 
-    def to_image(self, node: TNode, picture_filename=None, keep=None, file_format="png"):
-        if picture_filename is None:
-            try:
-                from PIL import Image
-            except ImportError:
-                raise ImportError("Either install Pillow or supply a filename to save to.")
+    def to_image(self, tree: TNode, file=None, keep=None, file_format="png", as_bytes=False):
+        """Export tree to an image
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix="_DicTree.png") as fp:
-                picture_filename = fp.name
-
-            self._to_image(node, picture_filename, keep, file_format)
-            img = Image.open(picture_filename)
-            return img
+        If file is None and not as_bytes, it will return a Pillow object [default].
+        If file is None and as_bytes, it will return image as bytes.
+        """
+        if hasattr(file, "write"):
+            self._to_image(tree, file, keep, file_format)
+        elif file:
+            with open(file, "bw") as writer:
+                self._to_image(tree, writer, keep, file_format)
         else:
-            self._to_image(node, picture_filename, keep, file_format)
+            img_bytes = self._to_image(tree, subprocess.PIPE, keep, file_format)
+            if as_bytes:
+                return img_bytes
+            elif _HAS_PILLOW:
+                # Pillow doesn't support streaming, so piping from subprocess won't be faster.
+                return Image.open(io.BytesIO(img_bytes))
+            else:
+                raise ImportError("Pillow not installed. Use `pip install Pillow`.")
 
-    def _to_image(self, node, picture_filename, keep, file_format):
-        with tempfile.NamedTemporaryFile(delete=False, suffix="_DicTree.dot") as fp:
-            dot_filename = fp.name
+    def _to_image(self, tree, file, keep, file_format):
+        args = [self.dot_path, "-T", file_format]
+        try:
+            process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=file)
+        except FileNotFoundError as err:
+            raise Exception("Install dot from graphviz.org") from err
+        self.to_dot(tree, io.TextIOWrapper(process.stdin, encoding='utf-8'), keep=keep)
+        process.stdin.close()
+        (output, errors) = process.communicate()
+        if process.returncode != 0:
+            raise Exception(errors.decode('utf-8', errors="replace"))
+        return output
 
-        self.to_dot(node, dot_filename=dot_filename, keep=keep)
+    def to_dot(self, tree: TNode, file=None, keep=None):
+        output = self._to_dot(tree, keep)
 
-        cmd = [self.dot_path, dot_filename, "-T", file_format, "-o", picture_filename]
-        subprocess.check_call(cmd)
-        Path(fp.name).unlink()
-
-    def to_dot(self, root: TNode, dot_filename=None, keep=None):
-        output = self._to_dot(root, keep)
-
-        if dot_filename is None:
+        if file is None:
             return "\n".join(output)
-        elif hasattr(dot_filename, "write"):
-            for line in output:
-                text = line + "\n"
-                dot_filename.write(text.encode('utf-8'))
+        elif hasattr(file, "write"):
+            file.writelines(output)
         else:
-            with open(dot_filename, "wb") as fp:
-                for line in output:
-                    text = line + "\n"
-                    fp.write(text.encode('utf-8'))
+            with open(file, "w", encoding='utf-8') as fp:
+                fp.writelines(output)
 
     def _to_dot(self, root, keep=None):
         node_to_str = self.name_factory
-        output = ["digraph tree {"]
+        yield "digraph tree {"
         for node in root.iter_tree(keep):
             node_esc = self._escape_string(str(node_to_str(node)))
             attrs = self._handle_attributes(self.node_attributes, node)
-            output.append(f"{node_esc}{attrs};")
+            yield f"{node_esc}{attrs};"
         for node in root.iter_descendants(keep):
             parent_esc = self._escape_string(str(node_to_str(node.parent)))
             child_esc = self._escape_string(str(node_to_str(node)))
             attrs = self._handle_attributes(self.edge_attributes, node.parent, node)
-            output.append(f"{parent_esc} -> {child_esc}{attrs};")
-        output.append("}")
-        return output
+            yield f"{parent_esc} -> {child_esc}{attrs};"
+        yield "}"
 
     @classmethod
     def _handle_attributes(cls, attributes: Callable[[TNode], Union[str, Mapping]], *args):

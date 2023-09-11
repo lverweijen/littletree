@@ -1,13 +1,14 @@
 import copy
+import sys
 from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Union, Iterable
 
 from .basenode import BaseNode
 from .exporters import DotExporter
 from .exporters import StringExporter
 from .serializers import DictSerializer
+from .serializers import NewickSerializer
 from .serializers import RelationSerializer
 from .serializers import RowSerializer
-from .serializers import NewickSerializer
 
 TNode = TypeVar("TNode", bound="Node")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
@@ -59,6 +60,21 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def _bare_deepcopy(self, memo=None):
         return self.__class__(data=copy.deepcopy(self.data, memo))
 
+    def show(self, img=False, style=None, **kwargs):
+        """Print this tree or show as an image.
+
+        For more control, use directly one of:
+        - tree.to_string()
+        - tree.to_image()
+        """
+        if img:
+            self.to_image(**kwargs).show()
+        elif sys.stdout:
+            if not style:
+                supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
+                style = "square" if supports_unicode else "ascii"
+            self.to_string(sys.stdout, style=style, **kwargs)
+
     def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)
@@ -104,12 +120,12 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)
 
     @classmethod
-    def from_newick(cls, file=None, text=None, root=None, fields="data", **kwargs) -> TNode:
+    def from_newick(cls, newick, root=None, fields="data", **kwargs) -> TNode:
         serializer = NewickSerializer(cls, fields=fields, **kwargs)
-        if text:
-            return serializer.loads(text, root)
+        if isinstance(newick, (str, bytes, bytearray)):
+            return serializer.loads(newick, root)
         else:
-            return serializer.load(file, root)
+            return serializer.load(newick, root)
 
     def to_newick(self, file=None, fields="data", **kwargs) -> Optional[str]:
         serializer = NewickSerializer(self.__class__, fields=fields, **kwargs)

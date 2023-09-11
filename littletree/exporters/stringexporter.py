@@ -12,8 +12,15 @@ class Style(TypedDict):
 
 
 DEFAULT_STYLES = {
-    "constant": Style(branch="├─", last="└─", vertical="│ ", ),
+    "square": Style(branch="├─", last="└─", vertical="│ "),
+    "square-4": Style(branch="├──", last="└──", vertical="│  "),
+    "square-arrow": Style(branch="├→", last="└→", vertical="│ "),
+    "round": Style(branch="├─", last="╰─", vertical="│ "),
+    "round-4": Style(branch="├──", last="╰──", vertical="│  "),
+    "round-arrow": Style(branch="├→", last="╰→", vertical="│ "),
     "ascii": Style(branch="|--", last="`--", vertical="|  "),
+    "ascii-arrow": Style(branch="|->", last="`->", vertical="|  "),
+    "minimal": Style(branch=">", last=">", vertical=" "),
 }
 
 
@@ -21,7 +28,7 @@ class StringExporter:
     def __init__(
         self,
         str_factory: Union[str, Callable[[BaseNode], str]] = None,
-        style: Union[Style, str] = "constant",
+        style: Union[Style, str] = "square",
     ):
         """
         :param str_factory: How to display each node
@@ -55,8 +62,8 @@ class StringExporter:
             self._to_string(node, file, keep)
             return file.getvalue()
         elif not hasattr(file, "write"):
-            with open(file, "wb"):
-                self._to_string(node, file, keep)
+            with open(file, "w", encoding='utf-8') as writer:
+                self._to_string(node, writer, keep)
         else:
             self._to_string(node, file, keep)
 

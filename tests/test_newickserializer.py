@@ -92,7 +92,7 @@ class TestNewickSerializer(TestCase):
         # wikipedia example
         serializer = NewickSerializer()
         tree = serializer.loads("(A,B,(C,D)E)F;")
-        result = tree.to_string()
+        result = tree.to_string(style='square')
         expected = ('F\n'
                     '├─ A\n'
                     '├─ B\n'
@@ -121,8 +121,7 @@ class TestNewickSerializer(TestCase):
         # wikipedia example
         serializer = NewickSerializer()
         tree = serializer.loads("(,,(,));")
-        lines = tree.to_string().splitlines()
-        # result = [line.split('0x')[0] for line in lines]
+        lines = tree.to_string(style='square').splitlines()
         result = [self.remove_anonymous(line) for line in lines]
         expected = ['', '├─ ', '├─ ', '└─ ', '   ├─ ', '   └─ ']
         self.assertEqual(expected, result)
@@ -132,9 +131,7 @@ class TestNewickSerializer(TestCase):
         newick = "(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);"
         serializer = NewickSerializer(fields="data")
         tree = serializer.loads(newick)
-        lines = tree.to_string().splitlines()
-        # result = [line.split('0x')[0] for line in lines]
-        # result = [re.sub(r"\d.*$", '', line) for line in lines]
+        lines = tree.to_string(style='square').splitlines()
         result = [self.remove_anonymous(line) for line in lines]
         expected = ['',
                     '├─ A',
@@ -153,6 +150,6 @@ class TestNewickSerializer(TestCase):
         newick = "why''node('this''node')"
         serializer = NewickSerializer(fields="data")
         tree = serializer.loads(newick)
-        result = tree.to_string()
+        result = tree.to_string(style='square')
         expected = "why''node\n└─ this'node\n"
         self.assertEqual(expected, result)

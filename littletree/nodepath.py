@@ -32,7 +32,7 @@ class NodePath:
 
     def __str__(self) -> str:
         separator = self.separator
-        return separator + separator.join([node.identifier for node in self])
+        return separator + separator.join([str(node.identifier) for node in self])
 
     def get(self, path) -> Optional[TNode]:
         """Like calling path, but return None if node is missing."""
