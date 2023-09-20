@@ -1,6 +1,7 @@
 import io
 import os
 import re
+import xml.sax.saxutils
 from typing import TypeVar, Optional, Sequence, Callable, Union
 
 from littletree import BaseNode
@@ -29,6 +30,7 @@ class NewickSerializer:
         quote_name: bool = True,
         distance_field: Optional[str] = "distance",
         comment_field: Optional[str] = None,
+        escape_comments: bool = True,
     ):
         """
         Create a serializer
@@ -38,6 +40,7 @@ class NewickSerializer:
         :param quote_name: Whether identifiers should be quoted
         :param distance_field: Which field of node to use for distance if any
         :param comment_field: Which field of node to use for comment if any
+        :param escape_comments: Whether [ and ] in comments should be escaped.
         """
         if factory is None:
             from ..node import Node
@@ -49,6 +52,7 @@ class NewickSerializer:
         self.quote_name = quote_name
         self.distance_field = distance_field
         self.comment_field = comment_field
+        self.escape_comments = escape_comments
 
     def loads(self, text: Union[str, bytes, bytearray], root: TNode = None) -> TNode:
         if isinstance(text, str):
@@ -74,7 +78,7 @@ class NewickSerializer:
         else:
             editor = FieldNodeEditor(self.fields, self.distance_field, self.comment_field)
 
-        return NewickParser(file, self.factory, editor, use_nhx=self.use_nhx).run()
+        return NewickParser(file, self.factory, editor, use_nhx=self.use_nhx, escape_comments=self.escape_comments).run()
 
     def dumps(self, tree: TNode):
         file = io.StringIO()
@@ -122,8 +126,10 @@ class NewickSerializer:
                 if distance is not None:
                     file.write(f":{distance}")
                 if data and self.use_nhx:
-                    self._write_nhx_data(data, file)
+                    self._write_nhx_data(data, file, escape_comments=self.escape_comments)
                 if comment and self.comment_field:
+                    if self.escape_comments:
+                        comment = escape_comment(comment)
                     file.write(f'[{comment}]')
 
             previous_depth = item.depth
@@ -131,10 +137,14 @@ class NewickSerializer:
         file.write(';')
 
     @staticmethod
-    def _write_nhx_data(data, file):
+    def _write_nhx_data(data, file, escape_comments):
         file.write("[&&NHX")
-        for k, v in data.items():
-            file.write(f":{k}={v}")
+        if escape_comments:
+            for k, v in data.items():
+                file.write(f":{escape_comment(str(k))}={escape_comment(str(v))}")
+        else:
+            for k, v in data.items():
+                file.write(f":{k}={v}")
         file.write("]")
 
     @staticmethod
@@ -144,9 +154,9 @@ class NewickSerializer:
 
 
 class NewickParser:
-    __slots__ = "file", "factory", "editor", "use_nhx", "stack", "nodes", "in_distance"
+    __slots__ = "file", "factory", "editor", "use_nhx", "stack", "nodes", "in_distance", "escape_comments"
 
-    def __init__(self, file, factory, editor, use_nhx):
+    def __init__(self, file, factory, editor, use_nhx, escape_comments):
         self.file = io.BufferedReader(file)
         self.factory = factory
         self.editor = editor
@@ -155,10 +165,12 @@ class NewickParser:
         self.stack = []
         self.nodes = [factory()]
         self.in_distance = False
+        self.escape_comments = escape_comments
 
     def run(self):
         table = {
             ord('['): self._read_comment,
+            ord(']'): self._unmatched_bracket,
             ord(','): self._read_sibling,
             ord('('): self._read_children,
             ord(')'): self._read_parent,
@@ -189,10 +201,14 @@ class NewickParser:
     def _read_comment(self, _byte):
         file = self.file
         comment_bytes = bytearray()
-        char = file.read(1)
-        while char and char != b"]":
-            comment_bytes += char
-            char = file.read(1)
+        depth = 1
+        while depth and (char := file.read(1)):
+            if char == b"[":
+                depth += 1
+            elif char == b"]":
+                depth -= 1
+            else:
+                comment_bytes += char
         comment = comment_bytes.decode('utf-8')
 
         node = self.nodes[-1]
@@ -204,9 +220,17 @@ class NewickParser:
                 msg = "Invalid New Hampshire Extended-pattern: " + comment
                 raise NewickDecodeError(msg) from err
             else:
+                if self.escape_comments:
+                    items = {unescape_comment(k): unescape_comment(v)
+                             for k, v in items.items()}
                 self.editor.apply_items(node, items)
         else:
+            if self.escape_comments:
+                comment = unescape_comment(comment)
             self.editor.apply_comment(node, comment)
+
+    def _unmatched_bracket(self, _byte):
+        raise NewickDecodeError("Brackets [ and ] don't match.")
 
     def _read_children(self, _byte):
         self.stack.append(self.nodes)
@@ -291,18 +315,36 @@ class FieldNodeEditor:
 
     def apply_comment(self, node, comment):
         comment_field = self.comment_field
-        if existing_comment := getattr(node, comment_field):
-            comment = existing_comment + f"|{comment}"
-            setattr(node, comment_field, comment)
-        else:
-            setattr(node, comment_field, comment)
+        if comment_field:
+            if existing_comment := getattr(node, comment_field):
+                comment = existing_comment + f"|{comment}"
+                setattr(node, comment_field, comment)
+            else:
+                setattr(node, comment_field, comment)
 
     def apply_items(self, node, items):
         existing_fields = self.fields
         for field, value in items.items():
             if field in existing_fields:
-                setattr(node, field, items[value])
+                setattr(node, field, items[field])
 
 
 class NewickDecodeError(Exception):
     pass
+
+
+ESCAPE_COMMENTS = {
+    "[": "&lsqb;",
+    "]": "&rsqb;",
+    "=": "&equals;",
+    ":": "&colon;"
+}
+UNESCAPE_COMMENTS = {v: k for (k, v) in ESCAPE_COMMENTS.items()}
+
+
+def escape_comment(raw_comment):
+    return xml.sax.saxutils.escape(raw_comment, ESCAPE_COMMENTS)
+
+
+def unescape_comment(escaped_comment):
+    return xml.sax.saxutils.unescape(escaped_comment, UNESCAPE_COMMENTS)
