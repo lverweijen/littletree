@@ -51,29 +51,29 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def __eq__(self: TNode, other: TNode):
         if self is other:
             return True
-        return ((self.identifier, self.data, self._cdict)
-                == (other.identifier, other.data, other._cdict))
+        elif isinstance(other, Node):
+            return ((self.identifier, self.data, self._cdict)
+                    == (other.identifier, other.data, other._cdict))
+        else:
+            return NotImplemented
 
-    def _bare_copy(self):
-        return self.__class__(data=self.data)
-
-    def _bare_deepcopy(self, memo=None):
-        return self.__class__(data=copy.deepcopy(self.data, memo))
-
-    def show(self, img=False, style=None, **kwargs):
-        """Print this tree or show as an image.
-
-        For more control, use directly one of:
-        - tree.to_string()
-        - tree.to_image()
-        """
-        if img:
-            self.to_image(**kwargs).show()
-        elif sys.stdout:
+    def show(self, style=None, **kwargs):
+        """Print this tree. Shortcut for print(tree.to_string())."""
+        if sys.stdout:
             if not style:
                 supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
                 style = "square" if supports_unicode else "ascii"
             self.to_string(sys.stdout, style=style, **kwargs)
+
+    def copy(self, memo=None) -> TNode:
+        """Make a shallow copy or deepcopy if memo is passed."""
+        if memo:
+            def node(original, _):
+                return Node(copy.deepcopy(original.data, memo))
+        else:
+            def node(original, _):
+                return Node(original.data)
+        return self.transform(node)
 
     def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
         exporter = StringExporter(str_factory=str_factory, **kwargs)
