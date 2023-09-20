@@ -1,8 +1,8 @@
 ## Version 0.3.0 ##
 - Remove `tree.show(img=True)`. Use `tree.to_image().show()` instead.
 - New method `tree.transform()` that creates a modified or pruned copy of a tree.
+- New method `tree.compare` that compares 2 nodes to each other.
 - Rewrite `copy()` in terms of transform.
-  New implementation is about twice as fast as the old one.
   Use `tree.copy()` for shallow copy.
   Use `tree.copy({})` for deep copy.
 - Remove style `minimal`, but add style `list` for `tree.show()`.

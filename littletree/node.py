@@ -75,6 +75,41 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
                 return Node(original.data)
         return self.transform(node)
 
+    def compare(self, other: TNode, keep_equal=False) -> TNode:
+        """Compare two trees to one another.
+
+        If diff_only is true, all nodes where data is equal will be removed.
+
+        >>> tree = Node('apples', identifier='fruit')
+        >>> other_tree = Node('oranges')
+        >>> tree.compare(other_tree)
+        Node({'self': 'apples', 'other': 'oranges'}, identifier='fruit)
+        """
+        diff_node = self.transform(lambda _, _i: Node({'self': self.data}))
+        diff_node.data['other'] = other.data
+        insert_depth = 0
+        for node, item in other.iter_descendants(with_item=True):
+            while insert_depth >= item.depth:
+                insert_depth -= 1
+                diff_node = diff_node.parent
+            diff_node = diff_node.path.create([node.identifier])
+            diff_node.data['other'] = node.data
+            insert_depth += 1
+        diff_tree = diff_node.root
+        if not keep_equal:
+            to_detach = None
+            for node in diff_tree.iter_tree(order='post'):
+                if to_detach:
+                    to_detach.detach()
+                if node.data.get('self') == node.data.get('other'):
+                    if node.is_leaf:
+                        to_detach = node  # Should be detached next round, because of up-traversal
+                    else:
+                        node.data.clear()
+            if diff_tree is to_detach:
+                return None  # Trees are perfectly equal
+        return diff_tree
+
     def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)

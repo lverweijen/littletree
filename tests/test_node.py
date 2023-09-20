@@ -109,6 +109,33 @@ class TestNode(TestCase):
         self.tree._check_integrity()
         self.assertTrue(self.tree.is_leaf)
 
+    def test_compare(self):
+        """Compare to nodes to one another."""
+        tree = Node(identifier='world')
+        tree['Europe'] = Node(data="first")
+        tree['Africa'] = Node('very big')
+        other_tree = Node(identifier='rest_of_world')
+        other_tree['Europe'] = Node(data="something great")
+        other_tree['Asia'] = Node()
+        other_tree['Australia'] = Node(data="here be kangaroos")
+        compare_tree = tree.compare(other_tree, keep_equal=True)
+        result = compare_tree.to_string()
+        expected = ('world\n'
+                    "{'self': {}, 'other': {}}\n"
+                    '├─ Europe\n'
+                    "│  {'self': {}, 'other': 'something great'}\n"
+                    '├─ Africa\n'
+                    "│  {'self': {}}\n"
+                    '├─ Asia\n'
+                    "│  {'other': {}}\n"
+                    '└─ Australia\n'
+                    "   {'other': 'here be kangaroos'}\n")
+        self.assertEqual(expected, result)
+
+    def test_compare_self(self):
+        compare_tree = self.tree.compare(self.tree)
+        self.assertIsNone(compare_tree)
+
     def test_iter_children(self):
         result = [str(child.path) for child in self.tree.children]
         expected = ['/world/Europe', '/world/Africa']
