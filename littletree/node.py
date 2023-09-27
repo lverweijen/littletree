@@ -155,15 +155,15 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)
 
     @classmethod
-    def from_newick(cls, newick, root=None, fields="data", **kwargs) -> TNode:
-        serializer = NewickSerializer(cls, fields=fields, **kwargs)
+    def from_newick(cls, newick, root=None, data="data", **kwargs) -> TNode:
+        serializer = NewickSerializer(cls, data_field=data, **kwargs)
         if isinstance(newick, (str, bytes, bytearray)):
             return serializer.loads(newick, root)
         else:
             return serializer.load(newick, root)
 
-    def to_newick(self, file=None, fields="data", **kwargs) -> Optional[str]:
-        serializer = NewickSerializer(self.__class__, fields=fields, **kwargs)
+    def to_newick(self, file=None, data="data", **kwargs) -> Optional[str]:
+        serializer = NewickSerializer(self.__class__, data_field=data, **kwargs)
         if file:
             return serializer.dump(self, file)
         else:

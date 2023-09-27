@@ -52,7 +52,7 @@ class TestNewickSerializer(TestCase):
 
     def test_to_newick3(self):
         """Test with data."""
-        serializer = NewickSerializer(fields="data")
+        serializer = NewickSerializer(data_field="data")
         result = serializer.dumps(self.tree2)
         expected = ("((('Oslo')'Norway'[&&NHX:abbrev=NO],"
                     "('Stockholm')'Sweden',"
@@ -76,7 +76,7 @@ class TestNewickSerializer(TestCase):
 
     def test_to_newick5(self):
         """Test with distances."""
-        serializer = NewickSerializer(fields="data", quote_name=False)
+        serializer = NewickSerializer(data_field="data", quote_name=False)
         result = serializer.dumps(self.tree3)
         expected = ('(((Oslo)Norway:1.2345,'
                     '(Stockholm)Sweden,'
@@ -127,7 +127,7 @@ class TestNewickSerializer(TestCase):
     def test_from_newick4(self):
         # wikipedia example
         newick = "(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);"
-        serializer = NewickSerializer(fields="data")
+        serializer = NewickSerializer(data_field="data")
         tree = serializer.loads(newick)
         lines = tree.to_string(style='square').splitlines()
         result = [self.remove_anonymous(line) for line in lines]
@@ -146,7 +146,7 @@ class TestNewickSerializer(TestCase):
 
     def test_from_newick_quoted(self):
         newick = "why''node('this''node')"
-        serializer = NewickSerializer(fields="data")
+        serializer = NewickSerializer(data_field="data")
         tree = serializer.loads(newick)
         result = tree.to_string(style='square')
         expected = "why''node\n└─ this'node\n"
