@@ -12,7 +12,7 @@ class TestDictSerializer(TestCase):
         tree.path.create(["Europe", "Finland", "Helsinki", "Helsinki", "Helsinki"])
         tree.path.create(["Africa"])
 
-        tree2 = tree.deepcopy()
+        tree2 = tree.copy({})
         tree2["Europe"].data = {"abbrev": "EU"}
         tree2.path("Europe/Sweden").data = {"abbrev": "SWE"}
 
@@ -89,14 +89,14 @@ class TestDictSerializer(TestCase):
 
         Note that identifier "world" is lost from output.
         """
-        serializer = DictSerializer(Node, children_name=None)
+        serializer = DictSerializer(Node, node_name=None, children_name=None)
         result = serializer.to_dict(self.tree)
         expected = self.compact_dict
         self.assertEqual(expected, result)
 
     def test_to_dict2(self):
         """Verbose but extensible serialization."""
-        serializer = DictSerializer(Node, node_name="name", children_name="children", fields="data")
+        serializer = DictSerializer(Node, node_name="name", children_name="children", data_field="data")
         result = serializer.to_dict(self.tree2)
         expected = self.verbose_dict
         self.assertEqual(expected, result)
@@ -110,13 +110,13 @@ class TestDictSerializer(TestCase):
 
     def test_to_dict4(self):
         """Compact but extensible serialization."""
-        serializer = DictSerializer(Node, node_name=None, children_name="children", fields="data")
+        serializer = DictSerializer(Node, node_name=None, children_name="children", data_field="data")
         result = serializer.to_dict(self.tree2)
         expected = self.compact_data_dict
         self.assertEqual(expected, result)
 
     def test_from_dict1(self):
-        serializer = DictSerializer(Node, children_name=None)
+        serializer = DictSerializer(Node, node_name=None, children_name=None)
         result = serializer.from_dict(self.compact_dict)
         result.identifier = "world"  # Needs to be updated by hand
         expected = self.tree
@@ -144,7 +144,7 @@ class TestDictSerializer(TestCase):
     def test_from_dict4(self):
         """Verbose but extensible serialization."""
 
-        serializer = DictSerializer(Node, node_name=None, children_name="children", fields="data")
+        serializer = DictSerializer(Node, node_name=None, children_name="children", data_field="data")
         result = serializer.from_dict(self.compact_data_dict)
         result.identifier = 'world'
         expected = self.tree2

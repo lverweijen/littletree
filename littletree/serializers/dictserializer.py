@@ -1,4 +1,6 @@
-from typing import Mapping, TypeVar, Type, Hashable, Optional
+from typing import Mapping, TypeVar, Type, Hashable, Optional, Sequence
+
+from ._nodeeditor import get_editor
 from ..basenode import BaseNode
 
 TNode = TypeVar("TNode", bound=BaseNode)
@@ -6,14 +8,15 @@ TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
 class DictSerializer:
-    __slots__ = "factory", "node_name", "children_name", "fields"
+    __slots__ = "factory", "node_name", "children_name", "editor"
 
     def __init__(
         self,
         factory: Type[TNode] = None,
-        node_name: TIdentifier = None,
+        node_name: TIdentifier = "identifier",
         children_name: Optional[str] = "children",
-        fields=(),
+        fields: Sequence[str] = (),
+        data_field: str = None,
     ):
         """
         Read / write tree from nested dictionary
@@ -36,7 +39,7 @@ class DictSerializer:
         self.factory = factory
         self.node_name = node_name
         self.children_name = children_name
-        self.fields = fields
+        self.editor = get_editor(fields, data_field)
 
     def from_dict(self, data: Mapping) -> TNode:
         """
@@ -50,12 +53,7 @@ class DictSerializer:
         else:
             from_func = self._from_cdict  # Children stored as dict (root is nameless)
 
-        if isinstance(self.fields, str):
-            set_data = self._set_node_data  # One field is a mapping
-        else:
-            set_data = self._set_node_fields  # Multiple fields are synchronized
-
-        return from_func(data, set_data=set_data)
+        return from_func(data, self.editor.update)
 
     def _from_cvalues(self, data: Mapping, set_data) -> TNode:
         # Node name is stored as a field
@@ -63,21 +61,24 @@ class DictSerializer:
         node_name = self.node_name
         children_name = self.children_name
 
+        data = data.copy()
         stack = []
         tree = parent = factory()
         tree.identifier = data[node_name]
-        set_data(tree, data)
         children = iter(data[children_name])
+        data = {k: v for (k, v) in data.items() if k not in [node_name, children_name]}
+        set_data(tree, data)
         while (data_node := next(children, None)) or stack:
             if data_node:
                 node = factory()
-                set_data(node, data_node)
-                parent[data_node[node_name]] = node
+                parent[data_node.pop(node_name)] = node
                 if node_children := data_node.get(children_name):
-                    stack.append((parent, children))
+                    stack.append(children)
                     parent, children = node, iter(node_children)
+                data = {k: v for (k, v) in data_node.items() if k not in [node_name, children_name]}
+                set_data(node, data)
             else:
-                parent, children = stack.pop()
+                parent, children = parent.parent, stack.pop()
         return tree
 
     def _from_cdict(self, data: Mapping, set_data) -> TNode:
@@ -86,20 +87,27 @@ class DictSerializer:
         children_name = self.children_name
 
         tree = parent = factory()
-        set_data(tree, data)
-        children = dict(data[self.children_name]) if children_name else dict(data)
+
+        if children_name:
+            data = dict(data)
+            children = data.pop(self.children_name, None)
+            set_data(tree, data)
+        else:
+            children = data
         stack = []
         while children or stack:
             if children:
                 node = self.factory()
                 name, data_node = children.popitem()
                 parent[name] = node
-                set_data(node, data_node)
                 if node_children := data_node.get(children_name) if children_name else data_node:
-                    stack.append((parent, children))
+                    stack.append(children)
                     parent, children = node, node_children
+                data = {k: v for (k, v) in data_node.items() if k != children_name}
+                set_data(node, data)
             else:
-                parent, children = stack.pop()
+                parent = parent.parent
+                children = stack.pop()
         return tree
 
     def to_dict(self, tree: TNode) -> Mapping:
@@ -115,12 +123,7 @@ class DictSerializer:
         else:
             to_func = self._to_cdict
 
-        if isinstance(self.fields, str):
-            get_data = self._get_node_data
-        else:
-            get_data = self._get_node_fields
-
-        return to_func(tree, get_data=get_data)
+        return to_func(tree, get_data=self.editor.get_attributes)
 
     def _to_cvalues(self, tree: TNode, get_data) -> Mapping:
         children_name = self.children_name
@@ -165,19 +168,3 @@ class DictSerializer:
                 parent[node.identifier] = last_mapping
 
         return stack[0]
-
-    def _get_node_data(self, node):
-        return getattr(node, self.fields)
-
-    def _get_node_fields(self, node):
-        return {field: getattr(node, field) for field in self.fields}
-
-    def _set_node_data(self, node, data):
-        data = {k: v for (k, v) in data.items() if k not in [self.node_name, self.children_name]}
-        setattr(node, self.fields, data)
-
-    def _set_node_fields(self, node, data):
-        fields = self.fields
-        for field, value in data.items():
-            if field in fields:
-                setattr(node, field, value)

@@ -127,17 +127,17 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return exporter.to_dot(self, file, keep=keep)
 
     @classmethod
-    def from_dict(cls, data, fields="data", **kwargs) -> TNode:
+    def from_dict(cls, data, data_field="data", **kwargs) -> TNode:
         """
         Load tree from Dict.
         :param fields: Fields to export
         :param data: Dict in which tree is stored
         :return: Root node of new tree
         """
-        return DictSerializer(cls, fields=fields, **kwargs).from_dict(data)
+        return DictSerializer(cls, data_field=data_field, **kwargs).from_dict(data)
 
-    def to_dict(self, fields="data", **kwargs) -> Mapping:
-        return DictSerializer(self.__class__, fields=fields, **kwargs).to_dict(self)
+    def to_dict(self, data_field="data", **kwargs) -> Mapping:
+        return DictSerializer(self.__class__, data_field=data_field, **kwargs).to_dict(self)
 
     @classmethod
     def from_rows(cls, rows, root=None, fields="data", **kwargs) -> TNode:

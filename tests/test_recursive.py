@@ -31,7 +31,7 @@ class TestRecursive(TestCase):
 
     def test_deepcopy(self):
         for repeat in range(10):
-            self.node.deepcopy()
+            self.node.copy({})
 
     @skip("too difficult")
     def test_to_rows(self):
