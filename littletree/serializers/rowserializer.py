@@ -74,13 +74,14 @@ class RowSerializer:
     def to_rows(self, tree: TNode, with_root: bool = False, leaves_only: bool = False):
         path_name = self.path_name
         sep = self.sep
+        editor = self.editor
 
         if path_name is None:
             for path, _ in self._iter_paths(tree, with_root, leaves_only):
                 yield tuple(path)
         elif isinstance(path_name, str):
             for path, node in self._iter_paths(tree, with_root, leaves_only):
-                data = self.editor.get_attributes(node)
+                data = editor.get_attributes(node)
                 data[path_name] = sep.join(path) if sep is not None else tuple(path)
                 yield data
         else:
@@ -89,7 +90,7 @@ class RowSerializer:
                     msg = f"Path {tuple(path)} doesn't fit in {path_name}"
                     raise RowSerializerError(msg)
                 data = {name: segment for (name, segment) in zip(path_name, path)}
-                data.update(self.editor.get_attributes(node))
+                data.update(editor.get_attributes(node))
                 yield data
 
     def _iter_paths(self, root: TNode, with_root: bool, leaves_only: bool):

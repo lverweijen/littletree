@@ -141,12 +141,12 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return RowSerializer(self.__class__, data_field=data_field, **kwargs).to_rows(self)
 
     @classmethod
-    def from_relations(cls, relations, root=None, fields="data", **kwargs) -> TNode:
-        serializer = RelationSerializer(cls, fields=fields, **kwargs)
+    def from_relations(cls, relations, root=None, data_field="data", **kwargs) -> TNode:
+        serializer = RelationSerializer(cls, data_field=data_field, **kwargs)
         return serializer.from_relations(relations, root)
 
-    def to_relations(self, fields="data", **kwargs):
-        return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)
+    def to_relations(self, data_field="data", **kwargs):
+        return RelationSerializer(self.__class__, data_field=data_field, **kwargs).to_relations(self)
 
     @classmethod
     def from_newick(cls, newick, root=None, data_field="data", **kwargs) -> TNode:

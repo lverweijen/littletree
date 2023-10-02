@@ -64,7 +64,7 @@ class TestRowSerializer(TestCase):
 
     def test_to_relations3(self):
         """With data."""
-        serializer = RelationSerializer(Node, fields="data")
+        serializer = RelationSerializer(Node, data_field="data")
         result = list(serializer.to_relations(self.tree2))
         expected = self.relations3
         self.assertEqual(expected, result)
@@ -108,7 +108,7 @@ class TestRowSerializer(TestCase):
 
     def test_from_relations3(self):
         """Without data."""
-        serializer = RelationSerializer(Node, fields="data")
+        serializer = RelationSerializer(Node, data_field="data")
         result = serializer.from_relations(self.relations3)
 
         # We didn't supply a root, so the tree has one extra level of nesting, remove it first

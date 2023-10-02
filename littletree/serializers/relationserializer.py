@@ -1,6 +1,7 @@
 from typing import Callable, Sequence, Mapping, TypeVar
 
 from littletree import BaseNode
+from littletree.serializers._nodeeditor import get_editor
 
 TNode = TypeVar("TNode", bound=BaseNode)
 
@@ -11,9 +12,10 @@ class RelationSerializer:
     def __init__(
         self,
         factory: Callable[[], TNode] = None,
-        child_name="identifier",
-        parent_name="parent",
-        fields=(),
+        child_name: str = "identifier",
+        parent_name: str = "parent",
+        fields: Sequence[str] = (),
+        data_field: str = None
     ):
         """
         Create path serializer. Useful to convert to/from csv-like formats.
@@ -30,11 +32,11 @@ class RelationSerializer:
         self.factory = factory
         self.child_name = child_name
         self.parent_name = parent_name
-        self.fields = fields
+        self.editor = get_editor(fields, data_field)
 
     def from_relations(self, rows: Sequence[Mapping], root=None):
-        factory = self.factory
-        child_name, parent_name, fields = self.child_name, self.parent_name, self.fields
+        factory, editor = self.factory, self.editor
+        child_name, parent_name = self.child_name, self.parent_name
 
         nodes = {}
 
@@ -58,16 +60,8 @@ class RelationSerializer:
                 parent.identifier = parent_id
             child.parent = parent
 
-            if fields:
-                if isinstance(fields, str):
-                    data = {}
-                    for field, value in row.items():
-                        if field not in (child_name, parent_name):
-                            data[field] = value
-                    child.data = data
-                else:
-                    for field in fields:
-                        setattr(child, field, row[field])
+            data = {k: v for (k, v) in row.items() if k not in [child_name, parent_name]}
+            editor.update(child, data)
 
         if not isinstance(root, BaseNode):
             root = nodes[root]
@@ -79,14 +73,9 @@ class RelationSerializer:
         return root
 
     def to_relations(self, root: TNode):
-        child_name, parent_name, fields = self.child_name, self.parent_name, self.fields
+        editor = self.editor
+        child_name, parent_name = self.child_name, self.parent_name
         for node in root.iter_descendants():
             relation = {child_name: node.identifier, parent_name: node.parent.identifier}
-            if fields:
-                if isinstance(fields, str):
-                    data = getattr(node, fields)
-                    if data:
-                        relation.update(data)
-                else:
-                    relation.update({field: getattr(node, field) for field in fields})
+            relation.update(editor.get_attributes(node))
             yield relation
