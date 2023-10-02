@@ -4,7 +4,7 @@ from unittest import TestCase
 from unittest.util import safe_repr
 
 from littletree import Node
-from littletree.serializers.newickserializer import NewickSerializer, NewickDecodeError
+from littletree.serializers.newickserializer import NewickSerializer, NewickError
 
 
 class TestNewickSerializer(TestCase):
@@ -157,7 +157,7 @@ class TestNewickSerializer(TestCase):
         nwk = tree.to_newick(escape_comments=False)
         self.assertEqual("'simple_node'[&&NHX:closing=]];", nwk)
 
-        with self.assertRaises(NewickDecodeError):
+        with self.assertRaises(NewickError):
             Node.from_newick(nwk)
 
     def test_from_newick_escaped(self):

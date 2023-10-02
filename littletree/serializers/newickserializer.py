@@ -16,7 +16,6 @@ DOUBLE = b'"'
 ITEM_PATTERN = re.compile(r"(?P<items>(\:[^=]+=[^:]+)*)$")
 
 
-
 @dataclasses.dataclass
 class Dialect:
     """
@@ -199,9 +198,9 @@ class NewickParser:
             [node] = nodes
             return node
         elif len(nodes) != 1:
-            raise NewickDecodeError(f"There should be one root, but {len(nodes)} were defined.")
+            raise NewickError(f"There should be one root, but {len(nodes)} were defined.")
         else:
-            raise NewickDecodeError(f"Children on level {len(stack)} have not been closed by ).")
+            raise NewickError(f"Children on level {len(stack)} have not been closed by ).")
 
     def _stop(self, _byte):
         self.file.seek(0, os.SEEK_END)
@@ -231,7 +230,7 @@ class NewickParser:
                 items = dict(item.split("=") for item in item_str.split(":") if len(item) > 1)
             except Exception as err:
                 msg = "Invalid New Hampshire Extended-pattern: " + comment
-                raise NewickDecodeError(msg) from err
+                raise NewickError(msg) from err
             else:
                 if dialect.escape_comments:
                     items = {unescape_comment(k): unescape_comment(v)
@@ -245,7 +244,7 @@ class NewickParser:
                 self.editor.set(node, "comment", comment)
 
     def _unmatched_bracket(self, _byte):
-        raise NewickDecodeError("Brackets [ and ] don't match.")
+        raise NewickError("Brackets [ and ] don't match.")
 
     def _read_children(self, _byte):
         self.stack.append(self.nodes)
@@ -297,7 +296,7 @@ class NewickParser:
         self.in_distance = True
 
 
-class NewickDecodeError(Exception):
+class NewickError(Exception):
     pass
 
 

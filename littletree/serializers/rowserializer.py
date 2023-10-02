@@ -1,13 +1,23 @@
-from typing import Sequence, Mapping, TypeVar, Callable
+import itertools
+from typing import Sequence, Mapping, TypeVar, Callable, Union, Optional
 
+from ._nodeeditor import get_editor
 from ..basenode import BaseNode
 
 TNode = TypeVar("TNode", bound=BaseNode)
 
 
 class RowSerializer:
+    __slots__ = "path_name", "sep", "factory", "editor"
     """Serializes a tree to a list of dicts containing path and data."""
-    def __init__(self, factory: Callable[[], TNode] = None, path_name="path", fields=()):
+    def __init__(
+        self,
+        factory: Callable[[], TNode] = None,
+        path_name: Union[str, Sequence[str], None] = "path",
+        sep: Optional[str] = "/",
+        fields: Sequence[str] = (),
+        data_field: str = None
+    ):
         """
         Create path serializer. Useful to convert to/from csv-like formats.
         :param factory: How to create a node
@@ -20,78 +30,79 @@ class RowSerializer:
 
         self.factory = factory
         self.path_name = path_name
-        self.fields = fields
+        self.sep = sep
+        self.editor = get_editor(fields, data_field)
 
-        if path_name is None and self.fields:
+        if path_name is None and fields:
             raise ValueError("path_name can not be None if fields are given")
-        if not isinstance(self.fields, Sequence):
+        if not isinstance(fields, Sequence):
             raise TypeError("fields should be a sequence")
 
     def from_rows(self, rows: Sequence[Mapping], root=None):
         factory = self.factory
         path_name = self.path_name
-        fields = self.fields
-
-        # Special case for pandas data frame (and similar apis)
-        if hasattr(rows, "itertuples") and hasattr(rows, "to_dict"):
-            if path_name is None:
-                rows = rows.itertuples(index=False)
-            else:
-                rows = rows.to_dict("records")
+        sep = self.sep
+        editor = self.editor
 
         if root is None:
             root = factory()
-        for row in rows:
-            if path_name is None:
-                path = row
-            elif isinstance(path_name, str):
+
+        if path_name is None:
+            if hasattr(rows, "itertuples"):
+                rows = rows.itertuples(index=False)
+            for row in rows:
+                root.path.create(row)
+        elif isinstance(path_name, str):
+            for row in rows:
+                data = {k: v for (k, v) in row.items() if k != path_name}
                 path = row[path_name]
                 if isinstance(path, str):
-                    path = path.split(root.path.separator)
-            else:
-                path = [row[segment] for segment in path_name if segment in row]
-
-            parent = root.path.create(path[:-1])
-            node = parent[path[-1]] = factory()
-
-            if fields:
-                if isinstance(fields, str):
-                    data = {}
-                    for field, value in row.items():
-                        if field != path_name:
-                            data[field] = value
-                    node.data = data
-                else:
-                    for field in fields:
-                        setattr(node, field, row[field])
-
+                    path = path.split(sep)
+                node = root.path.create(path)
+                editor.update(node, data)
+        else:
+            if hasattr(rows, "to_dict"):
+                rows = rows.to_dict('records')
+            for row in rows:
+                path_iter = (row.get(segment) for segment in path_name)
+                path = tuple(itertools.takewhile(lambda s: s is not None, path_iter))
+                data = {k: v for (k, v) in row.items() if k not in path_name}
+                node = root.path.create(path)
+                editor.update(node, data)
         return root
 
-    def to_rows(self, tree: TNode, leaves_only: bool = False, path_prefix=()):
+    def to_rows(self, tree: TNode, with_root: bool = False, leaves_only: bool = False):
         path_name = self.path_name
-        fields = self.fields
+        sep = self.sep
 
-        # Check if unable to store more children
-        if path_name and not isinstance(path_name, str) and len(path_prefix) == len(path_name):
-            return
+        if path_name is None:
+            for path, _ in self._iter_paths(tree, with_root, leaves_only):
+                yield tuple(path)
+        elif isinstance(path_name, str):
+            for path, node in self._iter_paths(tree, with_root, leaves_only):
+                data = self.editor.get_attributes(node)
+                data[path_name] = sep.join(path) if sep is not None else tuple(path)
+                yield data
+        else:
+            for path, node in self._iter_paths(tree, with_root, leaves_only):
+                if len(path) > len(path_name):
+                    msg = f"Path {tuple(path)} doesn't fit in {path_name}"
+                    raise RowSerializerError(msg)
+                data = {name: segment for (name, segment) in zip(path_name, path)}
+                data.update(self.editor.get_attributes(node))
+                yield data
 
-        for child in tree.children:
-            path = path_prefix + (child.identifier,)
-            if path_name is None:
-                row = path
-            elif isinstance(path_name, str):
-                row = {path_name: path}
-            else:
-                row = {name: segment for name, segment in zip(path_name, path)}
+    def _iter_paths(self, root: TNode, with_root: bool, leaves_only: bool):
+        row = []
+        if with_root:
+            row.append(root.identifier)
+            yield row, root
+        for node, item in root.iter_descendants(order='pre', with_item=True):
+            row = row[:item.depth + with_root - 1]
+            row.append(node.identifier)
+            if not leaves_only or node.is_leaf:
+                yield row, node
 
-            if fields:
-                if isinstance(fields, str):
-                    data = getattr(child, fields)
-                    if data:
-                        row.update(data)
-                else:
-                    row.update({field: getattr(child, field) for field in fields})
 
-            if not leaves_only or child.is_leaf:
-                yield row
-            yield from self.to_rows(child, leaves_only=leaves_only, path_prefix=path)
+class RowSerializerError(Exception):
+    pass

@@ -33,10 +33,9 @@ class TestRecursive(TestCase):
         for repeat in range(10):
             self.node.copy({})
 
-    @skip("too difficult")
     def test_to_rows(self):
         for repeat in range(10):
-            list(self.node.to_rows())
+            list(self.node.to_rows(sep=None))
 
     def test_to_relations(self):
         for repeat in range(100):

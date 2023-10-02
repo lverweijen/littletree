@@ -128,23 +128,17 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     @classmethod
     def from_dict(cls, data, data_field="data", **kwargs) -> TNode:
-        """
-        Load tree from Dict.
-        :param fields: Fields to export
-        :param data: Dict in which tree is stored
-        :return: Root node of new tree
-        """
         return DictSerializer(cls, data_field=data_field, **kwargs).from_dict(data)
 
     def to_dict(self, data_field="data", **kwargs) -> Mapping:
         return DictSerializer(self.__class__, data_field=data_field, **kwargs).to_dict(self)
 
     @classmethod
-    def from_rows(cls, rows, root=None, fields="data", **kwargs) -> TNode:
-        return RowSerializer(cls, fields=fields, **kwargs).from_rows(rows, root)
+    def from_rows(cls, rows, root=None, data_field="data", **kwargs) -> TNode:
+        return RowSerializer(cls, data_field=data_field, **kwargs).from_rows(rows, root)
 
-    def to_rows(self, fields="data", **kwargs) -> Iterator[Mapping]:
-        return RowSerializer(self.__class__, fields=fields, **kwargs).to_rows(self)
+    def to_rows(self, data_field="data", **kwargs) -> Iterator[Mapping]:
+        return RowSerializer(self.__class__, data_field=data_field, **kwargs).to_rows(self)
 
     @classmethod
     def from_relations(cls, relations, root=None, fields="data", **kwargs) -> TNode:
@@ -155,15 +149,15 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return RelationSerializer(self.__class__, fields=fields, **kwargs).to_relations(self)
 
     @classmethod
-    def from_newick(cls, newick, root=None, data="data", **kwargs) -> TNode:
-        serializer = NewickSerializer(cls, data_field=data, **kwargs)
+    def from_newick(cls, newick, root=None, data_field="data", **kwargs) -> TNode:
+        serializer = NewickSerializer(cls, data_field=data_field, **kwargs)
         if isinstance(newick, (str, bytes, bytearray)):
             return serializer.loads(newick, root)
         else:
             return serializer.load(newick, root)
 
-    def to_newick(self, file=None, data="data", **kwargs) -> Optional[str]:
-        serializer = NewickSerializer(self.__class__, data_field=data, **kwargs)
+    def to_newick(self, file=None, data_field="data", **kwargs) -> Optional[str]:
+        serializer = NewickSerializer(self.__class__, data_field=data_field, **kwargs)
         if file:
             return serializer.dump(self, file)
         else:

@@ -13,7 +13,7 @@ class DictSerializer:
     def __init__(
         self,
         factory: Type[TNode] = None,
-        node_name: TIdentifier = "identifier",
+        identifier_name: TIdentifier = "identifier",
         children_name: Optional[str] = "children",
         fields: Sequence[str] = (),
         data_field: str = None,
@@ -21,7 +21,7 @@ class DictSerializer:
         """
         Read / write tree from nested dictionary
 
-        :param node_name: How to find identifier in dict. If none, assume key-value pairs.
+        :param identifier_name: How to find identifier in dict. If none, assume key-value pairs.
         :param children_name: How to find children in dict. If none, use complete dict.
         :param fields: Which fields from data to pass to constructor as named arguments.
         :param factory: Factory method for Node construction
@@ -31,13 +31,13 @@ class DictSerializer:
             factory = Node
 
         if not isinstance(fields, str):
-            if node_name in fields:
+            if identifier_name in fields:
                 raise ValueError(f"fields can not contain node_name")
             if children_name in fields:
                 raise ValueError(f"fields can not contain children_name")
 
         self.factory = factory
-        self.node_name = node_name
+        self.node_name = identifier_name
         self.children_name = children_name
         self.editor = get_editor(fields, data_field)
 

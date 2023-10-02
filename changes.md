@@ -9,6 +9,7 @@
 - Add option `escape_comments` to newick serializer to escape newick modifiers in node data.
 - For now use `distance` and `comment` instead of `distance_field` and `comment_field` in NewickSerializer.
 - Changed default format of `to_dict` to contain `identifier`.
+- Rewrite RowSerializer
 
 ## Version 0.2.3 ##
 - Streamline `DotExporter`.
