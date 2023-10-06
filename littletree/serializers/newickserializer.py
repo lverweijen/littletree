@@ -12,7 +12,6 @@ TNode = TypeVar("TNode", bound=BaseNode)
 SINGLE = b"'"
 DOUBLE = b'"'
 
-# NHX_PATTERN = re.compile(r"\&\&NHX(?P<items>(\:[^=]+=[^:]+)*)$")
 ITEM_PATTERN = re.compile(r"(?P<items>(\:[^=]+=[^:]+)*)$")
 
 
@@ -23,15 +22,15 @@ class Dialect:
     quote_name: Whether identifiers should be quoted
     escape_comments: Whether symbols "[]:=" in comments should be escaped.
     """
-    nhx_prefix: Optional[str] = "&&NHX"
+    data_prefix: Optional[str] = "&&NHX"
     quote_name: bool = True
     escape_comments: bool = True
 
 
 DEFAULT_DIALECTS = {
-    "newick": Dialect(nhx_prefix=None, escape_comments=False),
-    "nhx": Dialect(escape_comments=False),
-    "littletree": Dialect(escape_comments=True),  # Fully serializable (for strings)
+    "newick": Dialect(data_prefix=None, escape_comments=False),
+    "nhx": Dialect(data_prefix="&&NHX", escape_comments=False),
+    "safe-nhx": Dialect(data_prefix="&&NHX", escape_comments=True),
 }
 
 
@@ -40,9 +39,11 @@ class NewickSerializer:
     Serialize to/from the newick tree format.
     A formal description is here: http://biowiki.org/wiki/index.php/Newick_Format
 
-    An extension called New Hampshire X format is supported and enabled by default.
+    A few dialects are supported (default: safe-nhx):
+    - newick is the most basic dialect without extra features
+    - nhx enables an extension called New Hampshire X format
     This extension is described here: https://www.cs.mcgill.ca/~birch/doc/forester/NHX.pdf
-    It can be disabled by setting `use_nhx` to False.
+    - safe-nhx is similar to nhx, but xml-escaping is applied on reserved newick characters
     """
     def __init__(
         self,
@@ -133,7 +134,7 @@ class NewickSerializer:
 
                 if distance is not None:
                     file.write(f":{distance}")
-                if data and dialect.nhx_prefix:
+                if data and dialect.data_prefix:
                     self._write_nhx_data(data, file, dialect)
                 if comment:
                     if dialect.escape_comments:
@@ -147,7 +148,7 @@ class NewickSerializer:
     @staticmethod
     def _write_nhx_data(data, file, dialect: Dialect):
         file.write("[")
-        file.write(dialect.nhx_prefix)
+        file.write(dialect.data_prefix)
         if dialect.escape_comments:
             for k, v in data.items():
                 file.write(f":{escape_comment(str(k))}={escape_comment(str(v))}")
@@ -222,7 +223,7 @@ class NewickParser:
         comment = comment_bytes.decode('utf-8')
 
         node = self.nodes[-1]
-        nhx_prefix = dialect.nhx_prefix
+        nhx_prefix = dialect.data_prefix
         if (nhx_prefix and comment.startswith(nhx_prefix)
                 and (match := ITEM_PATTERN.match(comment.removeprefix(nhx_prefix)))):
             try:
@@ -239,9 +240,9 @@ class NewickParser:
         else:
             if dialect.escape_comments:
                 comment = unescape_comment(comment)
-                if existing_comment := self.editor.get(node, comment):
-                    comment = f"{existing_comment}|{comment}"
-                self.editor.set(node, "comment", comment)
+            if existing_comment := self.editor.get(node, comment):
+                comment = f"{existing_comment}|{comment}"
+            self.editor.set(node, "comment", comment)
 
     def _unmatched_bracket(self, _byte):
         raise NewickError("Brackets [ and ] don't match.")

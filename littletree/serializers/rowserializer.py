@@ -47,19 +47,22 @@ class RowSerializer:
         if root is None:
             root = factory()
 
+        create_path = root.path.create
+        update_data = editor.update
+
         if path_name is None:
             if hasattr(rows, "itertuples"):
                 rows = rows.itertuples(index=False)
             for row in rows:
-                root.path.create(row)
+                create_path(row)
         elif isinstance(path_name, str):
             for row in rows:
                 data = {k: v for (k, v) in row.items() if k != path_name}
                 path = row[path_name]
                 if isinstance(path, str):
                     path = path.split(sep)
-                node = root.path.create(path)
-                editor.update(node, data)
+                node = create_path(path)
+                update_data(node, data)
         else:
             if hasattr(rows, "to_dict"):
                 rows = rows.to_dict('records')
@@ -67,8 +70,8 @@ class RowSerializer:
                 path_iter = (row.get(segment) for segment in path_name)
                 path = tuple(itertools.takewhile(lambda s: s is not None, path_iter))
                 data = {k: v for (k, v) in row.items() if k not in path_name}
-                node = root.path.create(path)
-                editor.update(node, data)
+                node = create_path(path)
+                update_data(node, data)
         return root
 
     def to_rows(self, tree: TNode, with_root: bool = False, leaves_only: bool = False):
@@ -93,7 +96,8 @@ class RowSerializer:
                 data.update(editor.get_attributes(node))
                 yield data
 
-    def _iter_paths(self, root: TNode, with_root: bool, leaves_only: bool):
+    @staticmethod
+    def _iter_paths(root: TNode, with_root: bool, leaves_only: bool):
         row = []
         if with_root:
             row.append(root.identifier)

@@ -50,9 +50,9 @@ class TestRecursive(TestCase):
 
     def test_to_newick(self):
         for i in range(100):
-            self.node.to_newick()
+            self.node.to_newick(dialect="newick")
 
     def test_from_newick(self):
         s = self.s
         for i in range(10):
-            Node.from_newick(s)
+            Node.from_newick(s, dialect="newick")
