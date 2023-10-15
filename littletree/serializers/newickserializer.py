@@ -1,15 +1,37 @@
+import dataclasses
 import io
 import os
 import re
-from typing import TypeVar, Optional, Sequence, Callable, Union
+import xml.sax.saxutils
+from typing import TypeVar, Sequence, Callable, Union, Mapping, Optional
 
 from littletree import BaseNode
+from littletree.serializers._nodeeditor import get_editor
 
 TNode = TypeVar("TNode", bound=BaseNode)
 SINGLE = b"'"
 DOUBLE = b'"'
 
-NHX_PATTERN = re.compile(r"\&\&NHX(?P<items>(\:[^=]+=[^:]+)*)$")
+ITEM_PATTERN = re.compile(r"(?P<items>(\:[^=]+=[^:]+)*)$")
+
+
+@dataclasses.dataclass
+class Dialect:
+    """
+    nhx_prefix: Prefix in comments for nhx-style properties
+    quote_name: Whether identifiers should be quoted
+    escape_comments: Whether symbols "[]:=" in comments should be escaped.
+    """
+    data_prefix: Optional[str] = "&&NHX"
+    quote_name: bool = True
+    escape_comments: bool = True
+
+
+DEFAULT_DIALECTS = {
+    "newick": Dialect(data_prefix=None, escape_comments=False),
+    "nhx": Dialect(data_prefix="&&NHX", escape_comments=False),
+    "safe-nhx": Dialect(data_prefix="&&NHX", escape_comments=True),
+}
 
 
 class NewickSerializer:
@@ -17,38 +39,42 @@ class NewickSerializer:
     Serialize to/from the newick tree format.
     A formal description is here: http://biowiki.org/wiki/index.php/Newick_Format
 
-    An extension called New Hampshire X format is supported and enabled by default.
+    A few dialects are supported (default: safe-nhx):
+    - newick is the most basic dialect without extra features
+    - nhx enables an extension called New Hampshire X format
     This extension is described here: https://www.cs.mcgill.ca/~birch/doc/forester/NHX.pdf
-    It can be disabled by setting `use_nhx` to False.
+    - safe-nhx is similar to nhx, but xml-escaping is applied on reserved newick characters
     """
     def __init__(
         self,
         factory: Callable[[], TNode] = None,
         fields: Sequence[str] = (),
-        use_nhx: bool = True,
-        quote_name: bool = True,
-        distance_field: Optional[str] = "distance",
-        comment_field: Optional[str] = None,
+        data_field: str = None,
+        dialect: Union[str, Dialect, Mapping] = None,
+        **kwargs,
     ):
         """
         Create a serializer
         :param factory: How to construct a node
-        :param fields: Which fields to use
-        :param use_nhx: Whether fields should be in NHX format or pure Newick
-        :param quote_name: Whether identifiers should be quoted
-        :param distance_field: Which field of node to use for distance if any
-        :param comment_field: Which field of node to use for comment if any
+        :param fields: Which fields to use (distance and comment might be useful)
+        :param data_field: Use one field for everything
+        :param dialect: Dialect options
+        :param kwargs: Alternative way of specifying dialect options
         """
         if factory is None:
             from ..node import Node
             factory = Node
 
+        if not dialect:
+            dialect = Dialect(**kwargs)
+        elif isinstance(dialect, str):
+            dialect = DEFAULT_DIALECTS[dialect]
+        else:
+            dialect = Dialect(**dialect)
+
         self.factory = factory
-        self.fields = fields
-        self.use_nhx = use_nhx
-        self.quote_name = quote_name
-        self.distance_field = distance_field
-        self.comment_field = comment_field
+        self.editor = get_editor(fields, data_field)
+        self.dialect = dialect
 
     def loads(self, text: Union[str, bytes, bytearray], root: TNode = None) -> TNode:
         if isinstance(text, str):
@@ -69,12 +95,7 @@ class NewickSerializer:
         return tree
 
     def _load(self, file):
-        if isinstance(self.fields, str):
-            editor = DataNodeEditor(self.fields, self.distance_field, self.comment_field)
-        else:
-            editor = FieldNodeEditor(self.fields, self.distance_field, self.comment_field)
-
-        return NewickParser(file, self.factory, editor, use_nhx=self.use_nhx).run()
+        return NewickParser(file, self.factory, self.dialect, self.editor).run()
 
     def dumps(self, tree: TNode):
         file = io.StringIO()
@@ -89,8 +110,7 @@ class NewickSerializer:
                 self._to_newick(tree, writer)
 
     def _to_newick(self, tree: TNode, file):
-        fields = self.fields
-        quote_name = self.quote_name
+        dialect = self.dialect
 
         previous_depth = 0
         for node, item in tree.iter_tree(order="post", with_item=True):
@@ -102,28 +122,23 @@ class NewickSerializer:
             else:
                 file.write((previous_depth - item.depth) * ")")
 
-            if quote_name:
+            if dialect.quote_name:
                 file.write(self._quote_name(node.identifier))
             else:
                 file.write(str(node.identifier))
 
-            if isinstance(fields, str):
-                data = getattr(node, fields)
-            elif fields:
-                data = {field: getattr(node, field) for field in fields}
-            else:
-                data = None
-
-            if data:
+            if data := self.editor.get_attributes(node):
                 data = data.copy()
-                comment = data.pop(self.comment_field, None)
-                distance = data.pop(self.distance_field, None)
+                comment = data.pop("comment", None)
+                distance = data.pop("distance", None)
 
                 if distance is not None:
                     file.write(f":{distance}")
-                if data and self.use_nhx:
-                    self._write_nhx_data(data, file)
-                if comment and self.comment_field:
+                if data and dialect.data_prefix:
+                    self._write_nhx_data(data, file, dialect)
+                if comment:
+                    if dialect.escape_comments:
+                        comment = escape_comment(comment)
                     file.write(f'[{comment}]')
 
             previous_depth = item.depth
@@ -131,10 +146,15 @@ class NewickSerializer:
         file.write(';')
 
     @staticmethod
-    def _write_nhx_data(data, file):
-        file.write("[&&NHX")
-        for k, v in data.items():
-            file.write(f":{k}={v}")
+    def _write_nhx_data(data, file, dialect: Dialect):
+        file.write("[")
+        file.write(dialect.data_prefix)
+        if dialect.escape_comments:
+            for k, v in data.items():
+                file.write(f":{escape_comment(str(k))}={escape_comment(str(v))}")
+        else:
+            for k, v in data.items():
+                file.write(f":{k}={v}")
         file.write("]")
 
     @staticmethod
@@ -144,13 +164,13 @@ class NewickSerializer:
 
 
 class NewickParser:
-    __slots__ = "file", "factory", "editor", "use_nhx", "stack", "nodes", "in_distance"
+    __slots__ = "file", "factory", "dialect", "editor", "stack", "nodes", "in_distance"
 
-    def __init__(self, file, factory, editor, use_nhx):
+    def __init__(self, file, factory, dialect, editor):
         self.file = io.BufferedReader(file)
         self.factory = factory
+        self.dialect = dialect
         self.editor = editor
-        self.use_nhx = use_nhx
 
         self.stack = []
         self.nodes = [factory()]
@@ -159,6 +179,7 @@ class NewickParser:
     def run(self):
         table = {
             ord('['): self._read_comment,
+            ord(']'): self._unmatched_bracket,
             ord(','): self._read_sibling,
             ord('('): self._read_children,
             ord(')'): self._read_parent,
@@ -178,35 +199,53 @@ class NewickParser:
             [node] = nodes
             return node
         elif len(nodes) != 1:
-            raise NewickDecodeError(f"There should be one root, but {len(nodes)} were defined.")
+            raise NewickError(f"There should be one root, but {len(nodes)} were defined.")
         else:
-            print("self.stack = {!r}".format(self.stack))
-            raise NewickDecodeError(f"Children on level {len(stack)} have not been closed by ).")
+            raise NewickError(f"Children on level {len(stack)} have not been closed by ).")
 
     def _stop(self, _byte):
         self.file.seek(0, os.SEEK_END)
 
     def _read_comment(self, _byte):
+        dialect = self.dialect
         file = self.file
         comment_bytes = bytearray()
-        char = file.read(1)
-        while char and char != b"]":
-            comment_bytes += char
-            char = file.read(1)
+        depth = 1
+        while char := file.read(1):
+            if char == b"[":
+                depth += 1
+            elif char == b"]":
+                depth -= 1
+            if depth:
+                comment_bytes += char
+            else:
+                break
         comment = comment_bytes.decode('utf-8')
 
         node = self.nodes[-1]
-        if self.use_nhx and (match := NHX_PATTERN.match(comment)):
+        nhx_prefix = dialect.data_prefix
+        if (nhx_prefix and comment.startswith(nhx_prefix)
+                and (match := ITEM_PATTERN.match(comment.removeprefix(nhx_prefix)))):
             try:
                 item_str = match["items"]
                 items = dict(item.split("=") for item in item_str.split(":") if len(item) > 1)
             except Exception as err:
                 msg = "Invalid New Hampshire Extended-pattern: " + comment
-                raise NewickDecodeError(msg) from err
+                raise NewickError(msg) from err
             else:
-                self.editor.apply_items(node, items)
+                if dialect.escape_comments:
+                    items = {unescape_comment(k): unescape_comment(v)
+                             for k, v in items.items()}
+                self.editor.update(node, items)
         else:
-            self.editor.apply_comment(node, comment)
+            if dialect.escape_comments:
+                comment = unescape_comment(comment)
+            if existing_comment := self.editor.get(node, comment):
+                comment = f"{existing_comment}|{comment}"
+            self.editor.set(node, "comment", comment)
+
+    def _unmatched_bracket(self, _byte):
+        raise NewickError("Brackets [ and ] don't match.")
 
     def _read_children(self, _byte):
         self.stack.append(self.nodes)
@@ -250,7 +289,7 @@ class NewickParser:
         node = self.nodes[-1]
         if self.in_distance:
             distance = float(unquoted_str)
-            self.editor.apply_distance(node, distance)
+            self.editor.set(node, "distance", distance)
         else:
             node.identifier = unquoted_str
 
@@ -258,51 +297,22 @@ class NewickParser:
         self.in_distance = True
 
 
-class DataNodeEditor:
-    def __init__(self, fields, distance_field, comment_field):
-        self.fields = fields
-        self.distance_field = distance_field
-        self.comment_field = comment_field
-
-    def apply_distance(self, node, distance):
-        getattr(node, self.fields)[self.distance_field] = distance
-
-    def apply_comment(self, node, comment):
-        comment_field = self.comment_field
-        data = getattr(node, self.fields)
-        if comment_field in data:
-            data[comment_field] += f"|{comment}"
-        else:
-            data[comment_field] = comment
-
-    def apply_items(self, node, items):
-        data = getattr(node, self.fields)
-        data.update(items)
-
-
-class FieldNodeEditor:
-    def __init__(self, fields, distance_field, comment_field):
-        self.fields = fields
-        self.distance_field = distance_field
-        self.comment_field = comment_field
-
-    def apply_distance(self, node, distance):
-        setattr(node, self.distance_field, distance)
-
-    def apply_comment(self, node, comment):
-        comment_field = self.comment_field
-        if existing_comment := getattr(node, comment_field):
-            comment = existing_comment + f"|{comment}"
-            setattr(node, comment_field, comment)
-        else:
-            setattr(node, comment_field, comment)
-
-    def apply_items(self, node, items):
-        existing_fields = self.fields
-        for field, value in items.items():
-            if field in existing_fields:
-                setattr(node, field, items[value])
-
-
-class NewickDecodeError(Exception):
+class NewickError(Exception):
     pass
+
+
+ESCAPE_COMMENTS = {
+    "[": "&lsqb;",
+    "]": "&rsqb;",
+    "=": "&equals;",
+    ":": "&colon;"
+}
+UNESCAPE_COMMENTS = {v: k for (k, v) in ESCAPE_COMMENTS.items()}
+
+
+def escape_comment(raw_comment):
+    return xml.sax.saxutils.escape(raw_comment, ESCAPE_COMMENTS)
+
+
+def unescape_comment(escaped_comment):
+    return xml.sax.saxutils.unescape(escaped_comment, UNESCAPE_COMMENTS)

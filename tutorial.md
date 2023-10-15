@@ -205,7 +205,7 @@ Nodes have basic import and exports options with many parameters:
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"
 family_tree = Node.from_newick(family_newick)
 family_tree.show(style="round-arrow")  # Uses family_tree.to_string()
-family_tree.show(img=True)  # Uses family_tree.to_image()
+family_tree.to_image().show()  # Requires graphviz and Pillow
 ```
 
 ```text

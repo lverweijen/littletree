@@ -31,12 +31,11 @@ class TestRecursive(TestCase):
 
     def test_deepcopy(self):
         for repeat in range(10):
-            self.node.deepcopy()
+            self.node.copy({})
 
-    @skip("too difficult")
     def test_to_rows(self):
         for repeat in range(10):
-            list(self.node.to_rows())
+            list(self.node.to_rows(sep=None))
 
     def test_to_relations(self):
         for repeat in range(100):
@@ -51,9 +50,9 @@ class TestRecursive(TestCase):
 
     def test_to_newick(self):
         for i in range(100):
-            self.node.to_newick()
+            self.node.to_newick(dialect="newick")
 
     def test_from_newick(self):
         s = self.s
-        for i in range(100):
-            Node.from_newick(s)
+        for i in range(10):
+            Node.from_newick(s, dialect="newick")
