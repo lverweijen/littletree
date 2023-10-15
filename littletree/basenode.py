@@ -56,7 +56,10 @@ class BaseNode(Generic[TIdentifier]):
     def __eq__(self: TNode, other: TNode):
         if self is other:
             return True
-        return self.identifier == other.identifier and self._cdict == other._cdict
+        elif isinstance(other, self.__class__):
+            return self.identifier == other.identifier and self._cdict == other._cdict
+        else:
+            return NotImplemented
 
     def __getitem__(self, identifier: TIdentifier) -> TNode:
         """Get child by identifier."""
@@ -157,9 +160,9 @@ class BaseNode(Generic[TIdentifier]):
     @property
     def root(self) -> TNode:
         """Return root of tree."""
-        p, p2 = self, self.parent
+        p, p2 = self, self._parent
         while p2:
-            p, p2 = p2, p2.parent
+            p, p2 = p2, p2._parent
         return p
 
     @property
@@ -259,36 +262,32 @@ class BaseNode(Generic[TIdentifier]):
             node._parent = None
         return node
 
-    def _bare_copy(self, memo=None):
-        """Make a copy without identifier, parent or children."""
-        return self.__class__()
+    def copy(self, _memo=None) -> TNode:
+        """Make a shallow copy or deepcopy if memo is passed."""
+        return self.transform(lambda _node, _item: BaseNode())
 
-    _bare_deepcopy = _bare_copy
+    def transform(self, f: Callable[[TNode, "NodeItem"], TNode], keep=None) -> TNode:
+        """Make a modified copy of a tree.
 
-    def copy(self) -> TNode:
-        """Shallow copy of a node."""
-        other = self._bare_copy()
+        :param f: How to modify each node
+        :param keep: Which node and children to include
+        """
+        other = f(self, NodeItem(0, 0))
         other._identifier = self._identifier
-        for n1, n2 in zip(self.iter_tree(), other.iter_tree()):
-            for i, c in n1._cdict.items():
-                c2 = c._bare_copy()
-                c2._identifier, c2.parent = c._identifier, n2
-        return other
+        insert_depth = 0
+        for node, item in self.iter_descendants(keep=keep, with_item=True):
+            while insert_depth >= item.depth:
+                insert_depth -= 1
+                other = other._parent
+            other[node._identifier] = other = f(node, item)
+            insert_depth += 1
+        return other.root
 
-    def deepcopy(self, memo=None) -> TNode:
-        """Deep copy of a node."""
-        if memo is None:
-            memo = dict()
-        other = self._bare_deepcopy()
-        other._identifier = self._identifier
-        for n1, n2 in zip(self.iter_tree(), other.iter_tree()):
-            for i, c in n1._cdict.items():
-                c2 = c._bare_deepcopy(memo)
-                c2._identifier, c2.parent = c._identifier, n2
-        return other
+    def __copy__(self):
+        return self.copy()
 
-    __copy__ = copy
-    __deepcopy__ = deepcopy
+    def __deepcopy__(self, memo):
+        return self.copy(memo)
 
     def detach(self) -> TNode:
         """Remove node from its parent.
@@ -357,10 +356,10 @@ class BaseNode(Generic[TIdentifier]):
                 yield (self, item) if with_item else self
 
     def iter_ancestors(self) -> Iterator[TNode]:
-        p = self.parent
+        p = self._parent
         while p:
             yield p
-            p = p.parent
+            p = p._parent
 
     def iter_descendants(
         self,
@@ -392,7 +391,7 @@ class BaseNode(Generic[TIdentifier]):
 
     def iter_siblings(self) -> Iterator[TNode]:
         """Return siblings."""
-        if self.parent is not None:
+        if self._parent is not None:
             return (child for child in self._parent.children if child != self)
         else:
             return iter(())
@@ -463,13 +462,13 @@ class BaseNode(Generic[TIdentifier]):
                 yield node, item
 
             # Go right or go up
-            parent = node.parent
+            parent = node._parent
             node, item = next(nodes, (None, None))
             while node is None and stack:
                 node = parent
                 item, nodes = stack.pop()
                 yield node, item
-                parent = node.parent
+                parent = node._parent
                 node, item = next(nodes, (None, None))
 
     def _check_integrity(self):

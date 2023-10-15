@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from littletree import Node
 from littletree.serializers import RowSerializer
+from littletree.serializers.rowserializer import RowSerializerError
 
 
 class TestRowSerializer(TestCase):
@@ -39,14 +40,23 @@ class TestRowSerializer(TestCase):
 
     def test_to_rows2(self):
         """Export path names in path attribute."""
-        serializer = RowSerializer(Node, path_name="path")
+        serializer = RowSerializer(Node, path_name="path", sep=None)
         result = list(serializer.to_rows(self.tree))
         expected = [{"path": row["path"]} for row in self.rows]
         self.assertEqual(expected, result)
 
-    def test_to_rows3(self):
+    def test_to_rows3a(self):
         """Test with path name as tuple"""
-        serializer = RowSerializer(Node, path_name=["Continent", "Country", "Capital"])
+        path_name = ["Continent", "Country", "Capital"]
+        serializer = RowSerializer(Node, path_name, sep=None)
+
+        with self.assertRaises(RowSerializerError):
+            list(serializer.to_rows(self.tree))
+
+    def test_to_rows3b(self):
+        """Test with path name as tuple"""
+        path_name = ["Continent", "Country", "Capital", "Subcaptital", "Subsubcapital"]
+        serializer = RowSerializer(Node, path_name, sep=None)
         result = list(serializer.to_rows(self.tree))
 
         expected = [
@@ -57,24 +67,35 @@ class TestRowSerializer(TestCase):
             {'Continent': 'Europe', 'Country': 'Sweden', 'Capital': 'Stockholm'},
             {'Continent': 'Europe', 'Country': 'Finland'},
             {'Continent': 'Europe', 'Country': 'Finland', 'Capital': 'Helsinki'},
+            {'Capital': 'Helsinki', 'Continent': 'Europe', 'Country': 'Finland',
+             'Subcaptital': 'Helsinki'},
+            {'Capital': 'Helsinki', 'Continent': 'Europe', 'Country': 'Finland',
+             'Subcaptital': 'Helsinki', 'Subsubcapital': 'Helsinki'},
             {'Continent': 'Africa'}
         ]
         self.assertEqual(expected, result)
 
     def test_to_rows4(self):
         """Test with path name as tuple, leaves only"""
-        serializer = RowSerializer(Node, path_name=["Continent", "Country", "Capital"])
+        path_name = ["Continent", "Country", "Capital", "Subcaptital", "Subsubcapital"]
+        serializer = RowSerializer(Node, path_name=path_name, sep=None)
         result = list(serializer.to_rows(self.tree, leaves_only=True))
         expected = [
             {'Continent': 'Europe', 'Country': 'Norway', 'Capital': 'Oslo'},
             {'Continent': 'Europe', 'Country': 'Sweden', 'Capital': 'Stockholm'},
+            {'Capital': 'Helsinki',
+             'Continent': 'Europe',
+             'Country': 'Finland',
+             'Subcaptital': 'Helsinki',
+             'Subsubcapital': 'Helsinki'},
             {'Continent': 'Africa'}
         ]
         self.assertEqual(expected, result)
 
     def test_to_rows5(self):
-        """Test with path name as tuple, leaves only"""
-        serializer = RowSerializer(Node, path_name=["Continent", "Country", "Capital"], fields=["data"])
+        """Test with path name as tuple, leaves only, test with data"""
+        path_name = ["Continent", "Country", "Capital", "Subcaptital", "Subsubcapital"]
+        serializer = RowSerializer(Node, path_name=path_name, fields=["data"], sep=None)
         result = list(serializer.to_rows(self.tree))
         expected = [
             {'Continent': 'Europe', 'data': {'abbrev': 'EU'}},
@@ -90,20 +111,32 @@ class TestRowSerializer(TestCase):
              'Continent': 'Europe',
              'Country': 'Finland',
              'data': {}},
+            {'Capital': 'Helsinki',
+             'Continent': 'Europe',
+             'Country': 'Finland',
+             'Subcaptital': 'Helsinki',
+             'data': {}},
+            {'Capital': 'Helsinki',
+             'Continent': 'Europe',
+             'Country': 'Finland',
+             'Subcaptital': 'Helsinki',
+             'Subsubcapital': 'Helsinki',
+             'data': {}},
             {'Continent': 'Africa', 'data': {}}
         ]
         self.assertEqual(expected, result)
 
     def test_to_rows6(self):
         """Test with path name as tuple, leaves only"""
-        serializer = RowSerializer(Node, path_name=["Continent", "Country"], fields="data")
-        result = list(serializer.to_rows(self.tree))
+        path_name = ["Country", "Capital", "Subcaptital", "Subsubcapital"]
+        serializer = RowSerializer(Node, path_name=path_name, data_field="data", sep=None,)
+        result = list(serializer.to_rows(self.tree.path("Europe/Finland"), with_root=True))
         expected = [
-            {'Continent': 'Europe', 'abbrev': 'EU'},
-            {'Continent': 'Europe', 'Country': 'Norway', 'abbrev': 'NO'},
-            {'Continent': 'Europe', 'Country': 'Sweden'},
-            {'Continent': 'Europe', 'Country': 'Finland'},
-            {'Continent': 'Africa'},
+            {'Country': 'Finland'},
+            {'Country': 'Finland', 'Capital': 'Helsinki'},
+            {'Country': 'Finland', 'Capital': 'Helsinki', 'Subcaptital': 'Helsinki'},
+            {'Country': 'Finland', 'Capital': 'Helsinki',
+             'Subcaptital': 'Helsinki', 'Subsubcapital': 'Helsinki'}
         ]
         self.assertEqual(expected, result)
 
@@ -123,7 +156,7 @@ class TestRowSerializer(TestCase):
 
     def test_from_rows2(self):
         """With data and path field."""
-        serializer = RowSerializer(Node, path_name="path", fields=["data"])
+        serializer = RowSerializer(Node, path_name="path", fields=["data"], sep=None)
         result = serializer.from_rows(self.rows)
         result.identifier = "world"  # Set root identifier
 
@@ -133,7 +166,7 @@ class TestRowSerializer(TestCase):
 
     def test_from_rows3(self):
         """With data and separate fields."""
-        serializer = RowSerializer(Node, path_name=["Continent", "Country"], fields=["data"])
+        serializer = RowSerializer(Node, path_name=["Continent", "Country"], fields=["data"], sep=None)
         rows = [
             {'Continent': 'Europe', 'Country': 'Norway', "data": {"Capital": 'Oslo'}},
             {'Continent': 'Europe', 'Country': 'Sweden', "data": {"Capital": 'Stockholm'}},
@@ -147,7 +180,7 @@ class TestRowSerializer(TestCase):
                                  'Europe': {'children': {'Norway': {'Capital': 'Oslo'},
                                                          'Sweden': {'Capital': 'Stockholm'}}}}}
 
-        self.assertEqual(expected, result.to_dict())
+        self.assertEqual(expected, result.to_dict(identifier_name=None))
 
     def test_from_df(self):
         try:
@@ -168,7 +201,7 @@ class TestRowSerializer(TestCase):
                                                          'Finland': {},
                                                          'Norway': {},
                                                          'Sweden': {}}}}}
-        self.assertEqual(expected, result.to_dict())
+        self.assertEqual(expected, result.to_dict(identifier_name=None))
 
     def test_from_df2(self):
         try:
@@ -195,4 +228,4 @@ class TestRowSerializer(TestCase):
                                  'Europe': {'children': {'Norway': {'Capital': 'Oslo'},
                                                          'Sweden': {'Capital': 'Stockholm'}}}}}
 
-        self.assertEqual(expected, result.to_dict())
+        self.assertEqual(expected, result.to_dict(identifier_name=None))

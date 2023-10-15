@@ -1,6 +1,6 @@
-LittleTree is a library that provides trees.
-The package is purely written in python and tries to be easy to use, but operations are generally implemented in an efficient way.
-It was created because all other tree implementations were either too basic, slow or complicated.
+LittleTree is a library that provides a tree data structure to python.
+The package is purely written in python.
+It should be easy to use while efficient.
 
 ## Installing ##
 
@@ -22,11 +22,11 @@ tree["Africa"] = Node()
 tree["America"] = Node()
 tree["Europe"] = Node()
 
-print(tree.to_string())
-tree.to_image('world.png')  # Works if dot(graphviz) is on path
+tree.show()  # Same as print(tree.to_string())
+tree.to_image().show()  # Show as an image instead
 ```
 
-The resulting tree looks like this:
+The resulting tree is printed like this:
 
 ```
 World
@@ -35,6 +35,8 @@ World
 ├─ America
 └─ Europe
 ```
+
+And it creates the following image:
 
 ![world](world.png)
 
@@ -47,12 +49,12 @@ See [tutorial](https://github.com/lverweijen/littletree/blob/main/tutorial.md) f
 
 ## Alternatives ##
 
-Before creating this, I looked at some other libraries.
-Each had some things I liked and disliked.
-None of them was exactly how I wanted it, so I decided to create something new.
+Before creating this, I looked at some other tree libraries.
+I found the others to be lacking, because they were either slow or made simple things complicated.
+Therefore, I decided to make my own.
 
-- [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but implementation uses lists, which makes lookups slow.
+- [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but generally slow.
 - [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree, but has more features.
-- [itertree](https://github.com/BR1py/itertree) - Has many features and is fast, but its design is complex.
-- [treelib](https://github.com/caesar0301/treelib) - Puts all nodes of a tree into a single flat dict.
-- [networkx](https://networkx.org/) - A tree is a special kind of graph
+- [itertree](https://github.com/BR1py/itertree) - Has many features. It has good performance, but has a complicated design.
+- [treelib](https://github.com/caesar0301/treelib) - This puts all nodes of a tree into a single dict. This makes some operations difficult or slow, although it has advantages too.
+- [networkx](https://networkx.org/) - Is actually made for graphing. Doesn't have a dedicated tree type.

@@ -1,8 +1,10 @@
+import ast
 import re
 from unittest import TestCase
+from unittest.util import safe_repr
 
 from littletree import Node
-from littletree.serializers.newickserializer import NewickSerializer
+from littletree.serializers.newickserializer import NewickSerializer, NewickError
 
 
 class TestNewickSerializer(TestCase):
@@ -50,7 +52,7 @@ class TestNewickSerializer(TestCase):
 
     def test_to_newick3(self):
         """Test with data."""
-        serializer = NewickSerializer(fields="data")
+        serializer = NewickSerializer(data_field="data")
         result = serializer.dumps(self.tree2)
         expected = ("((('Oslo')'Norway'[&&NHX:abbrev=NO],"
                     "('Stockholm')'Sweden',"
@@ -62,23 +64,19 @@ class TestNewickSerializer(TestCase):
 
     def test_to_newick4(self):
         """Test with data."""
-        serializer = NewickSerializer(fields=["data"])
+        serializer = NewickSerializer(fields=["data"], escape_comments=True)
         result = serializer.dumps(self.tree2)
-        expected = ("((('Oslo'[&&NHX:data={}])"
-                    "'Norway'[&&NHX:data={'abbrev': 'NO'}],"
-                    "('Stockholm'[&&NHX:data={}])'Sweden'[&&NHX:data={}],"
-                    "((('Helsinki'[&&NHX:data={}])'Helsinki'[&&NHX:data={}])'Helsinki'[&&NHX:data={}])'Finland'[&&NHX:data={}])"
-                    "'Europe'[&&NHX:data={'abbrev': 'EU'}],"
-                    "'Africa'[&&NHX:data={}])'world'[&&NHX:data={}];")
-        self.assertEqual(expected, result)
+        recovered_tree = serializer.loads(result)
 
-        # Round-tripping wouldn't be possible, because NHX may not contain colon-symbol
-        # and only supports strings anyway.
-        # This testcase is a bit weird anyway
+        # Recover from string
+        for node in recovered_tree.iter_tree():
+            node.data = ast.literal_eval(node.data)
+
+        self.assertEqual(self.tree2.to_string(), recovered_tree.to_string())
 
     def test_to_newick5(self):
         """Test with distances."""
-        serializer = NewickSerializer(fields="data", quote_name=False)
+        serializer = NewickSerializer(data_field="data", quote_name=False)
         result = serializer.dumps(self.tree3)
         expected = ('(((Oslo)Norway:1.2345,'
                     '(Stockholm)Sweden,'
@@ -129,7 +127,7 @@ class TestNewickSerializer(TestCase):
     def test_from_newick4(self):
         # wikipedia example
         newick = "(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);"
-        serializer = NewickSerializer(fields="data")
+        serializer = NewickSerializer(data_field="data")
         tree = serializer.loads(newick)
         lines = tree.to_string(style='square').splitlines()
         result = [self.remove_anonymous(line) for line in lines]
@@ -148,8 +146,23 @@ class TestNewickSerializer(TestCase):
 
     def test_from_newick_quoted(self):
         newick = "why''node('this''node')"
-        serializer = NewickSerializer(fields="data")
+        serializer = NewickSerializer(data_field="data")
         tree = serializer.loads(newick)
         result = tree.to_string(style='square')
         expected = "why''node\n└─ this'node\n"
         self.assertEqual(expected, result)
+
+    def test_from_newick_malformed(self):
+        tree = Node({"closing": "]"}, identifier='simple_node')
+        nwk = tree.to_newick(escape_comments=False)
+        self.assertEqual("'simple_node'[&&NHX:closing=]];", nwk)
+
+        with self.assertRaises(NewickError):
+            Node.from_newick(nwk)
+
+    def test_from_newick_escaped(self):
+        tree = Node({"closing": "]"}, identifier='simple_node')
+        nwk = tree.to_newick(escape_comments=True)
+        self.assertEqual("'simple_node'[&&NHX:closing=&rsqb;];", nwk)
+        tree_restored = Node.from_newick(nwk)
+        self.assertEqual(tree, tree_restored)

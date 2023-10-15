@@ -20,7 +20,7 @@ DEFAULT_STYLES = {
     "round-arrow": Style(branch="├→", last="╰→", vertical="│ "),
     "ascii": Style(branch="|--", last="`--", vertical="|  "),
     "ascii-arrow": Style(branch="|->", last="`->", vertical="|  "),
-    "minimal": Style(branch=">", last=">", vertical=" "),
+    "list": Style(branch="-", last="-", vertical=" "),
 }
 
 
