@@ -14,28 +14,37 @@ from ..basenode import BaseNode
 
 
 TNode = TypeVar("TNode", bound=BaseNode)
-NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Union[str, Mapping]], str]
-EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Union[str, Mapping]], str]
+Arrow = Union[str, Callable[[TNode, TNode], str]]
+NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Mapping[str, Any]]]
+EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Mapping[str, Any]]]
+GraphAttributes = Mapping[str, Any]
 
 
 class DotExporter:
     def __init__(
         self,
-        name_factory: Union[str, Callable[[TNode], str]] = "path",
+        node_name: Union[str, Callable[[TNode], str], None] = "path",
         node_attributes: NodeAttributes = None,
         edge_attributes: EdgeAttributes = None,
-        dot_path: Path = "dot"
+        graph_attributes: GraphAttributes = None,
+        directed: bool = True,
+        dot_path: Path = "dot",
     ):
-        if name_factory is None:
-            name_factory = str
-        elif isinstance(name_factory, str):
-            name_factory = operator.attrgetter(name_factory)
-        elif not callable(name_factory):
-            raise TypeError("name_factory should be callable")
+        def default_node_name(node):
+            return hex(id(node))
 
-        self.name_factory = name_factory
+        if not node_name:
+            node_name = default_node_name
+        elif isinstance(node_name, str):
+            node_name = operator.attrgetter(node_name)
+        elif not callable(node_name):
+            raise TypeError("node_name should be callable")
+
+        self.node_name = node_name
         self.node_attributes = node_attributes
         self.edge_attributes = edge_attributes
+        self.graph_attributes = graph_attributes
+        self.directed = directed
         self.dot_path = Path(dot_path)
 
     def to_image(self, tree: TNode, file=None, keep=None, file_format="png", as_bytes=False):
@@ -47,24 +56,29 @@ class DotExporter:
         if hasattr(file, "write"):
             self._to_image(tree, file, keep, file_format)
         elif file:
-            with open(file, "bw") as writer:
-                self._to_image(tree, writer, keep, file_format)
+            filepath = Path(file)
+            with open(filepath, "bw") as file:
+                self._to_image(tree, file, keep, file_format or filepath.suffix[1:])
         else:
             img_bytes = self._to_image(tree, subprocess.PIPE, keep, file_format)
             if as_bytes:
                 return img_bytes
             elif _HAS_PILLOW:
-                # Pillow doesn't support streaming, so piping from subprocess won't be faster.
+                # Pillow doesn't support streaming, so buffering bytes is fine.
                 return Image.open(io.BytesIO(img_bytes))
             else:
                 raise ImportError("Pillow not installed. Use `pip install Pillow`.")
 
     def _to_image(self, tree, file, keep, file_format):
-        args = [self.dot_path, "-T", file_format]
+        if not file_format:
+            file_format = "png"
+
         try:
+            args = [self.dot_path, "-T", file_format]
             process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=file)
         except FileNotFoundError as err:
             raise Exception("Install dot from graphviz.org") from err
+
         self.to_dot(tree, io.TextIOWrapper(process.stdin, encoding='utf-8'), keep=keep)
         process.stdin.close()
         (output, errors) = process.communicate()
@@ -84,32 +98,85 @@ class DotExporter:
                 fp.writelines(output)
 
     def _to_dot(self, root, keep=None):
-        node_to_str = self.name_factory
-        yield "digraph tree {"
+        name_factory = self.node_name
+        escape_string = self._escape_string
+        handle_attributes = self._handle_attributes
+
+        graph_attributes = self.graph_attributes
+        node_static, node_dynamic = self._split_attributes(self.node_attributes)
+        edge_static, edge_dynamic = self._split_attributes(self.edge_attributes)
+
+        if self.directed:
+            yield "digraph tree {"
+            arrow = "->"
+        else:
+            yield "graph tree {"
+            arrow = "--"
+
+        if graph_attributes:
+            attrs = handle_attributes(graph_attributes, root)
+            yield f"graph{attrs};"
+        if node_static:
+            attrs = handle_attributes(node_static, root)
+            yield f"node{attrs};"
+        if edge_static:
+            attrs = handle_attributes(edge_static, root, root)
+            yield f"edge{attrs};"
+
         for node in root.iter_tree(keep):
-            node_esc = self._escape_string(str(node_to_str(node)))
-            attrs = self._handle_attributes(self.node_attributes, node)
-            yield f"{node_esc}{attrs};"
+            node_name = escape_string(str(name_factory(node)))
+            attrs = handle_attributes(node_dynamic, node)
+            yield f"{node_name}{attrs};"
         for node in root.iter_descendants(keep):
-            parent_esc = self._escape_string(str(node_to_str(node.parent)))
-            child_esc = self._escape_string(str(node_to_str(node)))
-            attrs = self._handle_attributes(self.edge_attributes, node.parent, node)
-            yield f"{parent_esc} -> {child_esc}{attrs};"
+            parent_name = escape_string(str(name_factory(node.parent)))
+            child_name = escape_string(str(name_factory(node)))
+            attrs = handle_attributes(edge_dynamic, node.parent, node)
+            yield f"{parent_name}{arrow}{child_name}{attrs};"
         yield "}"
 
     @classmethod
-    def _handle_attributes(cls, attributes: Callable[[TNode], Union[str, Mapping]], *args):
+    def _split_attributes(cls, attributes: Union[NodeAttributes, EdgeAttributes]):
+        if isinstance(attributes, Mapping):
+            static = {k: v for (k, v) in attributes.items() if not callable(v)}
+            dynamic = {k: v for (k, v) in attributes.items() if callable(v)}
+        elif callable(attributes):
+            static = None
+            dynamic = attributes
+        else:
+            static = attributes
+            dynamic = None
+        return static, dynamic
+
+    @classmethod
+    def _handle_attributes(
+        cls,
+        attributes: Union[NodeAttributes, EdgeAttributes, GraphAttributes],
+        *args
+    ):
+        """
+        Attributes can be:
+        - Dict [str, (Any | TNode -> Any)]
+        - TNode -> Dict[str, Any]
+
+       Also supported, but not recommended:
+        - str
+        - TNode -> str
+        """
+
+        escape_string = cls._escape_string
         if not attributes:
             return ""
-        elif callable(attributes):
+        if callable(attributes):
             attributes = attributes(*args)
-        elif isinstance(attributes, Mapping):
+        if isinstance(attributes, Mapping):
             options = []
             for k, v in attributes.items():
                 if callable(v):
                     v = v(*args)
-                options.append(f"{k}={cls._escape_string(v)}")
+                options.append(f"{k}={escape_string(v)}")
             attributes = "[" + " ".join(options) + "]"
+        elif not attributes.startswith("["):
+            attributes = f"[{attributes}]"
         return attributes
 
     @staticmethod

@@ -1,3 +1,12 @@
+## Version 0.4.0 ##
+- Improve DotExporter
+  - Rename `name_factory` to `node_name`.
+  - Derive file type from file extension instead of assuming png
+  - Add `graph_attributes`
+  - Make attribute handling more intelligent
+  - Add parameter `directed` (default: True)
+  - Remove whitespace around arrows
+
 ## Version 0.3.0 ##
 - Remove `tree.show(img=True)`. Use `tree.to_image().show()` instead.
 - New method `tree.transform()` that creates a modified or pruned copy of a tree.
