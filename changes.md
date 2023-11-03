@@ -1,11 +1,13 @@
 ## Version 0.4.0 ##
 - Improve DotExporter
   - Rename `name_factory` to `node_name`.
-  - Derive file type from file extension instead of assuming png
-  - Add `graph_attributes`
-  - Make attribute handling more intelligent
-  - Add parameter `directed` (default: True)
-  - Remove whitespace around arrows
+  - Derive file type from file extension if possible. Fall back on png.
+  - Add `graph_attributes`.
+  - Make attribute handling more intelligent. Distinguish static and dynamic properties.
+  - Add parameter `directed` (default: True).
+  - Remove whitespace around arrows for compacter file size.
+- Add MermaidExporter. Similar to DotExporter, but supported by [github](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).
+- Make `tree.children` writable for more compatibility with anytree/bigtree
 
 ## Version 0.3.0 ##
 - Remove `tree.show(img=True)`. Use `tree.to_image().show()` instead.

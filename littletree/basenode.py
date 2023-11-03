@@ -149,6 +149,20 @@ class BaseNode(Generic[TIdentifier]):
             children = self._cvalues = self._cdict.values()
             return children
 
+    @children.setter
+    def children(self, new_children):
+        old_children = list(self.children)
+        self.clear()
+        try:
+            self.update(new_children)
+        except LoopError as err:
+            self.update(old_children)
+            raise err from None
+
+    @children.deleter
+    def children(self):
+        self.clear()
+
     @property
     def path(self) -> NodePath:
         try:

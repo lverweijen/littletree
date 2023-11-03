@@ -14,7 +14,6 @@ from ..basenode import BaseNode
 
 
 TNode = TypeVar("TNode", bound=BaseNode)
-Arrow = Union[str, Callable[[TNode, TNode], str]]
 NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Mapping[str, Any]]]
 EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Mapping[str, Any]]]
 GraphAttributes = Mapping[str, Any]
@@ -47,7 +46,7 @@ class DotExporter:
         self.directed = directed
         self.dot_path = Path(dot_path)
 
-    def to_image(self, tree: TNode, file=None, keep=None, file_format="png", as_bytes=False):
+    def to_image(self, tree: TNode, file=None, keep=None, file_format=None, as_bytes=False):
         """Export tree to an image
 
         If file is None and not as_bytes, it will return a Pillow object [default].
@@ -152,7 +151,7 @@ class DotExporter:
         cls,
         attributes: Union[NodeAttributes, EdgeAttributes, GraphAttributes],
         *args
-    ):
+    ) -> str:
         """
         Attributes can be:
         - Dict [str, (Any | TNode -> Any)]

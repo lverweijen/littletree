@@ -200,6 +200,7 @@ Nodes have basic import and exports options with many parameters:
 | Rows   | from_rows() / to_rows()           | Converting to / from path lists         |
 | Rows   | from_relations() / to_relations() | Converting to / from parent-child lists |
 | Text   | from_newick() / to_newick()       | Converting to / from newick-format      |
+| Text   | to_mermaid()                      | Exports to mermaid                      |
 
 ```python
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"

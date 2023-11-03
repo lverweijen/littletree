@@ -2,6 +2,7 @@ import copy
 from unittest import TestCase
 
 from littletree import Node
+from littletree.exceptions import LoopError
 
 
 class TestNode(TestCase):
@@ -76,6 +77,20 @@ class TestNode(TestCase):
 
         self.assertTrue(other_tree.is_leaf)
         self.assertEqual(expected, result)
+
+    def test_reassign_children(self):
+        tree = self.tree
+        children = list(tree.children)
+        children = reversed(children)
+        tree.children = children
+        tree.show()
+        result = [str(child.path) for child in tree.children]
+        expected = ['/world/Africa', '/world/Europe']
+        self.assertEqual(expected, result)
+
+    def test_reassign_children_error(self):
+        with self.assertRaises(LoopError):
+            self.tree['Europe'].children = [self.tree.root]
 
     def test_sort_children1(self):
         tree = self.tree

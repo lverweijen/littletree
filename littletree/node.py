@@ -4,6 +4,7 @@ from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Unio
 
 from .basenode import BaseNode
 from .exporters import DotExporter
+from .exporters import MermaidExporter
 from .exporters import StringExporter
 from .serializers import DictSerializer
 from .serializers import NewickSerializer
@@ -126,6 +127,10 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_dot(self, file, keep=keep)
 
+    def to_mermaid(self, file=None, keep=None, **kwargs) -> Optional[str]:
+        exporter = MermaidExporter(**kwargs)
+        return exporter.to_mermaid(self, file, keep=keep)
+
     @classmethod
     def from_dict(cls, data, data_field="data", **kwargs) -> TNode:
         return DictSerializer(cls, data_field=data_field, **kwargs).from_dict(data)
@@ -146,7 +151,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return serializer.from_relations(relations, root)
 
     def to_relations(self, data_field="data", **kwargs):
-        return RelationSerializer(self.__class__, data_field=data_field, **kwargs).to_relations(self)
+        serializer = RelationSerializer(self.__class__, data_field=data_field, **kwargs)
+        return serializer.to_relations(self)
 
     @classmethod
     def from_newick(cls, newick, root=None, data_field="data", **kwargs) -> TNode:
