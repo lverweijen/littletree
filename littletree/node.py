@@ -76,7 +76,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
                 return Node(original.data)
         return self.transform(node)
 
-    def compare(self, other: TNode, keep_equal=False) -> TNode:
+    def compare(self, other: TNode, keep_equal=False) -> Optional[TNode]:
         """Compare two trees to one another.
 
         If diff_only is true, all nodes where data is equal will be removed.
