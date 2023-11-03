@@ -74,7 +74,8 @@ class DotExporter:
 
         try:
             args = [self.dot_path, "-T", file_format]
-            process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=file)
+            process = subprocess.Popen(args,
+                                       stdin=subprocess.PIPE, stdout=file, stderr=subprocess.PIPE)
         except FileNotFoundError as err:
             raise Exception("Install dot from graphviz.org") from err
 

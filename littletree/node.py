@@ -115,20 +115,35 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)
 
-    def to_image(self, file=None, keep=None, node_attributes=None, **kwargs):
+    def to_image(
+        self,
+        file=None,
+        keep=None,
+        node_attributes=None,
+        node_label=str,
+        backend="graphviz",
+        **kwargs
+    ):
         if node_attributes is None:
-            node_attributes = {"label": str}
-        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+            node_attributes = {"label": node_label}
+        if backend == "graphviz":
+            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+        elif backend == "mermaid":
+            exporter = MermaidExporter(node_label=node_label, **kwargs)
+            if not file:
+                raise ValueError("Parameter file is required for mermaid")
+        else:
+            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
         return exporter.to_image(self, file, keep=keep)
 
-    def to_dot(self, file=None, keep=None, node_attributes=None, **kwargs) -> Optional[str]:
+    def to_dot(self, file=None, keep=None, node_attributes=None, node_label=str, **kwargs) -> Optional[str]:
         if node_attributes is None:
-            node_attributes = {"label": str}
+            node_attributes = {"label": node_label}
         exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_dot(self, file, keep=keep)
 
-    def to_mermaid(self, file=None, keep=None, **kwargs) -> Optional[str]:
-        exporter = MermaidExporter(**kwargs)
+    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
+        exporter = MermaidExporter(node_label=node_label, **kwargs)
         return exporter.to_mermaid(self, file, keep=keep)
 
     @classmethod

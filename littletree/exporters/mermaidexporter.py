@@ -1,4 +1,7 @@
+import io
 import operator
+import subprocess
+from pathlib import Path
 from typing import Callable, Union, TypeVar, Tuple, Optional
 
 from .elements import Literal
@@ -35,9 +38,10 @@ class MermaidExporter:
         self,
         node_name: Union[str, Callable[[TNode], str], None] = None,
         node_label: Union[str, Callable[[TNode], str], None] = str,
-        node_shape: TShape = "square",
+        node_shape: TShape = "box",
         edge_arrow: Union[str, Callable[[TNode, TNode], str]] = "-->",
         graph_direction: str = "TD",
+        mermaid_path: Union[str, Path] = "mmdc"
     ):
         def default_node_name(node):
             return hex(id(node))
@@ -47,6 +51,21 @@ class MermaidExporter:
         self.node_shape = node_shape
         self.edge_arrow = edge_arrow
         self.graph_direction = graph_direction
+        self.mermaid_path = mermaid_path
+
+    def to_image(self, tree, file, keep=None):
+        try:
+            args = [str(self.mermaid_path), "--input", "-", "--output", str(file)]
+            process = subprocess.Popen(args, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        except FileNotFoundError as err:
+            raise Exception("Install mermaid-cli from npm") from err
+
+        self.to_mermaid(tree, io.TextIOWrapper(process.stdin, encoding='utf-8'), keep=keep)
+        process.stdin.close()
+        (output, errors) = process.communicate()
+        if process.returncode != 0:
+            raise Exception(errors.decode('utf-8', errors="replace"))
+        return output
 
     def to_mermaid(self, tree: TNode, file=None, keep=None):
         output = self._to_mermaid(tree, keep)
@@ -70,7 +89,7 @@ class MermaidExporter:
         escape_string = self._escape_string
 
         # Output header
-        yield f"graph {self.graph_direction}"
+        yield f"graph {self.graph_direction};"
 
         # Output nodes
         for node in root.iter_tree(keep):
@@ -78,16 +97,16 @@ class MermaidExporter:
             name = node_name(node)
             if node_label:
                 text = escape_string(node_label(node))
-                yield f"{name}{left}{text}{right}"
+                yield f"{name}{left}{text}{right};"
             else:
-                yield f"{name}"
+                yield f"{name};"
 
         # Output edges
         for node in root.iter_descendants(keep):
             arrow = edge_arrow(node.parent, node) if callable(edge_arrow) else edge_arrow
             parent = node_name(node.parent)
             child = node_name(node)
-            yield f"{parent}{arrow}{child}"
+            yield f"{parent}{arrow}{child};"
 
     @staticmethod
     def _get_shape(shape_factory, node):

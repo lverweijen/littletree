@@ -10,13 +10,13 @@ class TestMermaidExporter(TestCase):
         exporter = MermaidExporter(node_name="path")
         result = exporter.to_mermaid(tree)
         expected = (
-            'graph TD\n'
-            '/A["A"]\n'
-            '/A/b["b"]\n'
-            '/A/c["c"]\n'
-            '/A/d["d"]\n'
-            '/A-->/A/b\n'
-            '/A-->/A/c\n'
-            '/A-->/A/d')
+            'graph TD;\n'
+            '/A["A"];\n'
+            '/A/b["b"];\n'
+            '/A/c["c"];\n'
+            '/A/d["d"];\n'
+            '/A-->/A/b;\n'
+            '/A-->/A/c;\n'
+            '/A-->/A/d;')
         self.assertEqual(expected, result)
         print(result)

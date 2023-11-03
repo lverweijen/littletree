@@ -8,6 +8,7 @@
   - Remove whitespace around arrows for compacter file size.
 - Add MermaidExporter. Similar to DotExporter, but supported by [github](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).
 - Make `tree.children` writable for more compatibility with anytree/bigtree
+- Add parameters `backend` and `node_label` to `tree.to_image()`
 
 ## Version 0.3.0 ##
 - Remove `tree.show(img=True)`. Use `tree.to_image().show()` instead.
