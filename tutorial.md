@@ -195,12 +195,12 @@ Nodes have basic import and exports options with many parameters:
 | Format | Function                          | Use                                     |
 |--------|-----------------------------------|-----------------------------------------|
 | Text   | to_string()                       | Pretty print the tree                   |
-| Image  | to_dot(), to_image()              | Exports to image (requires graphviz)    |
+| Text   | to_dot(), to_mermaid()            | Exports to dot/mermaid                  |
+| Image  | to_image()                        | Requires graphviz or mermaid            |
 | Nested | from_dict() / to_dict()           | Converting to / from json-like formats  |
 | Rows   | from_rows() / to_rows()           | Converting to / from path lists         |
 | Rows   | from_relations() / to_relations() | Converting to / from parent-child lists |
 | Text   | from_newick() / to_newick()       | Converting to / from newick-format      |
-| Text   | to_mermaid()                      | Exports to mermaid                      |
 
 ```python
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"

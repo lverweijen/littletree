@@ -55,6 +55,6 @@ Therefore, I decided to make my own.
 
 - [anytree](https://github.com/c0fec0de/anytree) - Very hackable, but generally slow.
 - [bigtree](https://github.com/kayjan/bigtree) - Similar to anytree, but has more features.
-- [itertree](https://github.com/BR1py/itertree) - Has many features. It has good performance, but has a complicated design.
+- [itertree](https://github.com/BR1py/itertree) - Has many features and good performance, but has a complicated design.
 - [treelib](https://github.com/caesar0301/treelib) - This puts all nodes of a tree into a single dict. This makes some operations difficult or slow, although it has advantages too.
 - [networkx](https://networkx.org/) - Is actually made for graphing. Doesn't have a dedicated tree type.
