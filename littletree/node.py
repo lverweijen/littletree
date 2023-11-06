@@ -4,6 +4,7 @@ from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Unio
 
 from .basenode import BaseNode
 from .exporters import DotExporter
+from .exporters import MermaidExporter
 from .exporters import StringExporter
 from .serializers import DictSerializer
 from .serializers import NewickSerializer
@@ -75,7 +76,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
                 return Node(original.data)
         return self.transform(node)
 
-    def compare(self, other: TNode, keep_equal=False) -> TNode:
+    def compare(self, other: TNode, keep_equal=False) -> Optional[TNode]:
         """Compare two trees to one another.
 
         If diff_only is true, all nodes where data is equal will be removed.
@@ -114,17 +115,36 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         exporter = StringExporter(str_factory=str_factory, **kwargs)
         return exporter.to_string(self, file, keep=keep)
 
-    def to_image(self, file=None, keep=None, node_attributes=None, **kwargs):
+    def to_image(
+        self,
+        file=None,
+        keep=None,
+        node_attributes=None,
+        node_label=str,
+        backend="graphviz",
+        **kwargs
+    ):
         if node_attributes is None:
-            node_attributes = {"label": str}
-        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+            node_attributes = {"label": node_label}
+        if backend == "graphviz":
+            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+        elif backend == "mermaid":
+            exporter = MermaidExporter(node_label=node_label, **kwargs)
+            if not file:
+                raise ValueError("Parameter file is required for mermaid")
+        else:
+            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
         return exporter.to_image(self, file, keep=keep)
 
-    def to_dot(self, file=None, keep=None, node_attributes=None, **kwargs) -> Optional[str]:
+    def to_dot(self, file=None, keep=None, node_attributes=None, node_label=str, **kwargs) -> Optional[str]:
         if node_attributes is None:
-            node_attributes = {"label": str}
+            node_attributes = {"label": node_label}
         exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         return exporter.to_dot(self, file, keep=keep)
+
+    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
+        exporter = MermaidExporter(node_label=node_label, **kwargs)
+        return exporter.to_mermaid(self, file, keep=keep)
 
     @classmethod
     def from_dict(cls, data, data_field="data", **kwargs) -> TNode:
@@ -146,7 +166,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         return serializer.from_relations(relations, root)
 
     def to_relations(self, data_field="data", **kwargs):
-        return RelationSerializer(self.__class__, data_field=data_field, **kwargs).to_relations(self)
+        serializer = RelationSerializer(self.__class__, data_field=data_field, **kwargs)
+        return serializer.to_relations(self)
 
     @classmethod
     def from_newick(cls, newick, root=None, data_field="data", **kwargs) -> TNode:
