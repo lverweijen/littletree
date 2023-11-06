@@ -54,6 +54,9 @@ class MermaidExporter:
         self.mermaid_path = mermaid_path
 
     def to_image(self, tree, file, keep=None):
+        if not file:
+            raise ValueError("Parameter file is required for mermaid")
+
         try:
             args = [str(self.mermaid_path), "--input", "-", "--output", str(file)]
             process = subprocess.Popen(args, stdin=subprocess.PIPE, stderr=subprocess.PIPE)

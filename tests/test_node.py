@@ -138,9 +138,9 @@ class TestNode(TestCase):
         expected = ('world\n'
                     "{'self': {}, 'other': {}}\n"
                     '├─ Europe\n'
-                    "│  {'self': {}, 'other': 'something great'}\n"
+                    "│  {'self': {'first'}, 'other': 'something great'}\n"
                     '├─ Africa\n'
-                    "│  {'self': {}}\n"
+                    "│  {'self': {'very big'}}\n"
                     '├─ Asia\n'
                     "│  {'other': {}}\n"
                     '└─ Australia\n'

@@ -86,7 +86,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         >>> tree.compare(other_tree)
         Node({'self': 'apples', 'other': 'oranges'}, identifier='fruit)
         """
-        diff_node = self.transform(lambda _, _i: Node({'self': self.data}))
+        diff_node = self.transform(lambda node, _i: Node({'self': node.data}))
         diff_node.data['other'] = other.data
         insert_depth = 0
         for node, item in other.iter_descendants(with_item=True):
@@ -130,8 +130,6 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             exporter = DotExporter(node_attributes=node_attributes, **kwargs)
         elif backend == "mermaid":
             exporter = MermaidExporter(node_label=node_label, **kwargs)
-            if not file:
-                raise ValueError("Parameter file is required for mermaid")
         else:
             raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
         return exporter.to_image(self, file, keep=keep)

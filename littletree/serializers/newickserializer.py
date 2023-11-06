@@ -5,8 +5,8 @@ import re
 import xml.sax.saxutils
 from typing import TypeVar, Sequence, Callable, Union, Mapping, Optional
 
-from littletree import BaseNode
-from littletree.serializers._nodeeditor import get_editor
+from ..basenode import BaseNode
+from ._nodeeditor import get_editor
 
 TNode = TypeVar("TNode", bound=BaseNode)
 SINGLE = b"'"

@@ -1,3 +1,6 @@
+## Version 0.4.1 ##
+Fix bug in `tree.compare` method
+
 ## Version 0.4.0 ##
 - Improve DotExporter
   - Rename `name_factory` to `node_name`.

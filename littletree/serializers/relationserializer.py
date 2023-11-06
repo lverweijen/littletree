@@ -1,7 +1,7 @@
 from typing import Callable, Sequence, Mapping, TypeVar
 
-from littletree import BaseNode
-from littletree.serializers._nodeeditor import get_editor
+from ..basenode import BaseNode
+from ._nodeeditor import get_editor
 
 TNode = TypeVar("TNode", bound=BaseNode)
 
