@@ -7,6 +7,7 @@ from .exporters import DotExporter
 from .exporters import MermaidExporter
 from .exporters import StringExporter
 from .serializers import DictSerializer
+from .serializers import NetworkXSerializer
 from .serializers import NewickSerializer
 from .serializers import RelationSerializer
 from .serializers import RowSerializer
@@ -181,3 +182,12 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             return serializer.dump(self, file)
         else:
             return serializer.dumps(self)
+
+    @classmethod
+    def from_networkx(cls, graph, **kwargs):
+        exporter = NetworkXSerializer(cls, data_field="data", **kwargs)
+        return exporter.from_networkx(graph)
+
+    def to_networkx(self, **kwargs):
+        exporter = NetworkXSerializer(self.__class__, data_field="data", **kwargs)
+        return exporter.to_networkx(self)

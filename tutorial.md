@@ -192,15 +192,16 @@ europe = madrid.path.to(lisbon).lca
 
 Nodes have basic import and exports options with many parameters:
 
-| Format | Function                          | Use                                     |
-|--------|-----------------------------------|-----------------------------------------|
-| Text   | to_string()                       | Pretty print the tree                   |
-| Text   | to_dot(), to_mermaid()            | Exports to dot/mermaid                  |
-| Image  | to_image()                        | Requires graphviz or mermaid            |
-| Nested | from_dict() / to_dict()           | Converting to / from json-like formats  |
-| Rows   | from_rows() / to_rows()           | Converting to / from path lists         |
-| Rows   | from_relations() / to_relations() | Converting to / from parent-child lists |
-| Text   | from_newick() / to_newick()       | Converting to / from newick-format      |
+| Format  | Function                          | Use                                     |
+|---------|-----------------------------------|-----------------------------------------|
+| Text    | to_string()                       | Pretty print the tree                   |
+| Text    | to_dot(), to_mermaid()            | Exports to dot/mermaid                  |
+| Image   | to_image()                        | Requires graphviz or mermaid            |
+| Nested  | from_dict() / to_dict()           | Converting to / from json-like formats  |
+| Rows    | from_rows() / to_rows()           | Converting to / from path lists         |
+| Rows    | from_relations() / to_relations() | Converting to / from parent-child lists |
+| Text    | from_newick() / to_newick()       | Converting to / from newick-format      |
+| DiGraph | from_networkx() / to_networkx()   | Converting to / from networkx-format    |
 
 ```python
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"

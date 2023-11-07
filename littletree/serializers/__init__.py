@@ -1,11 +1,13 @@
 __all__ = [
     "DictSerializer",
-    "RowSerializer",
+    "NetworkXSerializer",
+    "NewickSerializer",
     "RelationSerializer",
-    "NewickSerializer"
+    "RowSerializer",
 ]
 
 from .dictserializer import DictSerializer
+from .networkxserializer import NetworkXSerializer
 from .newickserializer import NewickSerializer
 from .relationserializer import RelationSerializer
 from .rowserializer import RowSerializer
