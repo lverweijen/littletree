@@ -115,12 +115,15 @@ They all return an iterator but can be converted to list using `list`.
 | tree.iter_ancestors()      | Iterate over ancestors              |
 | tree.iter_descendants()    | Iterate over descendants            |
 | tree.iter_siblings()       | Iterate over nodes with same parent |
+| tree.iter_together(tree2)  | Iterate over multiple trees         |
 | iter(node1.path.to(node2)) | Iterate from one node to another    |
 
 Some iterators can be controlled with parameters such as:
-- `order` - In what order to iterate over nodes (default: `"pre"`)
-- `with_item` - Whether to also yield an item with index and level of the iterated node (default: `False`)
-- `keep` - Exclude this node and its descendants from iteration `if not keep(node)`
+- `order` - In what order to iterate over nodes.
+  Can be `"pre"`, `"post"` or `"level"` (default: `"pre"`).
+- `with_item` - Whether to also yield an item with index and level of the iterated node (default: `False`).
+- `keep` - Exclude this node and its descendants from iteration `if not keep(node)`.
+  Use `keep=MaxDepth(n)` to iterate at most `n` levels deep.
 
 ## Path operations
 
