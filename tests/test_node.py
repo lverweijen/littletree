@@ -150,6 +150,36 @@ class TestNode(TestCase):
     def test_compare_self(self):
         compare_tree = self.tree.compare(self.tree)
         self.assertIsNone(compare_tree)
+        self.assertEqual(self, self)
+
+    def test_iter_together(self):
+        tree = Node(identifier='world')
+        tree['Europe'] = Node(data="first")
+        tree['Africa'] = Node('very big')
+        copy_tree = tree.copy()
+        copy_tree.identifier = "world_copy"
+        other_tree = Node(identifier='rest_of_world')
+        other_tree['Europe'] = Node(data="something great")
+        other_tree['Asia'] = Node()
+        other_tree['Australia'] = Node(data="here be kangaroos")
+        result = [(n1.identifier, n2 and n2.identifier)
+                  for n1, n2 in tree.iter_together(other_tree)]
+        result2 = [(n1.identifier, n2 and n2.identifier)
+                   for n1, n2 in other_tree.iter_together(tree)]
+        result3 = [(n1.identifier, n2 and n2.identifier)
+                   for n1, n2 in tree.iter_together(copy_tree)]
+        expected = [('world', 'rest_of_world'), ('Europe', 'Europe'), ('Africa', None)]
+        expected2 = [('rest_of_world', 'world'),
+                     ('Europe', 'Europe'),
+                     ('Asia', None),
+                     ('Australia', None)]
+        expected3 = [('world', 'world_copy'), ('Europe', 'Europe'), ('Africa', 'Africa')]
+        self.assertEqual(expected, result)
+        self.assertEqual(expected2, result2)
+        self.assertEqual(expected3, result3)
+        self.assertNotEqual(tree, other_tree)
+        self.assertNotEqual(other_tree, tree)
+        self.assertEqual(tree, copy_tree)
 
     def test_iter_children(self):
         result = [str(child.path) for child in self.tree.children]
