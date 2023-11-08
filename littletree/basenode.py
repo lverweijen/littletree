@@ -61,6 +61,21 @@ class BaseNode(Generic[TIdentifier]):
         else:
             return NotImplemented
 
+    def __eq__(self: TNode, other: TNode):
+        """Check if two trees are equal.
+
+        Trees are equal if they have the same structure.
+
+        Change from version 0.5.0:
+        - Two trees can now be equal if the roots have a different identifier.
+        """
+        if self is other:
+            return True
+        elif isinstance(other, self.__class__):
+            return all(n1._cdict.keys() == n2._cdict.keys() for n1, n2 in self.iter_together(other))
+        else:
+            return NotImplemented
+
     def __getitem__(self, identifier: TIdentifier) -> TNode:
         """Get child by identifier."""
         return self._cdict[identifier]
@@ -484,6 +499,25 @@ class BaseNode(Generic[TIdentifier]):
                 yield node, item
                 parent = node._parent
                 node, item = next(nodes, (None, None))
+
+    def iter_together(self, other) -> Tuple[TNode, Optional[TNode]]:
+        """Yield all nodes in self with similar nodes in other.
+
+        If no equivalent node can be found in other, yield node from self with None
+        """
+        yield self, other
+        stack = []
+        for node, item in self.iter_descendants(with_item=True):
+            while len(stack) >= item.depth:
+                other = stack.pop(-1)
+            if len(stack) < item.depth:
+                stack.append(other)
+                if other:
+                    try:
+                        other = other[node.identifier]
+                    except KeyError:
+                        other = None
+            yield node, other
 
     def _check_integrity(self):
         """Recursively check integrity of each parent with its children.
