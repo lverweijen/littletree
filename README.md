@@ -1,6 +1,18 @@
 LittleTree is a library that provides a tree data structure to python.
-The package is purely written in python.
-It should be intuivive to use while performant.
+It can be used to represent file systems, taxonomies and much more.
+
+## Features ##
+
+- Intuitive dict-like usage for creating and modifying trees.
+- Performant implementation of common tree operations and traversals.
+- Easy to subclass from. It's even possible to make it use a different dict backend ([indexed.Dict](https://pypi.org/project/indexed/), [SortedDict](https://grantjenks.com/docs/sortedcontainers/)).
+- Can handle big trees even if they are 10,000 layers deep.
+- Can be imported / exported to many different formats (nested dict, rows, relations, graphviz, mermaid, newick, networkx).
+- Purely written in Python.
+
+## Limitations ##
+- Each node has at most one parent. (It's a tree not a graph)
+- Different children of the same parent must have different names. (It's not a multidict)
 
 ## Installing ##
 
@@ -44,18 +56,6 @@ And it creates the following image:
 ![world](world.png)
 
 See [tutorial](https://github.com/lverweijen/littletree/blob/main/tutorial.md) for more information.
-
-## Features ##
-
-- Intuitive dict-like usage for creating and modifying trees.
-- Performant implementation of common operations and tree traversals.
-- Easy to subclass from. It's even possible to make it use a different dict backend ([indexed.Dict](https://pypi.org/project/indexed/), [SortedDict](https://grantjenks.com/docs/sortedcontainers/)).
-- Can handle big trees even if they are 10,000 layers deep.
-- Can be imported / exported to many different formats (nested dict, rows, relations, graphviz, mermaid, newick, networkx).
-
-## Limitations ##
-- Each node has at most one parent. (It's a tree not a graph)
-- Different children of the same parent must have different names. (It's not a multidict)
 
 See further:
 [Pypi](https://pypi.org/project/littletree/) |

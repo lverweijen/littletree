@@ -2,6 +2,8 @@
 - Add `NetworkXSerializer` for conversion to and from [networkx](https://networkx.org/).
 - Faster implementation of `__eq__` for deep trees.
 - Two trees can now be equal (`==`) if their roots have a different identifier. 
+- Replace argument `str_factory` by `formatter` in `tree.show()` and `tree.to_string`.
+  If passed a string, it will be applied as `formatter.format(node=node)`.
 
 ## Version 0.4.1 ##
 Fix bug in `tree.compare` method
