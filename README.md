@@ -3,10 +3,10 @@ It can be used to represent file systems, taxonomies and much more.
 
 ## Features ##
 
-- Intuitive dict-like usage for creating and modifying trees.
+- Dict-like usage for basic creation and modification of trees.
 - Performant implementation of common tree operations and traversals.
-- Easy to subclass from. It's even possible to make it use a different dict backend ([indexed.Dict](https://pypi.org/project/indexed/), [SortedDict](https://grantjenks.com/docs/sortedcontainers/)).
-- Can handle big trees even if they are 10,000 layers deep.
+- Can be subclassed. It's possible to make subclasses use a different dict backend ([indexed.Dict](https://pypi.org/project/indexed/), [SortedDict](https://grantjenks.com/docs/sortedcontainers/)).
+- Can handle big trees that are 10,000 layers deep.
 - Can be imported / exported to many different formats (nested dict, rows, relations, graphviz, mermaid, newick, networkx).
 - Purely written in Python.
 
