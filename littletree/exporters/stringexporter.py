@@ -1,5 +1,4 @@
 import io
-import operator
 from typing import Union, Callable, TypedDict
 
 from ..basenode import BaseNode
@@ -27,33 +26,38 @@ DEFAULT_STYLES = {
 class StringExporter:
     def __init__(
         self,
-        str_factory: Union[str, Callable[[BaseNode], str]] = None,
+        formatter: Union[str, Callable[[BaseNode], str]] = None,
         style: Union[Style, str] = "square",
     ):
         """
-        :param str_factory: How to display each node
+        :param formatter: How to display each node.
+        If it's a string, `formatter.format(node=node)` will be called on each node.
         :param style: Mapping with following keys:
         - branch: Sign for continued branch
         - last: Sign for last branch
         - vertical: Sign for vertical line
         """
 
-        if str_factory is None:
-            str_factory = str
-        elif isinstance(str_factory, str):
-            str_factory = operator.attrgetter(str_factory)
-        elif not callable(str_factory):
-            raise TypeError("str_factory should be callable")
+        if formatter is None:
+            formatter = str
+        elif isinstance(formatter, str):
+            format_str = formatter
+
+            def formatter(node):
+                return format_str.format(node=node)
+        elif not callable(formatter):
+            raise TypeError("format should be a formatting string or a callable")
 
         if isinstance(style, str):
             if style in DEFAULT_STYLES:
                 style = DEFAULT_STYLES[style]
             else:
-                raise ValueError("Available default styles are: " + ", ".join(DEFAULT_STYLES.keys()))
+                default_styles = ", ".join(DEFAULT_STYLES.keys())
+                raise ValueError(f"Available default styles are: {default_styles}")
         elif not(len(style["branch"]) == len(style["vertical"]) == len(style["last"])):
             raise ValueError("branch, vertical and last should have same length")
 
-        self.str_factory = str_factory
+        self.formatter = formatter
         self.style = style
 
     def to_string(self, node, file=None, keep=None):
@@ -68,7 +72,7 @@ class StringExporter:
             self._to_string(node, file, keep)
 
     def _to_string(self, node, file, keep):
-        str_factory = self.str_factory
+        formatter = self.formatter
         write_indent = self._write_indent
         style = self.style
         empty_style = len(style["last"]) * " "
@@ -76,7 +80,7 @@ class StringExporter:
         lookup2 = [style["last"], style["branch"]]
 
         for pattern, node in self._iterate_patterns(node, keep=keep):
-            for i, line in enumerate(str_factory(node).splitlines()):
+            for i, line in enumerate(formatter(node).splitlines()):
                 if not node.is_root:
                     if i == 0:
                         write_indent(file, pattern, lookup1, lookup2)

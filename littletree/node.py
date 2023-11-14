@@ -66,13 +66,13 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         else:
             return NotImplemented
 
-    def show(self, style=None, **kwargs):
+    def show(self, formatter=None, style=None, keep=None):
         """Print this tree. Shortcut for print(tree.to_string())."""
         if sys.stdout:
             if not style:
                 supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
                 style = "square" if supports_unicode else "ascii"
-            self.to_string(sys.stdout, style=style, **kwargs)
+            self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
 
     def copy(self, memo=None) -> TNode:
         """Make a shallow copy or deepcopy if memo is passed."""
@@ -87,7 +87,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def compare(self, other: TNode, keep_equal=False) -> Optional[TNode]:
         """Compare two trees to one another.
 
-        If diff_only is true, all nodes where data is equal will be removed.
+        If keep_equal is False (default), all nodes where data is equal will be removed.
 
         >>> tree = Node('apples', identifier='fruit')
         >>> other_tree = Node('oranges')
@@ -119,8 +119,8 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
                 return None  # Trees are perfectly equal
         return diff_tree
 
-    def to_string(self, file=None, keep=None, str_factory=None, **kwargs) -> Optional[str]:
-        exporter = StringExporter(str_factory=str_factory, **kwargs)
+    def to_string(self, file=None, formatter=None, style="square", keep=None) -> Optional[str]:
+        exporter = StringExporter(formatter, style)
         return exporter.to_string(self, file, keep=keep)
 
     def to_image(
