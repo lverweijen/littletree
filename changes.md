@@ -1,3 +1,7 @@
+## Version 0.5.1 ##
+- Remove dataclasses (slots). Doesn't work until python3.10
+- Improve RowSerializer for pandas dataframe
+
 ## Version 0.5.0 ##
 - Add `NetworkXSerializer` for conversion to and from [networkx](https://networkx.org/).
 - Faster implementation of `__eq__` for deep trees.

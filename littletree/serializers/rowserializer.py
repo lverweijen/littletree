@@ -54,8 +54,12 @@ class RowSerializer:
             if hasattr(rows, "itertuples"):
                 rows = rows.itertuples(index=False)
             for row in rows:
+                if isinstance(row, str):
+                    row = row.split(sep)
                 create_path(row)
         elif isinstance(path_name, str):
+            if hasattr(rows, "to_dict"):
+                rows = rows.to_dict('records')
             for row in rows:
                 data = {k: v for (k, v) in row.items() if k != path_name}
                 path = row[path_name]

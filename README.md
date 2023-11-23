@@ -1,4 +1,5 @@
-LittleTree is a library that provides a tree data structure to python.
+LittleTree is a library that provides a tree data structure to python,
+which is both fast and flexible.
 It can be used to represent file systems, taxonomies and much more.
 
 ## Features ##

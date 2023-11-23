@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 
-@dataclass(slots=True, frozen=True)
+# From python 3.10, add slots=True
+@dataclass(frozen=True)
 class MaxDepth:
     """Limit iteration to a certain depth
 
