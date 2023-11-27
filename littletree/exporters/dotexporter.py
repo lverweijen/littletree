@@ -90,7 +90,7 @@ class DotExporter:
         output = self._to_dot(tree, keep)
 
         if file is None:
-            return "\n".join(output)
+            return "".join(output)
         elif hasattr(file, "write"):
             file.writelines(output)
         else:
@@ -107,32 +107,32 @@ class DotExporter:
         edge_static, edge_dynamic = self._split_attributes(self.edge_attributes)
 
         if self.directed:
-            yield "digraph tree {"
+            yield "digraph tree {\n"
             arrow = "->"
         else:
-            yield "graph tree {"
+            yield "graph tree {\n"
             arrow = "--"
 
         if graph_attributes:
             attrs = handle_attributes(graph_attributes, root)
-            yield f"graph{attrs};"
+            yield f"graph{attrs};\n"
         if node_static:
             attrs = handle_attributes(node_static, root)
-            yield f"node{attrs};"
+            yield f"node{attrs};\n"
         if edge_static:
             attrs = handle_attributes(edge_static, root, root)
-            yield f"edge{attrs};"
+            yield f"edge{attrs};\n"
 
         for node in root.iter_tree(keep):
             node_name = escape_string(str(name_factory(node)))
             attrs = handle_attributes(node_dynamic, node)
-            yield f"{node_name}{attrs};"
+            yield f"{node_name}{attrs};\n"
         for node in root.iter_descendants(keep):
             parent_name = escape_string(str(name_factory(node.parent)))
             child_name = escape_string(str(name_factory(node)))
             attrs = handle_attributes(edge_dynamic, node.parent, node)
-            yield f"{parent_name}{arrow}{child_name}{attrs};"
-        yield "}"
+            yield f"{parent_name}{arrow}{child_name}{attrs};\n"
+        yield "}\n"
 
     @classmethod
     def _split_attributes(cls, attributes: Union[NodeAttributes, EdgeAttributes]):

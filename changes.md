@@ -1,6 +1,7 @@
 ## Version 0.5.1 ##
-- Remove dataclasses (slots). Doesn't work until python3.10
-- Improve RowSerializer for pandas dataframe
+- Remove dataclasses (slots). Doesn't work until python3.10.
+- Improve RowSerializer for pandas dataframe.
+- Add newlines to output of `node.to_dot()` and `node.to_mermaid()`.
 
 ## Version 0.5.0 ##
 - Add `NetworkXSerializer` for conversion to and from [networkx](https://networkx.org/).

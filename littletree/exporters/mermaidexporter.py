@@ -74,7 +74,7 @@ class MermaidExporter:
         output = self._to_mermaid(tree, keep)
 
         if file is None:
-            return "\n".join(output)
+            return "".join(output)
         elif hasattr(file, "write"):
             file.writelines(output)
         else:
@@ -92,7 +92,7 @@ class MermaidExporter:
         escape_string = self._escape_string
 
         # Output header
-        yield f"graph {self.graph_direction};"
+        yield f"graph {self.graph_direction};\n"
 
         # Output nodes
         for node in root.iter_tree(keep):
@@ -100,16 +100,16 @@ class MermaidExporter:
             name = node_name(node)
             if node_label:
                 text = escape_string(node_label(node))
-                yield f"{name}{left}{text}{right};"
+                yield f"{name}{left}{text}{right};\n"
             else:
-                yield f"{name};"
+                yield f"{name};\n"
 
         # Output edges
         for node in root.iter_descendants(keep):
             arrow = edge_arrow(node.parent, node) if callable(edge_arrow) else edge_arrow
             parent = node_name(node.parent)
             child = node_name(node)
-            yield f"{parent}{arrow}{child};"
+            yield f"{parent}{arrow}{child};\n"
 
     @staticmethod
     def _get_shape(shape_factory, node):

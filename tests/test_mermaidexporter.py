@@ -17,6 +17,5 @@ class TestMermaidExporter(TestCase):
             '/A/d["d"];\n'
             '/A-->/A/b;\n'
             '/A-->/A/c;\n'
-            '/A-->/A/d;')
+            '/A-->/A/d;\n')
         self.assertEqual(expected, result)
-        print(result)

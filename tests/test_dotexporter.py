@@ -16,5 +16,5 @@ class TestDotExporter(TestCase):
             '"/A"->"/A/b";\n'
             '"/A"->"/A/c";\n'
             '"/A"->"/A/d";\n'
-            '}')
+            '}\n')
         self.assertEqual(expected, result)
