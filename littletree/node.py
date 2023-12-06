@@ -101,7 +101,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             while insert_depth >= item.depth:
                 insert_depth -= 1
                 diff_node = diff_node.parent
-            diff_node = diff_node.path.create([node.identifier])
+            diff_node[node.identifier] = diff_node = Node()
             diff_node.data['other'] = node.data
             insert_depth += 1
         diff_tree = diff_node.root

@@ -54,14 +54,6 @@ class BaseNode(Generic[TIdentifier]):
         return "".join(output)
 
     def __eq__(self: TNode, other: TNode):
-        if self is other:
-            return True
-        elif isinstance(other, self.__class__):
-            return self.identifier == other.identifier and self._cdict == other._cdict
-        else:
-            return NotImplemented
-
-    def __eq__(self: TNode, other: TNode):
         """Check if two trees are equal.
 
         Trees are equal if they have the same structure.
@@ -122,8 +114,8 @@ class BaseNode(Generic[TIdentifier]):
 
     @identifier.setter
     def identifier(self, new_identifier):
-        p = self.parent
-        old_identifier = self.identifier
+        p = self._parent
+        old_identifier = self._identifier
         if p is not None:
             if new_identifier in p._cdict:
                 raise DuplicateChildError(new_identifier, p)
@@ -138,9 +130,9 @@ class BaseNode(Generic[TIdentifier]):
 
     @parent.setter
     def parent(self, new_parent):
-        old_parent = self.parent
+        old_parent = self._parent
         if old_parent is not new_parent:
-            t = self.identifier
+            t = self._identifier
             if new_parent is None:
                 self._parent = None
             elif t in new_parent:
@@ -253,7 +245,7 @@ class BaseNode(Generic[TIdentifier]):
             for node in other:
                 if node._parent is not None:
                     node = node.copy() if mode == "copy" else node.detach()
-                other_dict[node.identifier] = node
+                other_dict[node._identifier] = node
             if check_loop:
                 self._check_loop2(other_dict.values())
             self._update(other_dict)
