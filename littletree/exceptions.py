@@ -23,3 +23,6 @@ class LoopError(Exception):
 
     def __str__(self):
         return f"{self.node} can't become parent of {self.ancestor}"
+
+class DifferentTreeError(Exception):
+    pass

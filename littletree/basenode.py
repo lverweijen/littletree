@@ -2,8 +2,8 @@ from typing import Mapping, Iterable, Optional, Union, Any, Callable, Generic, T
     Hashable, ValuesView, Tuple
 
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
-from .nodepath import NodePath
 from .nodemixin import NodeMixin, NodeItem
+from .nodepath import NodePath
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)

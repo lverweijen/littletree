@@ -1,6 +1,6 @@
 import itertools
 from fnmatch import fnmatchcase
-from typing import Optional, TypeVar, Iterable, Iterator, Tuple
+from typing import Optional, TypeVar, Iterable, Iterator
 
 TNode = TypeVar("TNode", bound="BaseNode")
 

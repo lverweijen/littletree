@@ -29,6 +29,7 @@ class NodeMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
+
     def is_leaf(self) -> bool:
         return not self.children
 
