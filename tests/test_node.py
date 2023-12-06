@@ -152,6 +152,19 @@ class TestNode(TestCase):
         self.assertIsNone(compare_tree)
         self.assertEqual(self, self)
 
+    def test_lca(self):
+        tree = self.tree
+        europe = tree['Europe']
+        result = Node.lca(europe['Norway'],
+                          europe.path.get("Sweden/Stockholm"),
+                          europe.path.get('Finland/Helsinki'))
+        self.assertEqual(europe, result)
+        result = Node.lca(europe,
+                          europe['Norway'],
+                          europe.path.get("Sweden/Stockholm"),
+                          europe.path.get('Finland/Helsinki'))
+        self.assertEqual(europe, result)
+
     def test_iter_together(self):
         tree = Node(identifier='world')
         tree['Europe'] = Node(data="first")

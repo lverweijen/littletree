@@ -1,3 +1,9 @@
+## Version 0.6.0 ##
+- Add `NodeMixin`, which provides something even more basic than `BaseNode`.
+- Add parameter `keep` to `tree.copy()`.
+- Rename `tree.root` to `tree.get_root()`.
+- Add methods `tree.get_height()`, `tree.get_degree()`.
+
 ## Version 0.5.1 ##
 - Remove dataclasses (slots). Doesn't work until python3.10.
 - Improve RowSerializer for pandas dataframe.

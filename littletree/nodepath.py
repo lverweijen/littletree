@@ -27,8 +27,7 @@ class NodePath:
         return 1 + sum(1 for _ in self._node.iter_ancestors())
 
     def __iter__(self) -> Iterator[TNode]:
-        node = self._node
-        return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
+        return self._node.iter_path()
 
     def __str__(self) -> str:
         separator = self.separator
