@@ -1,8 +1,7 @@
 import itertools
-import warnings
 from abc import abstractmethod, ABCMeta
 from collections import deque, namedtuple
-from typing import TypeVar, Callable, Hashable, Union, Iterator, Tuple, List, Iterable, Optional
+from typing import TypeVar, Callable, Hashable, Union, Iterator, Tuple, Iterable, Optional
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
@@ -10,10 +9,10 @@ NodePredicate = Callable[[TNode, "NodeItem"], bool]
 
 
 class NodeMixin(metaclass=ABCMeta):
-    """Mixin that provides tree statistics and iterators.
+    """Mixin that provides common tree methods and iterators.
 
     This class can be used instead of BaseNode,
-    if you want to implement parent and children yourself.
+    if you need to implement parent and children yourself.
     """
     __slots__ = ()
 
@@ -30,11 +29,6 @@ class NodeMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
-    def root(self) -> TNode:
-        warnings.warn("Property `node.root` is deprecated. Use `node.get_root()` instead.")
-        return self.get_root()
-
-    @property
     def is_leaf(self) -> bool:
         return not self.children
 
@@ -42,54 +36,19 @@ class NodeMixin(metaclass=ABCMeta):
     def is_root(self) -> bool:
         return self.parent is None
 
-    def lca(self, *others) -> TNode:
-        """Find the lowest common ancestor of self and other nodes."""
-        other_paths = (other.iter_path() for other in others)
-        result = None
-        for vote, other_votes in zip(self.iter_path(), zip(*other_paths)):
-            if all(vote is other_vote for other_vote in other_votes):
-                result = vote
-            else:
-                break
-        return result
-
-    def get_root(self) -> TNode:
+    @property
+    def root(self) -> TNode:
         """Return root of tree."""
         p, p2 = self, self.parent
         while p2:
             p, p2 = p2, p2.parent
         return p
 
-    def get_height(self, keep: NodePredicate = None) -> int:
-        """Get height of tree.
-
-        The degree is defined as the maximum depth of any node
-        """
-        return max([item.depth for (_, item) in self.iter_tree(keep=keep, with_item=True)])
-
-    def get_degree(self, keep: NodePredicate = None) -> int:
-        """Get degree of tree.
-
-        The degree is defined as the maximum degree (#children) of any node
-        """
-        return max([len(n.children) for (n, _) in self.iter_tree(keep=keep, with_item=True)])
-
-    def get_depth(self) -> int:
-        """Get depth of this node."""
-        return sum(1 for _ in self.iter_ancestors())
-
-    def get_index(self) -> int:
-        """Get index of node on parent."""
-        if self.parent:
-            for i, child in enumerate(self.parent.children):
-                if child is self:
-                    return i
-
     def iter_tree(
-            self,
-            keep: NodePredicate = None,
-            order: str = "pre",
-            with_item: bool = False,
+        self,
+        keep: NodePredicate = None,
+        order: str = "pre",
+        with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
         """Iterate through all nodes of tree
 
@@ -113,15 +72,11 @@ class NodeMixin(metaclass=ABCMeta):
             yield p
             p = p.parent
 
-    def iter_path(self) -> Iterator[TNode]:
-        """Yield nodes from root to self."""
-        return itertools.chain(reversed(tuple(self.iter_ancestors())), [self])
-
     def iter_descendants(
-            self,
-            keep: NodePredicate = None,
-            order: str = "pre",
-            with_item: bool = False,
+        self,
+        keep: NodePredicate = None,
+        order: str = "pre",
+        with_item: bool = False,
     ) -> Union[Iterator[TNode], Iterator[Tuple[TNode, "NodeItem"]]]:
         """Iterate through descendants
 
@@ -148,27 +103,27 @@ class NodeMixin(metaclass=ABCMeta):
     def iter_siblings(self) -> Iterator[TNode]:
         """Return siblings."""
         if self.parent is not None:
-            return (child for child in self.parent.children if child != self)
+            return (child for child in self.parent.children if child is not self)
         else:
             return iter(())
 
     def iter_leaves(self) -> Iterator[TNode]:
         """Yield leaf nodes."""
-        for node in self.iter_descendants():
-            if node.is_leaf:
-                yield node
+        if self.is_leaf:
+            yield self
+        else:
+            for node in self.iter_descendants():
+                if node.is_leaf:
+                    yield node
 
-    def iter_levels(self) -> Iterator[List[TNode]]:
-        """Iterate levels.
-
-        The caller can modify level inplace and only the nodes remaining will be recursed on.
-        This can be used to prune the search.
-        Calling level.reverse() during the iteration step would get the levels in zigzag order.
-        """
-        level = [self]
-        while level:
-            yield level
-            level = [child for node in level for child in node.children]
+    def iter_levels(self) -> Iterator[Iterator[TNode]]:
+        """Iterate levels."""
+        level = iter([self])
+        level, output, test = itertools.tee(level, 3)
+        while next(test, None):
+            yield output
+            level = (child for node in level for child in node.children)
+            level, output, test = itertools.tee(level, 3)
 
     def _iter_descendants_pre(self, keep):
         nodes = deque((child, NodeItem(index, 1)) for (index, child) in enumerate(self.children))

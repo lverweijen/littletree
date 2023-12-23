@@ -245,7 +245,6 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
             other.clear()
         else:
             raise TypeError("new_children should be mapping, iterable or other node")
-        return self
 
     def _update(self, other: Mapping[TIdentifier, TNode]):
         """Low-level update. Never use directly.
@@ -288,7 +287,7 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
                 other = other._parent
             other[node._identifier] = other = f(node, item)
             insert_depth += 1
-        return other.get_root()
+        return other.root
 
     def __copy__(self):
         return self.copy()
@@ -313,7 +312,6 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
         for child in self.children:
             child._parent = None
         self._cdict.clear()
-        return self
 
     def sort_children(
         self,
@@ -339,7 +337,6 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
         if recursive:
             for c in self.children:
                 c.sort_children(key=key, recursive=recursive, reverse=reverse)
-        return self
 
     def iter_together(self, other) -> Tuple[TNode, Optional[TNode]]:
         """Yield all nodes in self with similar nodes in other.

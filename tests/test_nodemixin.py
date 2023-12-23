@@ -13,61 +13,15 @@ class TestNodeMixin(unittest.TestCase):
 
         self.tree = root
 
-    # Statistics
-    def test_get_height(self):
-        tree = self.tree
-        node = self.tree.path('Europe/Finland/Helsinki/Helsinki')
-        leaf = self.tree.path('Africa')
-        self.assertEqual(5, tree.get_height())
-        self.assertEqual(1, node.get_height())
-        self.assertEqual(0, leaf.get_height())
-
-    def test_get_depth(self):
-        tree = self.tree
-        node = self.tree.path('Europe/Finland/Helsinki/Helsinki')
-        leaf = self.tree.path('Africa')
-        self.assertEqual(0, tree.get_depth())
-        self.assertEqual(4, node.get_depth())
-        self.assertEqual(1, leaf.get_depth())
-
-    def test_get_degree(self):
-        tree = self.tree
-        node = self.tree.path('Europe/Finland/Helsinki/Helsinki')
-        leaf = self.tree.path('Africa')
-        self.assertEqual(3, tree.get_degree())
-        self.assertEqual(1, node.get_degree())
-        self.assertEqual(0, leaf.get_degree())
-
-    def test_get_index(self):
-        tree = self.tree
-        node = self.tree.path('Europe/Finland')
-        leaf = self.tree.path('Africa')
-        self.assertEqual(None, tree.get_index())
-        self.assertEqual(2, node.get_index())
-        self.assertEqual(1, leaf.get_index())
-
-    # Special nodes
+    # Special methods
     def test_root(self):
         root = self.tree
         node = self.tree.path('Europe/Finland')
         leaf = self.tree.path('Africa')
 
-        self.assertEqual(root, root.get_root())
-        self.assertEqual(root, node.get_root())
-        self.assertEqual(root, leaf.get_root())
-
-    def test_lca(self):
-        tree = self.tree
-        europe = tree['Europe']
-        norway = europe['Norway']
-        stockholm = europe.path.get("Sweden/Stockholm")
-        helsinki = europe.path.get('Finland/Helsinki')
-        unknown = Node(identifier="unknown")
-
-        self.assertEqual(europe, Node.lca(norway, stockholm, helsinki))
-        self.assertEqual(europe, Node.lca(europe, norway, stockholm, helsinki))
-        self.assertEqual(helsinki, Node.lca(helsinki, helsinki))
-        self.assertEqual(None, Node.lca(helsinki, unknown))
+        self.assertEqual(root, root.root)
+        self.assertEqual(root, node.root)
+        self.assertEqual(root, leaf.root)
 
     # Iterators
     def test_iter_children(self):
@@ -186,6 +140,18 @@ class TestNodeMixin(unittest.TestCase):
         expected = ['/world/Europe/Norway', '/world/Europe/Sweden']
         self.assertEqual(expected, result)
 
+        tree = Node()
+        for child in ['child', 'twin1', 'twin2', 'twin3']:
+            tree.path.create(child)
+        result = [str(child.identifier) for child in tree['child'].iter_siblings()]
+        expected = ['twin1', 'twin2', 'twin3']
+        self.assertEqual(expected, result)
+
+        # No siblings
+        result = [str(child.path) for child in tree.iter_siblings()]
+        expected = []
+        self.assertEqual(expected, result)
+
     def test_iter_path(self):
         target = self.tree.path(["Europe", "Norway", "Oslo"])
         result = [str(node.path) for node in target.path]
@@ -196,6 +162,11 @@ class TestNodeMixin(unittest.TestCase):
         target = self.tree.path(["Europe"])
         result = [child.identifier for child in target.iter_leaves()]
         expected = ['Oslo', 'Stockholm', 'Helsinki']
+        self.assertEqual(expected, result)
+
+        leaf = self.tree.path('Africa')
+        result = [child.identifier for child in leaf.iter_leaves()]
+        expected = ['Africa']
         self.assertEqual(expected, result)
 
 

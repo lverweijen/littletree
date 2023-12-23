@@ -13,7 +13,7 @@ class TestNode(TestCase):
 
         self.tree = tree
 
-    def test_to_str(self):
+    def test_str(self):
         tree = self.tree
         result = str(tree.path("Europe/Finland").path.to(tree["Africa"]))
         self.assertEqual("../../Africa", result)
@@ -21,7 +21,12 @@ class TestNode(TestCase):
         result = str(tree.path("Europe/Finland").path.to(tree.path("Europe/Sweden")))
         self.assertEqual("../Sweden", result)
 
-    def test_to_iter(self):
+    def test_eq(self):
+        self.assertEqual(self.tree.path, self.tree.path)
+        self.assertEqual(self.tree.path, self.tree.copy().path)
+        self.assertNotEqual(self.tree.path, self.tree["Europe"].path)
+
+    def test_iter(self):
         tree = self.tree
         result = list(tree.path("Europe/Finland").path.to(tree["Africa"]))
         expected = [
@@ -41,7 +46,7 @@ class TestNode(TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_to_reversed(self):
+    def test_reversed(self):
         tree = self.tree
         result = list(reversed(tree.path("Europe/Finland").path.to(tree["Africa"])))
         expected = [

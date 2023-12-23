@@ -74,15 +74,15 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
                 style = "square" if supports_unicode else "ascii"
             self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
 
-    def copy(self, memo=None) -> TNode:
+    def copy(self, memo=None, *, keep=None, deep=False) -> TNode:
         """Make a shallow copy or deepcopy if memo is passed."""
-        if memo:
+        if deep or memo:
             def node(original, _):
-                return Node(copy.deepcopy(original.data, memo))
+                return Node(copy.deepcopy(original.data, memo or {}))
         else:
             def node(original, _):
                 return Node(original.data)
-        return self.transform(node)
+        return self.transform(node, keep=keep)
 
     def compare(self, other: TNode, keep_equal=False) -> Optional[TNode]:
         """Compare two trees to one another.
@@ -104,7 +104,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             diff_node = diff_node.path.create([node.identifier])
             diff_node.data['other'] = node.data
             insert_depth += 1
-        diff_tree = diff_node.get_root()
+        diff_tree = diff_node.root
         if not keep_equal:
             to_detach = None
             for node in diff_tree.iter_tree(order='post'):

@@ -1,7 +1,7 @@
 import copy
 from unittest import TestCase
 
-from littletree import Node
+from littletree import Node, MaxDepth
 from littletree.exceptions import LoopError
 
 
@@ -191,3 +191,22 @@ class TestNode(TestCase):
 
         self.assertEqual(europe, shallow_copy)
         self.assertEqual(europe, deep_copy)
+
+    def test_copy_depth(self):
+        europe = self.tree["Europe"]
+        shallow_copy = europe.copy(keep=MaxDepth(1))
+        deep_copy = europe.copy(keep=MaxDepth(1), deep=True)
+        europe_pruned = Node(identifier="Europe")
+        europe_pruned.path.create("Norway")
+        europe_pruned.path.create("Sweden")
+        europe_pruned.path.create("Finland")
+
+        europe_pruned.show()
+        shallow_copy.show()
+        deep_copy.show()
+
+        shallow_copy._check_integrity()
+        deep_copy._check_integrity()
+
+        self.assertEqual(europe_pruned, shallow_copy)
+        self.assertEqual(europe_pruned, deep_copy)

@@ -1,8 +1,11 @@
 ## Version 0.6.0 ##
-- Add `NodeMixin`, which provides something even more basic than `BaseNode`.
-- Add parameter `keep` to `tree.copy()`.
-- Rename `tree.root` to `tree.get_root()`.
-- Add methods `tree.get_height()`, `tree.get_degree()`.
+- Add `NodeMixin` class, which provides something even more basic than `BaseNode`.
+- Add parameters `keep` and `deep` to `tree.copy()`.
+  So a pruned copy can be made by doing `tree.copy(keep=MaxDepth(3))`.
+- Calling `iter_leaves` on a node that is a leaf
+  now correctly yields an iterable containing just that Node.
+- Fix `iter_siblings` to use identity instead of equality.
+- Methods `sort_children`, `update` and `clear` no longer return `self`, but None.
 
 ## Version 0.5.1 ##
 - Remove dataclasses (slots). Doesn't work until python3.10.

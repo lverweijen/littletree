@@ -1,6 +1,6 @@
 import itertools
 from fnmatch import fnmatchcase
-from typing import Optional, TypeVar, Iterable, Iterator
+from typing import Optional, TypeVar, Iterable, Iterator, Tuple
 
 TNode = TypeVar("TNode", bound="BaseNode")
 
@@ -23,15 +23,28 @@ class NodePath:
             node = node._cdict[segment]
         return node
 
-    def __len__(self):
-        return 1 + sum(1 for _ in self._node.iter_ancestors())
-
-    def __iter__(self) -> Iterator[TNode]:
-        return self._node.iter_path()
+    def __eq__(self, other):
+        if not isinstance(other, NodePath):
+            return False
+        if len(self) != len(other):
+            return False
+        return all(s1.identifier == s2.identifier for s1, s2 in zip(self, other))
 
     def __str__(self) -> str:
         separator = self.separator
         return separator + separator.join([str(node.identifier) for node in self])
+
+    def __len__(self) -> int:
+        return 1 + sum(1 for _ in self._node.iter_ancestors())
+
+    def __iter__(self) -> Iterator[TNode]:
+        """Iterate through nodes on path."""
+        node = self._node
+        return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
+
+    def __reversed__(self) -> Iterator[TNode]:
+        node = self._node
+        return itertools.chain([node], node.iter_ancestors())
 
     def get(self, path) -> Optional[TNode]:
         """Like calling path, but return None if node is missing."""
