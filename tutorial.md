@@ -107,16 +107,16 @@ tree2.update([tree1["Asia"]], mode="detach")
 There are a few functions for iteration.
 They all return an iterator but can be converted to list using `list`.
 
-| Iterator                   | Function                            |
-|----------------------------|-------------------------------------|
-| iter(tree.children)        | Iterate over children               |
-| iter(tree.path)            | Iterate from root to self           |
-| tree.iter_tree()           | Iterate over all nodes              |
-| tree.iter_ancestors()      | Iterate over ancestors              |
-| tree.iter_descendants()    | Iterate over descendants            |
-| tree.iter_siblings()       | Iterate over nodes with same parent |
-| tree.iter_together(tree2)  | Iterate over multiple trees         |
-| iter(node1.path.to(node2)) | Iterate from one node to another    |
+| Iterator                  | Function                            |
+|---------------------------|-------------------------------------|
+| iter(tree.children)       | Iterate over children               |
+| iter(tree.path)           | Iterate from root to self           |
+| tree.iter_tree()          | Iterate over all nodes              |
+| tree.iter_ancestors()     | Iterate over ancestors              |
+| tree.iter_descendants()   | Iterate over descendants            |
+| tree.iter_siblings()      | Iterate over nodes with same parent |
+| tree.iter_together(tree2) | Iterate over multiple trees         |
+| iter(Route(node1, node2)) | Iterate from one node to another    |
 
 Some iterators can be controlled with parameters such as:
 - `order` - In what order to iterate over nodes.
@@ -160,7 +160,7 @@ lisbon_nodes = tree.path.glob("**/Lisbon")
 Path from one node to another:
 ```python
 madrid = tree.path.create("Europe/Spain/Madrid")
-madrid_to_lisbon = list(madrid.path.to(lisbon))
+madrid_to_lisbon = list(Route(madrid, lisbon))
 # => [madrid, spain, europe, portugal, lisbon]
 ```
 
@@ -168,12 +168,20 @@ madrid_to_lisbon = list(madrid.path.to(lisbon))
 
 Find level of a node:
 ```python
+level = node.path.count_edges()
+
+# This is equivalent to:
 level = len(node.path) - 1
 ```
 
-Get (edge) distance between two nodes:
+Get distance between two nodes:
 ```python
-distance = len(node1.path.to(node2)) - 1
+# Number of nodes on route from node1 to node2
+distance = len(Route(node1, node2))
+
+# If you want to be more explicit
+Route(node1, node2).count_nodes()
+Route(node1, node2).count_edges()
 ```
 
 Calculate height (maximum depth) of a tree
@@ -188,7 +196,7 @@ degree = 1 + max([item.index for (_, item) in tree.iter_tree(with_item=True)])
 
 Find lowest common ancestor of two nodes:
 ```python
-europe = madrid.path.to(lisbon).lca
+europe = Route(madrid, lisbon).lca()
 ```
 
 ## Exporting and serialization

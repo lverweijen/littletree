@@ -1,3 +1,7 @@
+## Version 0.6.1 ##
+- Remove `PathTo` class.
+- Add class `Route` which is a generic version of the old `PathTo` class.
+
 ## Version 0.6.0 ##
 - Add `NodeMixin` class, which provides something even more basic than `BaseNode`.
 - Add parameters `keep` and `deep` to `tree.copy()`.
