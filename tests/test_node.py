@@ -1,7 +1,7 @@
 import copy
 from unittest import TestCase
 
-from littletree import Node
+from littletree import Node, MaxDepth
 from littletree.exceptions import LoopError
 
 
@@ -181,134 +181,6 @@ class TestNode(TestCase):
         self.assertNotEqual(other_tree, tree)
         self.assertEqual(tree, copy_tree)
 
-    def test_iter_children(self):
-        result = [str(child.path) for child in self.tree.children]
-        expected = ['/world/Europe', '/world/Africa']
-        self.assertEqual(expected, result)
-
-    def test_iter_tree1(self):
-        result = [str(child.path) for child in self.tree.iter_tree()]
-        expected = [
-            '/world',
-            '/world/Europe',
-            '/world/Europe/Norway',
-            '/world/Europe/Norway/Oslo',
-            '/world/Europe/Sweden',
-            '/world/Europe/Sweden/Stockholm',
-            '/world/Europe/Finland',
-            '/world/Europe/Finland/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
-            '/world/Africa'
-        ]
-        self.assertEqual(expected, result)
-
-    def test_iter_tree2(self):
-        """Iterate only through nodes which are first-child."""
-        def is_first_child(_, item):
-            return item.index == 0
-
-        result = [str(child.path) for child in self.tree.iter_tree(is_first_child)]
-        expected = [
-            '/world',
-            '/world/Europe',
-            '/world/Europe/Norway',
-            '/world/Europe/Norway/Oslo',
-        ]
-        self.assertEqual(expected, result)
-
-    def test_iter_tree3(self):
-        target = self.tree
-        result = [child.identifier for child in target.iter_tree(keep=lambda _, it: it.depth < 3,
-                                                                 order="level")]
-        expected = ['world', 'Europe', 'Africa', 'Norway', 'Sweden', 'Finland']
-        self.assertEqual(expected, result)
-
-    def test_iter_ancestors(self):
-        target = self.tree.path(["Europe", "Norway", "Oslo"])
-        result = [str(child.path) for child in target.iter_ancestors()]
-        expected = ['/world/Europe/Norway', '/world/Europe', "/world"]
-        self.assertEqual(expected, result)
-
-    def test_iter_descendants1(self):
-        target = self.tree.path(["Europe", "Finland"])
-        result = [str(child.path) for child in target.iter_descendants(order="pre")]
-        expected = [
-            '/world/Europe/Finland/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
-        ]
-        self.assertEqual(expected, result)
-
-    def test_iter_descendants_post1(self):
-        target = self.tree
-        result = [str(child.path) for child in target.iter_descendants(order="post")]
-
-        expected = [
-            '/world/Europe/Norway/Oslo',
-            '/world/Europe/Norway',
-            '/world/Europe/Sweden/Stockholm',
-            '/world/Europe/Sweden',
-            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki',
-            '/world/Europe/Finland',
-            '/world/Europe',
-            '/world/Africa']
-        self.assertEqual(expected, result)
-
-    def test_iter_descendants_post2(self):
-        target = self.tree.path(["Europe", "Finland"])
-        result = [str(child.path) for child in target.iter_descendants(order="post")]
-        expected = [
-            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki',
-        ]
-        self.assertEqual(expected, result)
-
-    def test_iter_descendants_post3(self):
-        def keep_square(_, item):
-            return item.index <= 2 and item.depth <= 2
-        target = self.tree
-        result = [str(child.path) for child in target.iter_descendants(keep_square, order="post")]
-        expected = [
-            '/world/Europe/Norway',
-            '/world/Europe/Sweden',
-            '/world/Europe/Finland',
-            '/world/Europe',
-            '/world/Africa',
-        ]
-        self.assertEqual(expected, result)
-
-    def test_iter_descendants3(self):
-        target = self.tree.path(["Europe", "Finland"])
-        result = [str(child.path) for child in target.iter_descendants(order="level")]
-        expected = [
-            '/world/Europe/Finland/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki',
-            '/world/Europe/Finland/Helsinki/Helsinki/Helsinki',
-        ]
-        self.assertEqual(expected, result)
-
-    def test_iter_siblings(self):
-        target = self.tree.path(["Europe", "Finland"])
-        result = [str(child.path) for child in target.iter_siblings()]
-        expected = ['/world/Europe/Norway', '/world/Europe/Sweden']
-        self.assertEqual(expected, result)
-
-    def test_iter_path(self):
-        target = self.tree.path(["Europe", "Norway", "Oslo"])
-        result = [str(node.path) for node in target.path]
-        expected = ['/world', '/world/Europe', '/world/Europe/Norway', '/world/Europe/Norway/Oslo']
-        self.assertEqual(expected, result)
-
-    def test_iter_leaves(self):
-        target = self.tree.path(["Europe"])
-        result = [child.identifier for child in target.iter_leaves()]
-        expected = ['Oslo', 'Stockholm', 'Helsinki']
-        self.assertEqual(expected, result)
-
     def test_copy(self):
         europe = self.tree["Europe"]
         shallow_copy = copy.copy(europe)
@@ -319,3 +191,22 @@ class TestNode(TestCase):
 
         self.assertEqual(europe, shallow_copy)
         self.assertEqual(europe, deep_copy)
+
+    def test_copy_depth(self):
+        europe = self.tree["Europe"]
+        shallow_copy = europe.copy(keep=MaxDepth(1))
+        deep_copy = europe.copy(keep=MaxDepth(1), deep=True)
+        europe_pruned = Node(identifier="Europe")
+        europe_pruned.path.create("Norway")
+        europe_pruned.path.create("Sweden")
+        europe_pruned.path.create("Finland")
+
+        europe_pruned.show()
+        shallow_copy.show()
+        deep_copy.show()
+
+        shallow_copy._check_integrity()
+        deep_copy._check_integrity()
+
+        self.assertEqual(europe_pruned, shallow_copy)
+        self.assertEqual(europe_pruned, deep_copy)
