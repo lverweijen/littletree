@@ -16,10 +16,10 @@ class TestNode(TestCase):
     def test_str(self):
         tree = self.tree
         result = str(tree.path("Europe/Finland").path.to(tree["Africa"]))
-        self.assertEqual("../../Africa", result)
+        self.assertEqual("Route(Finland, Africa)", result)
 
         result = str(tree.path("Europe/Finland").path.to(tree.path("Europe/Sweden")))
-        self.assertEqual("../Sweden", result)
+        self.assertEqual("Route(Finland, Sweden)", result)
 
     def test_eq(self):
         self.assertEqual(self.tree.path, self.tree.path)
@@ -35,7 +35,6 @@ class TestNode(TestCase):
             tree.root,
             tree["Africa"],
         ]
-        print("expected = {!r}".format(expected))
         self.assertEqual(expected, result)
 
         result = list(tree.path("Europe/Finland").path.to(tree.path("Europe/Sweden")))
@@ -57,17 +56,7 @@ class TestNode(TestCase):
         ]
         self.assertEqual(expected, result)
 
-    def test_lca(self):
-        tree = self.tree
-        result = tree.path("Europe/Finland").path.to(tree["Africa"]).lca
-        expected = tree.root
-        self.assertEqual(expected, result)
-
-        result = tree.path("Europe/Finland").path.to(tree.path("Europe/Sweden")).lca
-        expected = tree["Europe"]
-        self.assertEqual(expected, result)
-
-    def test_to_len(self):
+    def test_len(self):
         tree = self.tree
         result = len(tree.path("Europe/Finland").path.to(tree["Africa"]))
         self.assertEqual(4, result)

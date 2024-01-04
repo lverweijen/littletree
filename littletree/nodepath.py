@@ -2,6 +2,8 @@ import itertools
 from fnmatch import fnmatchcase
 from typing import Optional, TypeVar, Iterable, Iterator, Tuple
 
+from littletree.exceptions import DifferentTreeError
+
 TNode = TypeVar("TNode", bound="BaseNode")
 
 
@@ -34,13 +36,26 @@ class NodePath:
         separator = self.separator
         return separator + separator.join([str(node.identifier) for node in self])
 
-    def __len__(self) -> int:
-        return 1 + sum(1 for _ in self._node.iter_ancestors())
+    def count_nodes(self) -> int:
+        """Count nodes on path."""
+        return 1 + self.count_edges()
 
-    def __iter__(self) -> Iterator[TNode]:
+    def count_edges(self) -> int:
+        """Count edges on path."""
+        return sum(1 for _ in self._node.iter_ancestors())
+
+    __len__ = count_nodes
+
+    def iter_nodes(self) -> Iterator[TNode]:
         """Iterate through nodes on path."""
         node = self._node
         return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
+
+    def iter_edges(self) -> Iterator[Tuple[TNode, TNode]]:
+        """Iterate through edges on path."""
+        return itertools.pairwise(self.iter_nodes())
+
+    __iter__ = iter_nodes
 
     def __reversed__(self) -> Iterator[TNode]:
         node = self._node
@@ -117,55 +132,10 @@ class NodePath:
         """Check if segment is a pattern. If not direct access is much faster."""
         return isinstance(segment, str) and any(char in segment for char in "*?[")
 
-    def to(self, other) -> Optional["PathTo"]:
+    def to(self, *others):
         """Return the path if nodes are in the same tree, else None"""
-        s_path, o_path = tuple(self), tuple(other.path)
-
-        n_common = 0
-        n_max = min(len(s_path), len(o_path))
-        while n_common < n_max and s_path[n_common] == o_path[n_common]:
-            n_common += 1
-
-        if n_common:
-            return PathTo(s_path, o_path, n_common)
-
-
-class PathTo:
-    __slots__ = "_path1", "_path2", "_ncommon"
-
-    def __init__(self, path1, path2, n_common):
-        """Do not instantiate directly. Use node1.path.to(node2) instead."""
-        self._path1 = path1
-        self._path2 = path2
-        self._ncommon = n_common
-
-    def __iter__(self) -> Iterator[TNode]:
-        n_common = self._ncommon
-        n_up = len(self._path1) - n_common
-        up = itertools.islice(reversed(self._path1), n_up)
-        down = itertools.islice(self._path2, n_common - 1, None)
-        return itertools.chain(up, down)
-
-    def __reversed__(self) -> Iterable[TNode]:
-        n_common = self._ncommon
-        n_up = len(self._path2) - n_common
-        up = itertools.islice(reversed(self._path2), n_up)
-        down = itertools.islice(self._path1, n_common - 1, None)
-        return itertools.chain(up, down)
-
-    def __len__(self):
-        return len(self._path1) + len(self._path2) - 2 * self._ncommon + 1
-
-    def __str__(self):
-        sep = self.lca.path.separator
-        output = []
-        n_up = len(self._path1) - self._ncommon
-        down = itertools.islice(self._path2, self._ncommon, None)
-        output.extend(n_up * [".."])
-        output.extend([node.identifier for node in down])
-        return sep.join(output)
-
-    @property
-    def lca(self) -> TNode:
-        """Find the lowest common ancestor of both nodes."""
-        return self._path1[self._ncommon - 1]
+        from .route import Route
+        try:
+            return Route(self._node, *others)
+        except DifferentTreeError:
+            return None
