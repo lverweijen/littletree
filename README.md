@@ -4,16 +4,16 @@ It can be used to represent file systems, taxonomies and much more.
 
 ## Features ##
 
-- Dict-like usage for basic creation and modification of trees.
-- Performant implementation of common tree operations and traversals.
-- Can be subclassed. It's possible to make subclasses use a different dict backend ([indexed.Dict](https://pypi.org/project/indexed/), [SortedDict](https://grantjenks.com/docs/sortedcontainers/)).
-- Can handle big trees that are 10,000 layers deep.
+- Intuitive basic creation and modification of trees.
+- Efficient implementation of common tree operations and traversals.
+  Works on trees that are 10 000 layers deep.
+- Extensible. Subclass `BaseNode` or `NodeMixin` if you need more freedom.
 - Can be imported / exported to many different formats (nested dict, rows, relations, graphviz, mermaid, newick, networkx).
 - Purely written in Python.
 
 ## Limitations ##
-- Each node has at most one parent. (It's a tree not a graph)
-- Different children of the same parent must have different names. (It's not a multidict)
+- Each node has at most one parent. (It's a tree not a graph!)
+- Nodes cannot be their own ancestor.
 
 ## Installing ##
 
@@ -52,7 +52,8 @@ World
 └─ Europe
 ```
 
-And it creates the following image:
+If [Pillow](https://pypi.org/project/pillow/) and [graphviz](https://graphviz.org/) are installed,
+it will also display the following image:
 
 ![world](world.png)
 

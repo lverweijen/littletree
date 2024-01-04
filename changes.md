@@ -1,3 +1,8 @@
+## Version 0.6.2 ##
+- Make better use of NodeMixin
+- Make sure most exporter work directly on NodeMixin
+- Move exporter functions (from Node) directly to NodeMixin.
+
 ## Version 0.6.1 ##
 - Remove `PathTo` class.
 - Add class `Route` which is a generic version of the old `PathTo` class.
