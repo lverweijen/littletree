@@ -373,18 +373,3 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
             assert child.identifier == child_identifier
             assert child.parent is self
             child._check_integrity()
-
-    def _check_loop1(self, other: TNode):
-        if not other.is_leaf:
-            if self is other:
-                raise LoopError(self, other)
-            if any(other is ancestor for ancestor in self.iter_ancestors()):
-                raise LoopError(self, other)
-
-    def _check_loop2(self, others: Iterable[TNode]):
-        ancestors = set(map(id, self.iter_ancestors()))
-        ancestors.add(id(self))
-
-        ancestor = next((child for child in others if id(child) in ancestors), None)
-        if ancestor:
-            raise LoopError(self, ancestor)
