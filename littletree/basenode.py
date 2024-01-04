@@ -330,13 +330,20 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
             nodes = sorted(self.children, key=key, reverse=reverse)
             self._cdict.clear()
             self._cdict.update((n._identifier, n) for n in nodes)
+            if recursive:
+                for d in self.iter_descendants():
+                    nodes = sorted(d.children, key=key, reverse=reverse)
+                    d._cdict.clear()
+                    d._cdict.update((n._identifier, n) for n in nodes)
         else:
             nodes = sorted(self._cdict.items(), reverse=reverse)
             self._cdict.clear()
             self._cdict.update(nodes)
-        if recursive:
-            for c in self.children:
-                c.sort_children(key=key, recursive=recursive, reverse=reverse)
+            if recursive:
+                for d in self.iter_descendants():
+                    nodes = sorted(d._cdict.items(), reverse=reverse)
+                    d._cdict.clear()
+                    d._cdict.update(nodes)
 
     def iter_together(self, other) -> Tuple[TNode, Optional[TNode]]:
         """Yield all nodes in self with similar nodes in other.
