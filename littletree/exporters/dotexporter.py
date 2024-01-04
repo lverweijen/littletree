@@ -10,10 +10,10 @@ try:
 except ImportError:
     _HAS_PILLOW = False
 
-from ..basenode import BaseNode
+from ..nodemixin import NodeMixin
 
 
-TNode = TypeVar("TNode", bound=BaseNode)
+TNode = TypeVar("TNode", bound=NodeMixin)
 NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Mapping[str, Any]]]
 EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Mapping[str, Any]]]
 GraphAttributes = Mapping[str, Any]
@@ -22,7 +22,7 @@ GraphAttributes = Mapping[str, Any]
 class DotExporter:
     def __init__(
         self,
-        node_name: Union[str, Callable[[TNode], str], None] = "path",
+        node_name: Union[str, Callable[[TNode], str], None] = None,
         node_attributes: NodeAttributes = None,
         edge_attributes: EdgeAttributes = None,
         graph_attributes: GraphAttributes = None,

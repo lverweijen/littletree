@@ -185,8 +185,8 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
         other: Union[Mapping[TIdentifier, TNode], Iterable[TNode], TNode],
         mode: str = "copy",
         check_loop: bool = True,
-    ) -> TNode:
-        """Add multiple nodes at once and return self.
+    ) -> None:
+        """Add multiple nodes at once.
 
         This is much faster than setitem when adding multiple children at once.
 
@@ -307,7 +307,7 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
             self._parent = None
         return self
 
-    def clear(self) -> TNode:
+    def clear(self) -> None:
         """Remove all children."""
         for child in self.children:
             child._parent = None
@@ -318,7 +318,7 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
         key: Optional[Callable[[TNode], Any]] = None,
         recursive: bool = False,
         reverse: bool = False,
-    ) -> TNode:
+    ) -> None:
         """Sort children
 
         :param key: Function to sort by. If not given, sort on identifier.

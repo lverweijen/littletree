@@ -3,7 +3,7 @@ from abc import abstractmethod, ABCMeta
 from collections import deque, namedtuple
 from typing import TypeVar, Callable, Hashable, Union, Iterator, Tuple, Iterable, Optional
 
-TNode = TypeVar("TNode", bound="BaseNode")
+TNode = TypeVar("TNode", bound="NodeMixin")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 NodePredicate = Callable[[TNode, "NodeItem"], bool]
 

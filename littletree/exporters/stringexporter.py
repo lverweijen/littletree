@@ -1,7 +1,7 @@
 import io
 from typing import Union, Callable, TypedDict
 
-from ..basenode import BaseNode
+from ..nodemixin import NodeMixin
 
 
 class Style(TypedDict):
@@ -26,7 +26,7 @@ DEFAULT_STYLES = {
 class StringExporter:
     def __init__(
         self,
-        formatter: Union[str, Callable[[BaseNode], str]] = None,
+        formatter: Union[str, Callable[[NodeMixin], str]] = None,
         style: Union[Style, str] = "square",
     ):
         """
