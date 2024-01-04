@@ -5,9 +5,8 @@ from pathlib import Path
 from typing import Callable, Union, TypeVar, Tuple, Optional
 
 from .elements import Literal
-from ..nodemixin import NodeMixin
 
-TNode = TypeVar("TNode", bound=NodeMixin)
+TNode = TypeVar("TNode", bound="NodeMixin")
 TShape = Union[
     Tuple[str, str], str,
     Callable[[TNode], Union[Tuple[str, str], str]]

@@ -1,11 +1,7 @@
 import copy
-import sys
 from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Union, Iterable
 
 from .basenode import BaseNode
-from .exporters import DotExporter
-from .exporters import MermaidExporter
-from .exporters import StringExporter
 from .serializers import DictSerializer
 from .serializers import NetworkXSerializer
 from .serializers import NewickSerializer
@@ -66,14 +62,6 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         else:
             return NotImplemented
 
-    def show(self, formatter=None, style=None, keep=None):
-        """Print this tree. Shortcut for print(tree.to_string())."""
-        if sys.stdout:
-            if not style:
-                supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
-                style = "square" if supports_unicode else "ascii"
-            self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
-
     def copy(self, memo=None, *, keep=None, deep=False) -> TNode:
         """Make a shallow copy or deepcopy if memo is passed."""
         if deep or memo:
@@ -118,39 +106,6 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             if diff_tree is to_detach:
                 return None  # Trees are perfectly equal
         return diff_tree
-
-    def to_string(self, file=None, formatter=None, style="square", keep=None) -> Optional[str]:
-        exporter = StringExporter(formatter, style)
-        return exporter.to_string(self, file, keep=keep)
-
-    def to_image(
-        self,
-        file=None,
-        keep=None,
-        node_attributes=None,
-        node_label=str,
-        backend="graphviz",
-        **kwargs
-    ):
-        if node_attributes is None:
-            node_attributes = {"label": node_label}
-        if backend == "graphviz":
-            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
-        elif backend == "mermaid":
-            exporter = MermaidExporter(node_label=node_label, **kwargs)
-        else:
-            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
-        return exporter.to_image(self, file, keep=keep)
-
-    def to_dot(self, file=None, keep=None, node_attributes=None, node_label=str, **kwargs) -> Optional[str]:
-        if node_attributes is None:
-            node_attributes = {"label": node_label}
-        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
-        return exporter.to_dot(self, file, keep=keep)
-
-    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
-        exporter = MermaidExporter(node_label=node_label, **kwargs)
-        return exporter.to_mermaid(self, file, keep=keep)
 
     @classmethod
     def from_dict(cls, data, data_field="data", **kwargs) -> TNode:

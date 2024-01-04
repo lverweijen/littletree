@@ -1,7 +1,11 @@
 import itertools
+import sys
 from abc import abstractmethod, ABCMeta
 from collections import deque, namedtuple
 from typing import TypeVar, Callable, Hashable, Union, Iterator, Tuple, Iterable, Optional
+
+from .exceptions import LoopError
+from .exporters import StringExporter, DotExporter, MermaidExporter
 
 TNode = TypeVar("TNode", bound="NodeMixin")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
@@ -30,10 +34,12 @@ class NodeMixin(metaclass=ABCMeta):
 
     @property
     def is_leaf(self) -> bool:
+        """Return if this node is a leaf (does not have children)."""
         return not self.children
 
     @property
     def is_root(self) -> bool:
+        """Return if this node is a root (has no parent)."""
         return self.parent is None
 
     @property
@@ -43,6 +49,58 @@ class NodeMixin(metaclass=ABCMeta):
         while p2:
             p, p2 = p2, p2.parent
         return p
+
+    def show(self, formatter=None, style=None, keep=None):
+        """Print this tree. Shortcut for print(tree.to_string())."""
+        if sys.stdout:
+            if not style:
+                supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
+                style = "square" if supports_unicode else "ascii"
+            self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
+
+    def to_string(self, file=None, formatter=None, style="square", keep=None) -> Optional[str]:
+        """Convert tree to string."""
+        exporter = StringExporter(formatter, style)
+        return exporter.to_string(self, file, keep=keep)
+
+    def to_image(
+        self,
+        file=None,
+        keep=None,
+        node_attributes=None,
+        node_label=str,
+        backend="graphviz",
+        **kwargs
+    ):
+        """Convert tree to image."""
+        if node_attributes is None:
+            node_attributes = {"label": node_label}
+        if backend == "graphviz":
+            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+        elif backend == "mermaid":
+            exporter = MermaidExporter(node_label=node_label, **kwargs)
+        else:
+            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
+        return exporter.to_image(self, file, keep=keep)
+
+    def to_dot(
+        self,
+        file=None,
+        keep=None,
+        node_attributes=None,
+        node_label=str,
+        **kwargs
+    ) -> Optional[str]:
+        """Convert tree to dot file."""
+        if node_attributes is None:
+            node_attributes = {"label": node_label}
+        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+        return exporter.to_dot(self, file, keep=keep)
+
+    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
+        """Convert tree to mermaid file."""
+        exporter = MermaidExporter(node_label=node_label, **kwargs)
+        return exporter.to_mermaid(self, file, keep=keep)
 
     def iter_tree(
         self,
@@ -181,6 +239,23 @@ class NodeMixin(metaclass=ABCMeta):
                 yield node, item
                 parent = node.parent
                 node, item = next(nodes, (None, None))
+
+    def _check_loop1(self, other: TNode):
+        """Check if other is an ancestor of self."""
+        if not other.is_leaf:
+            if self is other:
+                raise LoopError(self, other)
+            if any(other is ancestor for ancestor in self.iter_ancestors()):
+                raise LoopError(self, other)
+
+    def _check_loop2(self, others: Iterable[TNode]):
+        """Check if any of others is an ancestor of self."""
+        ancestors = set(map(id, self.iter_ancestors()))
+        ancestors.add(id(self))
+
+        ancestor = next((child for child in others if id(child) in ancestors), None)
+        if ancestor:
+            raise LoopError(self, ancestor)
 
 
 NodeItem = namedtuple("NodeItem", ["index", "depth"])

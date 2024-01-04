@@ -10,10 +10,7 @@ try:
 except ImportError:
     _HAS_PILLOW = False
 
-from ..nodemixin import NodeMixin
-
-
-TNode = TypeVar("TNode", bound=NodeMixin)
+TNode = TypeVar("TNode", bound="NodeMixin")
 NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Mapping[str, Any]]]
 EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Mapping[str, Any]]]
 GraphAttributes = Mapping[str, Any]
