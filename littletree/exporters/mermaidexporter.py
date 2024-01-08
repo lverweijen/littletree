@@ -94,6 +94,7 @@ class MermaidExporter:
         yield f"graph {self.graph_direction};\n"
 
         # Output nodes
+        nodes = []  # Stop automatic garbage collecting
         for node in root.iter_tree(keep):
             left, right = get_shape(node_shape, node)
             name = node_name(node)
@@ -102,9 +103,12 @@ class MermaidExporter:
                 yield f"{name}{left}{text}{right};\n"
             else:
                 yield f"{name};\n"
+            nodes.append(node)
 
         # Output edges
-        for node in root.iter_descendants(keep):
+        nodes = iter(nodes)
+        next(nodes)
+        for node in nodes:
             arrow = edge_arrow(node.parent, node) if callable(edge_arrow) else edge_arrow
             parent = node_name(node.parent)
             child = node_name(node)

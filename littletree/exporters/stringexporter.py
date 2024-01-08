@@ -1,7 +1,7 @@
 import io
-from typing import Union, Callable, TypedDict, TypeVar
+from typing import Union, Callable, TypedDict
 
-TNode = TypeVar("TNode", bound="NodeMixin")
+from ..tree import DownTree
 
 
 class Style(TypedDict):
@@ -26,7 +26,7 @@ DEFAULT_STYLES = {
 class StringExporter:
     def __init__(
         self,
-        formatter: Union[str, Callable[[TNode], str]] = None,
+        formatter: Union[str, Callable[[DownTree], str]] = None,
         style: Union[Style, str] = "square",
     ):
         """
@@ -60,18 +60,18 @@ class StringExporter:
         self.formatter = formatter
         self.style = style
 
-    def to_string(self, node, file=None, keep=None):
+    def to_string(self, tree: DownTree, file=None, keep=None):
         if file is None:
             file = io.StringIO()
-            self._to_string(node, file, keep)
+            self._to_string(tree, file, keep)
             return file.getvalue()
         elif not hasattr(file, "write"):
             with open(file, "w", encoding='utf-8') as writer:
-                self._to_string(node, writer, keep)
+                self._to_string(tree, writer, keep)
         else:
-            self._to_string(node, file, keep)
+            self._to_string(tree, file, keep)
 
-    def _to_string(self, node, file, keep):
+    def _to_string(self, tree, file, keep):
         formatter = self.formatter
         write_indent = self._write_indent
         style = self.style
@@ -79,9 +79,9 @@ class StringExporter:
         lookup1 = [empty_style, style["vertical"]]
         lookup2 = [style["last"], style["branch"]]
 
-        for pattern, node in self._iterate_patterns(node, keep=keep):
+        for pattern, node in self._iterate_patterns(tree, keep=keep):
             for i, line in enumerate(formatter(node).splitlines()):
-                if not node.is_root:
+                if node is not tree:
                     if i == 0:
                         write_indent(file, pattern, lookup1, lookup2)
                     else:

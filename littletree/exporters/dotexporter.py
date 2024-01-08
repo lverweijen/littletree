@@ -120,11 +120,15 @@ class DotExporter:
             attrs = handle_attributes(edge_static, root, root)
             yield f"edge{attrs};\n"
 
+        nodes = []
         for node in root.iter_tree(keep):
+            nodes.append(node)
             node_name = escape_string(str(name_factory(node)))
             attrs = handle_attributes(node_dynamic, node)
             yield f"{node_name}{attrs};\n"
-        for node in root.iter_descendants(keep):
+        nodes = iter(nodes)
+        next(nodes)
+        for node in nodes:
             parent_name = escape_string(str(name_factory(node.parent)))
             child_name = escape_string(str(name_factory(node)))
             attrs = handle_attributes(edge_dynamic, node.parent, node)

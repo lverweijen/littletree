@@ -1,23 +1,14 @@
 import itertools
-import sys
 from abc import abstractmethod, ABCMeta
 from collections import deque, namedtuple
-from typing import TypeVar, Callable, Hashable, Union, Iterator, Tuple, Iterable, Optional
+from typing import TypeVar, Callable, Union, Iterator, Tuple, Iterable, Optional
 
-from .exceptions import LoopError
-from .exporters import StringExporter, DotExporter, MermaidExporter
-
-TNode = TypeVar("TNode", bound="NodeMixin")
-TIdentifier = TypeVar("TIdentifier", bound=Hashable)
+TNode = TypeVar("TNode")
 NodePredicate = Callable[[TNode, "NodeItem"], bool]
 
 
-class NodeMixin(metaclass=ABCMeta):
-    """Mixin that provides common tree methods and iterators.
-
-    This class can be used instead of BaseNode,
-    if you need to implement parent and children yourself.
-    """
+class UpTree(metaclass=ABCMeta):
+    """Abstract class for tree classes with parent but no children."""
     __slots__ = ()
 
     @property
@@ -25,17 +16,6 @@ class NodeMixin(metaclass=ABCMeta):
     def parent(self) -> Optional[TNode]:
         """Parent of this node or None if root."""
         raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def children(self) -> Iterable[TNode]:
-        """Children of this node."""
-        raise NotImplementedError
-
-    @property
-    def is_leaf(self) -> bool:
-        """Return if this node is a leaf (does not have children)."""
-        return not self.children
 
     @property
     def is_root(self) -> bool:
@@ -50,57 +30,39 @@ class NodeMixin(metaclass=ABCMeta):
             p, p2 = p2, p2.parent
         return p
 
-    def show(self, formatter=None, style=None, keep=None):
-        """Print this tree. Shortcut for print(tree.to_string())."""
-        if sys.stdout:
-            if not style:
-                supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
-                style = "square" if supports_unicode else "ascii"
-            self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
+    def count_ancestors(self) -> int:
+        """Count the number of ancestors.
 
-    def to_string(self, file=None, formatter=None, style="square", keep=None) -> Optional[str]:
-        """Convert tree to string."""
-        exporter = StringExporter(formatter, style)
-        return exporter.to_string(self, file, keep=keep)
+        Also known as depth of this node.
+        """
+        return sum(1 for _ in self.iter_ancestors())
 
-    def to_image(
-        self,
-        file=None,
-        keep=None,
-        node_attributes=None,
-        node_label=str,
-        backend="graphviz",
-        **kwargs
-    ):
-        """Convert tree to image."""
-        if node_attributes is None:
-            node_attributes = {"label": node_label}
-        if backend == "graphviz":
-            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
-        elif backend == "mermaid":
-            exporter = MermaidExporter(node_label=node_label, **kwargs)
-        else:
-            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
-        return exporter.to_image(self, file, keep=keep)
+    def iter_ancestors(self) -> Iterator[TNode]:
+        """Yield parent, grandparent and further ancestors till root."""
+        p = self.parent
+        while p:
+            yield p
+            p = p.parent
 
-    def to_dot(
-        self,
-        file=None,
-        keep=None,
-        node_attributes=None,
-        node_label=str,
-        **kwargs
-    ) -> Optional[str]:
-        """Convert tree to dot file."""
-        if node_attributes is None:
-            node_attributes = {"label": node_label}
-        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
-        return exporter.to_dot(self, file, keep=keep)
 
-    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
-        """Convert tree to mermaid file."""
-        exporter = MermaidExporter(node_label=node_label, **kwargs)
-        return exporter.to_mermaid(self, file, keep=keep)
+class DownTree(metaclass=ABCMeta):
+    """Abstract class for tree classes with children but no parent."""
+    __slots__ = ()
+
+    @property
+    @abstractmethod
+    def children(self) -> Iterable[TNode]:
+        """Children of this node."""
+        raise NotImplementedError
+
+    @property
+    def is_leaf(self) -> bool:
+        """Return if this node is a leaf (does not have children)."""
+        return not self.children
+
+    def count_nodes(self) -> int:
+        """Count the number of nodes in tree."""
+        return 1 + self.count_descendants()
 
     def iter_tree(
         self,
@@ -123,12 +85,9 @@ class NodeMixin(metaclass=ABCMeta):
             if order == "post":
                 yield (self, item) if with_item else self
 
-    def iter_ancestors(self) -> Iterator[TNode]:
-        """Yield parent, grandparent and further ancestors till root."""
-        p = self.parent
-        while p:
-            yield p
-            p = p.parent
+    def count_descendants(self) -> int:
+        """Count the number of descendants."""
+        return sum(1 for _ in self.iter_descendants())
 
     def iter_descendants(
         self,
@@ -149,8 +108,6 @@ class NodeMixin(metaclass=ABCMeta):
             descendants = self._iter_descendants_post(keep)
         elif order == "level":
             descendants = self._iter_descendants_level(keep)
-        elif order == "post_rec":  # For checking if post returns correct result
-            descendants = self._iter_descendants_post_rec(keep)
         else:
             raise ValueError('order should be "pre", "post" or "level"')
 
@@ -158,12 +115,12 @@ class NodeMixin(metaclass=ABCMeta):
             return descendants
         return (node for (node, with_item) in descendants)
 
-    def iter_siblings(self) -> Iterator[TNode]:
-        """Return siblings."""
-        if self.parent is not None:
-            return (child for child in self.parent.children if child is not self)
-        else:
-            return iter(())
+    def count_leaves(self) -> int:
+        """Count the number of leaves.
+
+        This is also known as the breadth of the tree
+        """
+        return sum(1 for _ in self.iter_leaves())
 
     def iter_leaves(self) -> Iterator[TNode]:
         """Yield leaf nodes."""
@@ -173,6 +130,13 @@ class NodeMixin(metaclass=ABCMeta):
             for node in self.iter_descendants():
                 if node.is_leaf:
                     yield node
+
+    def count_levels(self) -> int:
+        """Count the number of levels.
+
+        This is equal to height of the tree + 1
+        """
+        return 1 + max([item.depth for (_, item) in self.iter_tree(with_item=True)])
 
     def iter_levels(self) -> Iterator[Iterator[TNode]]:
         """Iterate levels."""
@@ -193,12 +157,12 @@ class NodeMixin(metaclass=ABCMeta):
                               for index, child in enumerate(node.children)]
                 nodes.extendleft(reversed(next_nodes))
 
-    def _iter_descendants_post_rec(self, keep, _depth=1):
+    def _iter_descendants_post(self, keep, _depth=1):
         # Same as _iter_descendants_post (kept as reference implementation)
         for index, child in enumerate(self.children):
             item = NodeItem(index, _depth)
             if not keep or keep(child, item):
-                yield from child._iter_descendants_post_rec(keep=keep, _depth=_depth + 1)
+                yield from child._iter_descendants_post(keep=keep, _depth=_depth + 1)
                 yield child, item
 
     def _iter_descendants_level(self, keep):
@@ -211,7 +175,24 @@ class NodeMixin(metaclass=ABCMeta):
                               for index, child in enumerate(node.children)]
                 nodes.extend(next_nodes)
 
+
+class Tree(UpTree, DownTree, metaclass=ABCMeta):
+    """Abstract class for tree classes with access to children and parents."""
+    __slots__ = ()
+
+    def count_siblings(self) -> int:
+        """Count siblings."""
+        return len(self.parent.children) - 1
+
+    def iter_siblings(self) -> Iterator[TNode]:
+        """Return siblings."""
+        if self.parent is not None:
+            return (child for child in self.parent.children if child is not self)
+        else:
+            return iter(())
+
     def _iter_descendants_post(self, keep, _depth=1):
+        # Fast iterative version that requires parent
         nodes = iter([(child, NodeItem(index, 1))
                       for (index, child) in enumerate(self.children)])
         node, item = next(nodes, (None, None))
@@ -239,23 +220,6 @@ class NodeMixin(metaclass=ABCMeta):
                 yield node, item
                 parent = node.parent
                 node, item = next(nodes, (None, None))
-
-    def _check_loop1(self, other: TNode):
-        """Check if other is an ancestor of self."""
-        if not other.is_leaf:
-            if self is other:
-                raise LoopError(self, other)
-            if any(other is ancestor for ancestor in self.iter_ancestors()):
-                raise LoopError(self, other)
-
-    def _check_loop2(self, others: Iterable[TNode]):
-        """Check if any of others is an ancestor of self."""
-        ancestors = set(map(id, self.iter_ancestors()))
-        ancestors.add(id(self))
-
-        ancestor = next((child for child in others if id(child) in ancestors), None)
-        if ancestor:
-            raise LoopError(self, ancestor)
 
 
 NodeItem = namedtuple("NodeItem", ["index", "depth"])

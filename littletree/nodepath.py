@@ -42,7 +42,7 @@ class NodePath:
 
     def count_edges(self) -> int:
         """Count edges on path."""
-        return sum(1 for _ in self._node.iter_ancestors())
+        return self._node.count_ancestors()
 
     __len__ = count_nodes
 
