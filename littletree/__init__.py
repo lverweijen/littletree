@@ -1,13 +1,13 @@
 from .basenode import BaseNode
 from .maxdepth import MaxDepth
 from .node import Node
-from .nodemixin import NodeMixin
+from .tree import Tree
 from .route import Route
 
 __all__ = [
     "BaseNode",
     "Node",
-    "NodeMixin",
+    "Tree",
     "MaxDepth",
     "Route",
 ]

@@ -1,16 +1,16 @@
 import itertools
 from typing import Iterator, Tuple, TypeVar
 
-from .basenode import BaseNode
 from .exceptions import DifferentTreeError
+from .tree import UpTree
 
-TNode = TypeVar("TNode", bound=BaseNode)
+TNode = TypeVar("TNode", bound=UpTree)
 
 
 class Route:
     __slots__ = "_paths"
 
-    def __init__(self, *nodes, check_tree=True):
+    def __init__(self, *nodes: TNode, check_tree=True):
         """Create a route through all nodes."""
         self._paths = [
             tuple(itertools.chain(reversed(tuple(node.iter_ancestors())), [node]))

@@ -1,15 +1,18 @@
-from typing import Mapping, Iterable, Optional, Union, Any, Callable, Generic, TypeVar, \
-    Hashable, ValuesView, Tuple
+import sys
+from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
+from typing import TypeVar, Callable, Hashable, Optional
 
+from littletree.tree import Tree
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
-from .nodemixin import NodeMixin, NodeItem
+from .exporters import StringExporter, DotExporter, MermaidExporter
 from .nodepath import NodePath
+from .tree import NodeItem
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
-class BaseNode(Generic[TIdentifier], NodeMixin):
+class BaseNode(Generic[TIdentifier], Tree):
     """Minimalistic node class that a user can inherit from.
 
     Compared to Node this class is more primitive and less opinionated.
@@ -373,3 +376,72 @@ class BaseNode(Generic[TIdentifier], NodeMixin):
             assert child.identifier == child_identifier
             assert child.parent is self
             child._check_integrity()
+
+    def show(self, formatter=None, style=None, keep=None):
+        """Print this tree. Shortcut for print(tree.to_string())."""
+        if sys.stdout:
+            if not style:
+                supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
+                style = "square" if supports_unicode else "ascii"
+            self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
+
+    def to_string(self, file=None, formatter=None, style="square", keep=None) -> Optional[str]:
+        """Convert tree to string."""
+        exporter = StringExporter(formatter, style)
+        return exporter.to_string(self, file, keep=keep)
+
+    def to_image(
+        self,
+        file=None,
+        keep=None,
+        node_attributes=None,
+        node_label=str,
+        backend="graphviz",
+        **kwargs
+    ):
+        """Convert tree to image."""
+        if node_attributes is None:
+            node_attributes = {"label": node_label}
+        if backend == "graphviz":
+            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+        elif backend == "mermaid":
+            exporter = MermaidExporter(node_label=node_label, **kwargs)
+        else:
+            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
+        return exporter.to_image(self, file, keep=keep)
+
+    def to_dot(
+        self,
+        file=None,
+        keep=None,
+        node_attributes=None,
+        node_label=str,
+        **kwargs
+    ) -> Optional[str]:
+        """Convert tree to dot file."""
+        if node_attributes is None:
+            node_attributes = {"label": node_label}
+        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
+        return exporter.to_dot(self, file, keep=keep)
+
+    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
+        """Convert tree to mermaid file."""
+        exporter = MermaidExporter(node_label=node_label, **kwargs)
+        return exporter.to_mermaid(self, file, keep=keep)
+
+    def _check_loop1(self, other: TNode):
+        """Check if other is an ancestor of self."""
+        if not other.is_leaf:
+            if self is other:
+                raise LoopError(self, other)
+            if any(other is ancestor for ancestor in self.iter_ancestors()):
+                raise LoopError(self, other)
+
+    def _check_loop2(self, others: Iterable[TNode]):
+        """Check if any of others is an ancestor of self."""
+        ancestors = set(map(id, self.iter_ancestors()))
+        ancestors.add(id(self))
+
+        ancestor = next((child for child in others if id(child) in ancestors), None)
+        if ancestor:
+            raise LoopError(self, ancestor)
