@@ -21,15 +21,15 @@ class TestPerformance(TestCase):
 
     def test_recursion1(self):
         for repeat in range(100):
-            list(self.tree.iter_tree(order='pre'))
+            list(self.tree.iter_nodes(order='pre'))
 
     def test_recursion2(self):
         for repeat in range(100):
-            list(self.tree.iter_tree(order='post'))
+            list(self.tree.iter_nodes(order='post'))
 
     def test_recursion3(self):
         for repeat in range(100):
-            list(self.tree.iter_tree(order='level'))
+            list(self.tree.iter_nodes(order='level'))
 
     def test_equal(self):
         copy = self.tree.copy()

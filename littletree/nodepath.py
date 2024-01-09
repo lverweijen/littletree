@@ -110,7 +110,7 @@ class NodePath:
             if segment == "**":
                 nodes = {id(node): node
                          for candidate in nodes.values()
-                         for node in candidate.iter_tree()}
+                         for node in candidate.iter_nodes()}
             elif segment == "":
                 nodes = {id(node): node
                          for node in nodes.values()

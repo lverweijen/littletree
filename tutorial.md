@@ -111,7 +111,7 @@ They all return an iterator but can be converted to list using `list`.
 |---------------------------|-------------------------------------|
 | iter(tree.children)       | Iterate over children               |
 | iter(tree.path)           | Iterate from root to self           |
-| tree.iter_tree()          | Iterate over all nodes              |
+| tree.iter_nodes()         | Iterate over all nodes              |
 | tree.iter_ancestors()     | Iterate over ancestors              |
 | tree.iter_descendants()   | Iterate over descendants            |
 | tree.iter_siblings()      | Iterate over nodes with same parent |
@@ -166,32 +166,21 @@ madrid_to_lisbon = list(Route(madrid, lisbon))
 
 ## Miscellaneous tree operations
 
-Find level of a node:
-```python
-level = node.path.count_edges()
+Calculate height and breadth of a tree
 
-# This is equivalent to:
-level = len(node.path) - 1
+```python
+height = tree.count_levels() - 1
+breadth = tree.count_leaves()
+```
+
+Find depth of a node:
+```python
+depth = node.count_ancestors()
 ```
 
 Get distance between two nodes:
 ```python
-# Number of nodes on route from node1 to node2
-distance = len(Route(node1, node2))
-
-# If you want to be more explicit
-Route(node1, node2).count_nodes()
-Route(node1, node2).count_edges()
-```
-
-Calculate height (maximum depth) of a tree
-```python
-height = max([item.depth for (_, item) in tree.iter_tree(with_item=True)])
-```
-
-Calculate degree (maximum number of children) of a tree
-```python
-degree = 1 + max([item.index for (_, item) in tree.iter_tree(with_item=True)])
+distance = Route(node1, node2).count_edges()
 ```
 
 Find lowest common ancestor of two nodes:

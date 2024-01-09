@@ -95,7 +95,7 @@ class MermaidExporter:
 
         # Output nodes
         nodes = []  # Stop automatic garbage collecting
-        for node in root.iter_tree(keep):
+        for node in root.iter_nodes(keep):
             left, right = get_shape(node_shape, node)
             name = node_name(node)
             if node_label:

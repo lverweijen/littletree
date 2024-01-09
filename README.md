@@ -7,7 +7,7 @@ It can be used to represent file systems, taxonomies and much more.
 - Intuitive basic creation and modification of trees.
 - Efficient implementation of common tree operations and traversals.
   Works on trees that are 10 000 layers deep.
-- Extensible. Subclass `BaseNode` or `NodeMixin` if you need more freedom.
+- Extensible. Subclass from `BaseNode` if you need more freedom.
 - Can be imported / exported to many different formats (nested dict, rows, relations, graphviz, mermaid, newick, networkx).
 - Purely written in Python.
 

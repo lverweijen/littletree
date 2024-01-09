@@ -60,11 +60,27 @@ class DownTree(metaclass=ABCMeta):
         """Return if this node is a leaf (does not have children)."""
         return not self.children
 
+    def count_leaves(self) -> int:
+        """Count the number of leaves.
+
+        This is also known as the breadth of the tree
+        """
+        return sum(1 for _ in self.iter_leaves())
+
+    def iter_leaves(self) -> Iterator[TNode]:
+        """Yield leaf nodes."""
+        if self.is_leaf:
+            yield self
+        else:
+            for node in self.iter_descendants():
+                if node.is_leaf:
+                    yield node
+
     def count_nodes(self) -> int:
         """Count the number of nodes in tree."""
         return 1 + self.count_descendants()
 
-    def iter_tree(
+    def iter_nodes(
         self,
         keep: NodePredicate = None,
         order: str = "pre",
@@ -115,28 +131,12 @@ class DownTree(metaclass=ABCMeta):
             return descendants
         return (node for (node, with_item) in descendants)
 
-    def count_leaves(self) -> int:
-        """Count the number of leaves.
-
-        This is also known as the breadth of the tree
-        """
-        return sum(1 for _ in self.iter_leaves())
-
-    def iter_leaves(self) -> Iterator[TNode]:
-        """Yield leaf nodes."""
-        if self.is_leaf:
-            yield self
-        else:
-            for node in self.iter_descendants():
-                if node.is_leaf:
-                    yield node
-
     def count_levels(self) -> int:
         """Count the number of levels.
 
         This is equal to height of the tree + 1
         """
-        return 1 + max([item.depth for (_, item) in self.iter_tree(with_item=True)])
+        return 1 + max([item.depth for (_, item) in self.iter_nodes(with_item=True)])
 
     def iter_levels(self) -> Iterator[Iterator[TNode]]:
         """Iterate levels."""

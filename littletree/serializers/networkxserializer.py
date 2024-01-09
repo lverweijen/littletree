@@ -33,7 +33,7 @@ class NetworkXSerializer:
 
         data = graph.nodes.data()
         if data:
-            for node in tree.iter_tree():
+            for node in tree.iter_nodes():
                 editor.update(node, data[node.identifier])
 
         return tree
@@ -44,6 +44,6 @@ class NetworkXSerializer:
 
         edges = [(node.parent.identifier, node.identifier) for node in tree.iter_descendants()]
         graph = nx.DiGraph(edges)
-        node_attributes = {n.identifier: editor.get_attributes(n) for n in tree.iter_tree()}
+        node_attributes = {n.identifier: editor.get_attributes(n) for n in tree.iter_nodes()}
         nx.set_node_attributes(graph, node_attributes)
         return graph

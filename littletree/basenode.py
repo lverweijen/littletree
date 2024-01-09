@@ -2,11 +2,10 @@ import sys
 from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
 from typing import TypeVar, Callable, Hashable, Optional
 
-from littletree.tree import Tree
+from .abc import Tree, NodeItem
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from .exporters import StringExporter, DotExporter, MermaidExporter
 from .nodepath import NodePath
-from .tree import NodeItem
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
@@ -347,6 +346,10 @@ class BaseNode(Generic[TIdentifier], Tree):
                     nodes = sorted(d._cdict.items(), reverse=reverse)
                     d._cdict.clear()
                     d._cdict.update(nodes)
+
+    def iter_tree(self, *args, **kwargs):
+        """Alias for backward compatibility."""
+        return self.iter_nodes(*args, **kwargs)
 
     def iter_together(self, other) -> Tuple[TNode, Optional[TNode]]:
         """Yield all nodes in self with similar nodes in other.
