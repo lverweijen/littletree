@@ -30,7 +30,7 @@ class TestNodeMixin(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_iter_tree1(self):
-        result = [str(child.path) for child in self.tree.iter_tree()]
+        result = [str(child.path) for child in self.tree.iter_nodes()]
         expected = [
             '/world',
             '/world/Europe',
@@ -51,7 +51,7 @@ class TestNodeMixin(unittest.TestCase):
         def is_first_child(_, item):
             return item.index == 0
 
-        result = [str(child.path) for child in self.tree.iter_tree(is_first_child)]
+        result = [str(child.path) for child in self.tree.iter_nodes(is_first_child)]
         expected = [
             '/world',
             '/world/Europe',
@@ -62,8 +62,8 @@ class TestNodeMixin(unittest.TestCase):
 
     def test_iter_tree3(self):
         target = self.tree
-        result = [child.identifier for child in target.iter_tree(keep=lambda _, it: it.depth < 3,
-                                                                 order="level")]
+        result = [child.identifier for child in target.iter_nodes(keep=lambda _, it: it.depth < 3,
+                                                                  order="level")]
         expected = ['world', 'Europe', 'Africa', 'Norway', 'Sweden', 'Finland']
         self.assertEqual(expected, result)
 

@@ -1,7 +1,7 @@
 import io
 from typing import Union, Callable, TypedDict
 
-from ..tree import DownTree
+from ..abc import DownTree
 
 
 class Style(TypedDict):

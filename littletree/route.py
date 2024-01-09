@@ -2,7 +2,7 @@ import itertools
 from typing import Iterator, Tuple, TypeVar
 
 from .exceptions import DifferentTreeError
-from .tree import UpTree
+from .abc import UpTree
 
 TNode = TypeVar("TNode", bound=UpTree)
 

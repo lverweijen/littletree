@@ -95,7 +95,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         diff_tree = diff_node.root
         if not keep_equal:
             to_detach = None
-            for node in diff_tree.iter_tree(order='post'):
+            for node in diff_tree.iter_nodes(order='post'):
                 if to_detach:
                     to_detach.detach()
                 if node.data.get('self') == node.data.get('other'):

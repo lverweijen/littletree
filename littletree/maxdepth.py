@@ -9,7 +9,7 @@ class MaxDepth:
     Can be passed to keep argument of methods such as tree.iter_tree().
     >>> from littletree import Node
     >>> tree = Node(identifier='root').path.create(['a', 'b', 'c', 'd']).root
-    >>> [node.identifier for node in tree.iter_tree(keep=MaxDepth(3))]
+    >>> [node.identifier for node in tree.iter_nodes(keep=MaxDepth(3))]
     ['root', 'a', 'b', 'c']
     """
     depth: int

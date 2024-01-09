@@ -121,7 +121,7 @@ class DotExporter:
             yield f"edge{attrs};\n"
 
         nodes = []
-        for node in root.iter_tree(keep):
+        for node in root.iter_nodes(keep):
             nodes.append(node)
             node_name = escape_string(str(name_factory(node)))
             attrs = handle_attributes(node_dynamic, node)

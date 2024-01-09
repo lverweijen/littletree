@@ -113,7 +113,7 @@ class NewickSerializer:
         dialect = self.dialect
 
         previous_depth = 0
-        for node, item in tree.iter_tree(order="post", with_item=True):
+        for node, item in tree.iter_nodes(order="post", with_item=True):
             if item.depth >= previous_depth:
                 if previous_depth:
                     file.write(",")
