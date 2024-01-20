@@ -2,7 +2,7 @@ import io
 import operator
 import subprocess
 from pathlib import Path
-from typing import Mapping, Callable, Any, Union, TypeVar
+from typing import Mapping, Callable, Any, Union, TypeVar, Tuple
 
 try:
     from PIL import Image
@@ -11,6 +11,10 @@ except ImportError:
     _HAS_PILLOW = False
 
 TNode = TypeVar("TNode", bound="NodeMixin")
+TShape = Union[
+    Tuple[str, str], str,
+    Callable[[TNode], Union[Tuple[str, str], str]]
+]
 NodeAttributes = Union[Mapping[str, Any], Callable[[TNode], Mapping[str, Any]]]
 EdgeAttributes = Union[Mapping[str, Any], Callable[[TNode, TNode], Mapping[str, Any]]]
 GraphAttributes = Mapping[str, Any]
@@ -20,6 +24,8 @@ class DotExporter:
     def __init__(
         self,
         node_name: Union[str, Callable[[TNode], str], None] = None,
+        node_label: Union[str, Callable[[TNode], str], None] = str,
+        node_shape: TShape = None,
         node_attributes: NodeAttributes = None,
         edge_attributes: EdgeAttributes = None,
         graph_attributes: GraphAttributes = None,
@@ -35,6 +41,14 @@ class DotExporter:
             node_name = operator.attrgetter(node_name)
         elif not callable(node_name):
             raise TypeError("node_name should be callable")
+
+        if node_attributes is None:
+            node_attributes = {}
+
+        if isinstance(node_attributes, Mapping):
+            extra = {"label": node_label, "shape": node_shape}
+            extra = {k: v for k, v in extra.items() if v}
+            node_attributes = {**extra, **node_attributes}
 
         self.node_name = node_name
         self.node_attributes = node_attributes
@@ -121,7 +135,7 @@ class DotExporter:
             yield f"edge{attrs};\n"
 
         nodes = []
-        for node in root.iter_nodes(keep):
+        for node in root.iter_nodes(keep=keep):
             nodes.append(node)
             node_name = escape_string(str(name_factory(node)))
             attrs = handle_attributes(node_dynamic, node)

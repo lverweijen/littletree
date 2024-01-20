@@ -1,3 +1,6 @@
 [build-system]
 requires = ["setuptools>=40.6.0"]
 build-backend = "setuptools.build_meta"
+
+[project.urls]
+Changes = "https://github.com/lverweijen/littletree/blob/main/changes.md"

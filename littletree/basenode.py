@@ -2,7 +2,7 @@ import sys
 from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
 from typing import TypeVar, Callable, Hashable, Optional
 
-from .abc import Tree, NodeItem
+from .abc import MutableTree, NodeItem
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from .exporters import StringExporter, DotExporter, MermaidExporter
 from .nodepath import NodePath
@@ -11,7 +11,7 @@ TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
-class BaseNode(Generic[TIdentifier], Tree):
+class BaseNode(Generic[TIdentifier], MutableTree):
     """Minimalistic node class that a user can inherit from.
 
     Compared to Node this class is more primitive and less opinionated.
@@ -182,6 +182,24 @@ class BaseNode(Generic[TIdentifier], Tree):
             path = self._path = self.path_class(self)
             return path
 
+    def add_child(self, node: TNode):
+        if node.is_root:
+            identifier = node.identifier
+            if identifier in self:
+                raise DuplicateChildError(node, self)
+            if not node.is_leaf:
+                self._check_loop1(node)
+            self._cdict[identifier] = node
+            node._parent = self
+        else:
+            raise DuplicateParentError(node)
+
+    def remove_child(self, node: TNode):
+        if node.parent is self:
+            node.detach()
+        else:
+            raise ValueError("Not a child")
+
     def update(
         self,
         other: Union[Mapping[TIdentifier, TNode], Iterable[TNode], TNode],
@@ -262,6 +280,8 @@ class BaseNode(Generic[TIdentifier], Tree):
             if old_child:
                 old_child._parent = None
             cdict[identifier] = child
+
+    add_children = update
 
     def pop(self, identifier: TIdentifier) -> Optional[TNode]:
         """Remove and return node with identifier or None."""
