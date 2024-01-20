@@ -36,26 +36,14 @@ class NodePath:
         separator = self.separator
         return separator + separator.join([str(node.identifier) for node in self])
 
-    def count_nodes(self) -> int:
+    def __len__(self) -> int:
         """Count nodes on path."""
-        return 1 + self.count_edges()
+        return 1 + self._node.count_ancestors()
 
-    def count_edges(self) -> int:
-        """Count edges on path."""
-        return self._node.count_ancestors()
-
-    __len__ = count_nodes
-
-    def iter_nodes(self) -> Iterator[TNode]:
+    def __iter__(self) -> Iterator[TNode]:
         """Iterate through nodes on path."""
         node = self._node
         return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
-
-    def iter_edges(self) -> Iterator[Tuple[TNode, TNode]]:
-        """Iterate through edges on path."""
-        return itertools.pairwise(self.iter_nodes())
-
-    __iter__ = iter_nodes
 
     def __reversed__(self) -> Iterator[TNode]:
         node = self._node

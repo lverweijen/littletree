@@ -23,11 +23,43 @@ class TestNodeMixin(unittest.TestCase):
         self.assertEqual(root, node.root)
         self.assertEqual(root, leaf.root)
 
+    def test_has_child(self):
+        tree = self.tree
+        europe, unknown = tree["Europe"], Node("Unknown")
+        node = self.tree.path('Europe/Finland')
+        self.assertTrue(tree.has_child(europe))
+        self.assertFalse(tree.has_child(unknown))
+        self.assertFalse(tree.has_child(node))
+
+    def test_has_descendant(self):
+        root = self.tree
+        node = self.tree.path('Europe/Finland')
+        leaf = self.tree.path('Africa')
+        unknown = Node("Unknown")
+
+        self.assertTrue(root.has_descendant(node))
+        self.assertTrue(root.has_descendant(leaf))
+        self.assertFalse(root.has_descendant(root))
+        self.assertFalse(root.has_descendant(unknown))
+
+    def test_has_ancestor(self):
+        root = self.tree
+        node = self.tree.path('Europe/Finland')
+        leaf = self.tree.path('Africa')
+        unknown = Node("Unknown")
+
+        self.assertFalse(node.has_ancestor(node))
+        self.assertFalse(node.has_ancestor(leaf))
+        self.assertTrue(node.has_ancestor(root))
+        self.assertTrue(leaf.has_ancestor(root))
+        self.assertFalse(unknown.has_ancestor(root))
+
     # Iterators
     def test_iter_children(self):
         result = [str(child.path) for child in self.tree.children]
         expected = ['/world/Europe', '/world/Africa']
         self.assertEqual(expected, result)
+
 
     def test_iter_tree1(self):
         result = [str(child.path) for child in self.tree.iter_nodes()]
@@ -51,7 +83,7 @@ class TestNodeMixin(unittest.TestCase):
         def is_first_child(_, item):
             return item.index == 0
 
-        result = [str(child.path) for child in self.tree.iter_nodes(is_first_child)]
+        result = [str(child.path) for child in self.tree.iter_nodes(keep=is_first_child)]
         expected = [
             '/world',
             '/world/Europe',
@@ -114,7 +146,8 @@ class TestNodeMixin(unittest.TestCase):
         def keep_square(_, item):
             return item.index <= 2 and item.depth <= 2
         target = self.tree
-        result = [str(child.path) for child in target.iter_descendants(keep_square, order="post")]
+        result = [str(child.path)
+                  for child in target.iter_descendants(keep=keep_square, order="post")]
         expected = [
             '/world/Europe/Norway',
             '/world/Europe/Sweden',

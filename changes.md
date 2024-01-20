@@ -1,3 +1,11 @@
+## Version 0.7.0 ##
+- `NodeMixin` is gone. Instead `littletree.abc` contains multiple abstract classes.
+- Rename `tree.iter_tree()` to `tree.iter_nodes()`.
+- Some new methods:
+  - `count` methods such as `count_nodes()`, `count_descendants()`
+  - `add_child` and `remove_child` to add a node without changing identifier
+  - `has_child`, `has_descendant`, `has_ancestor`
+
 ## Version 0.6.2 ##
 - Make better use of NodeMixin
 - Make sure most exporter work directly on NodeMixin
@@ -39,7 +47,7 @@ Fix bug in `tree.compare` method
   - Make attribute handling more intelligent. Distinguish static and dynamic properties.
   - Add parameter `directed` (default: True).
   - Remove whitespace around arrows for compacter file size.
-- Add MermaidExporter. Similar to DotExporter, but supported by [github](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).
+- Add MermaidExporter. Similar to DotExporter, but supported by [GitHub](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).
 - Make `tree.children` writable for more compatibility with anytree/bigtree
 - Add parameters `backend` and `node_label` to `tree.to_image()`
 
