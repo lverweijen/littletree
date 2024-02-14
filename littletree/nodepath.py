@@ -1,13 +1,13 @@
 import itertools
 from fnmatch import fnmatchcase
-from typing import Optional, TypeVar, Iterable, Iterator, Tuple
+from typing import Optional, TypeVar, Iterable
 
-from littletree.exceptions import DifferentTreeError
+import abstracttree.treeclasses
 
 TNode = TypeVar("TNode", bound="BaseNode")
 
 
-class NodePath:
+class NodePath(abstracttree.treeclasses.PathView):
     __slots__ = "_node"
 
     # Can be overriden by child classes
@@ -15,7 +15,19 @@ class NodePath:
 
     def __init__(self, node: TNode):
         """Do not instantiate directly, use node.path instead."""
+        super().__init__(node)
         self._node = node
+
+    def __eq__(self, other):
+        if not isinstance(other, NodePath):
+            return False
+        if self.count() != other.count():
+            return False
+        return all(s1.identifier == s2.identifier for s1, s2 in itertools.zip_longest(self, other))
+
+    def __str__(self) -> str:
+        separator = self.separator
+        return separator + separator.join([str(node.identifier) for node in self])
 
     def __call__(self, path) -> TNode:
         if isinstance(path, str):
@@ -24,30 +36,6 @@ class NodePath:
         for segment in path:
             node = node._cdict[segment]
         return node
-
-    def __eq__(self, other):
-        if not isinstance(other, NodePath):
-            return False
-        if len(self) != len(other):
-            return False
-        return all(s1.identifier == s2.identifier for s1, s2 in zip(self, other))
-
-    def __str__(self) -> str:
-        separator = self.separator
-        return separator + separator.join([str(node.identifier) for node in self])
-
-    def __len__(self) -> int:
-        """Count nodes on path."""
-        return 1 + self._node.count_ancestors()
-
-    def __iter__(self) -> Iterator[TNode]:
-        """Iterate through nodes on path."""
-        node = self._node
-        return itertools.chain(reversed(tuple(node.iter_ancestors())), [node])
-
-    def __reversed__(self) -> Iterator[TNode]:
-        node = self._node
-        return itertools.chain([node], node.iter_ancestors())
 
     def get(self, path) -> Optional[TNode]:
         """Like calling path, but return None if node is missing."""
@@ -98,7 +86,7 @@ class NodePath:
             if segment == "**":
                 nodes = {id(node): node
                          for candidate in nodes.values()
-                         for node in candidate.iter_nodes()}
+                         for node in candidate.nodes}
             elif segment == "":
                 nodes = {id(node): node
                          for node in nodes.values()
@@ -119,11 +107,3 @@ class NodePath:
     def _is_pattern(segment) -> bool:
         """Check if segment is a pattern. If not direct access is much faster."""
         return isinstance(segment, str) and any(char in segment for char in "*?[")
-
-    def to(self, *others):
-        """Return the path if nodes are in the same tree, else None"""
-        from .route import Route
-        try:
-            return Route(self._node, *others)
-        except DifferentTreeError:
-            return None

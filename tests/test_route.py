@@ -119,29 +119,29 @@ class TestRoute(TestCase):
         expected = [self.tree.root, self.tree.path("Europe")]
         self.assertEqual(expected, result)
 
-    def test_len(self):
+    def test_count_nodes(self):
         tree = self.tree
-        result = len(self.route)
+        result = self.route.count_nodes()
         self.assertEqual(4, result)
 
-        result = len(self.route2)
+        result = self.route2.count_nodes()
         self.assertEqual(3, result)
 
-        result = len(self.route3)
+        result = self.route3.count_nodes()
         self.assertEqual(7, result)
 
-        result = len(self.route4)
+        result = self.route4.count_nodes()
         self.assertEqual(6, result)
 
-        result = len(self.route5)
+        result = self.route5.count_nodes()
         self.assertEqual(4, result)
 
         deep_helsinki = tree.path(["Europe", "Finland", "Helsinki", "Helsinki", "Helsinki"])
         route = Route(deep_helsinki, deep_helsinki)
         route_from_route = Route(deep_helsinki.root, deep_helsinki)
-        result = len(route)
-        result2 = len(deep_helsinki.path)
-        result3 = len(route_from_route)
+        result = route.count_nodes()
+        result2 = deep_helsinki.path.count()
+        result3 = route_from_route.count_nodes()
         self.assertEqual(1, result)
         self.assertEqual(6, result2)
         self.assertEqual(6, result3)

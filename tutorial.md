@@ -111,19 +111,22 @@ They all return an iterator but can be converted to list using `list`.
 |---------------------------|-------------------------------------|
 | iter(tree.children)       | Iterate over children               |
 | iter(tree.path)           | Iterate from root to self           |
-| tree.iter_nodes()         | Iterate over all nodes              |
-| tree.iter_ancestors()     | Iterate over ancestors              |
-| tree.iter_descendants()   | Iterate over descendants            |
-| tree.iter_siblings()      | Iterate over nodes with same parent |
+| iter(tree.nodes)          | Iterate over all nodes              |
+| iter(tree.ancestors)      | Iterate over ancestors              |
+| iter(tree.descendants)    | Iterate over descendants            |
+| iter(tree.siblings)       | Iterate over nodes with same parent |
 | tree.iter_together(tree2) | Iterate over multiple trees         |
-| iter(Route(node1, node2)) | Iterate from one node to another    |
+| iter(node1.to(node2))     | Iterate from one node to another    |
 
-Some iterators can be controlled with parameters such as:
-- `order` - In what order to iterate over nodes.
-  Can be `"pre"`, `"post"` or `"level"` (default: `"pre"`).
-- `with_item` - Whether to also yield an item with index and level of the iterated node (default: `False`).
-- `keep` - Exclude this node and its descendants from iteration `if not keep(node)`.
-  Use `keep=MaxDepth(n)` to iterate at most `n` levels deep.
+To iterate through the nodes in a specific order, use one of the following:
+
+- `for node, item in tree.nodes.preorder()`
+- `for node, item in tree.nodes.postorder()`
+- `for node, item in tree.nodes.levelorder()`
+
+An optional argument `keep` can be given to the above three functions.
+If passed, a node and its descendants will be skipped `if not keep(node)`.
+Use `keep=MaxDepth(n)` to iterate at most `n` levels deep.
 
 ## Path operations
 
@@ -169,18 +172,18 @@ madrid_to_lisbon = list(Route(madrid, lisbon))
 Calculate height and breadth of a tree
 
 ```python
-height = tree.count_levels() - 1
-breadth = tree.count_leaves()
+height = tree.levels.count() - 1
+breadth = tree.leaves.count()
 ```
 
 Find depth of a node:
 ```python
-depth = node.count_ancestors()
+depth = node.ancestors.count()
 ```
 
 Get distance between two nodes:
 ```python
-distance = Route(node1, node2).count_edges()
+distance = node1.to(node2).count_edges()
 ```
 
 Find lowest common ancestor of two nodes:
@@ -196,18 +199,20 @@ Nodes have basic import and exports options with many parameters:
 |---------|-----------------------------------|-----------------------------------------|
 | Text    | to_string()                       | Pretty print the tree                   |
 | Text    | to_dot(), to_mermaid()            | Exports to dot/mermaid                  |
-| Image   | to_image()                        | Requires graphviz or mermaid            |
+| Image   | to_image(), to_pillow()           | Requires graphviz or mermaid            |
 | Nested  | from_dict() / to_dict()           | Converting to / from json-like formats  |
 | Rows    | from_rows() / to_rows()           | Converting to / from path lists         |
 | Rows    | from_relations() / to_relations() | Converting to / from parent-child lists |
 | Text    | from_newick() / to_newick()       | Converting to / from newick-format      |
 | DiGraph | from_networkx() / to_networkx()   | Converting to / from networkx-format    |
+| Tree    | from_tree()                       | Import from abstracttree (generic)      |
 
 ```python
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"
 family_tree = Node.from_newick(family_newick)
 family_tree.show(style="round-arrow")  # Uses family_tree.to_string()
-family_tree.to_image().show()  # Requires graphviz and Pillow
+family_tree.to_pillow().show()  # Requires graphviz and Pillow
+family_tree.plot()  # Requires matplotlib
 ```
 
 ```text
@@ -264,7 +269,7 @@ class SortedNode(Node):
     
     def sort_children(self):
         # This has now become a no-op
-        return self  
+        pass
 ```
 
 ### Symlinks

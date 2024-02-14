@@ -2,7 +2,7 @@ import copy
 from unittest import TestCase
 
 from littletree import Node, MaxDepth
-from littletree.exceptions import LoopError
+from littletree.exceptions import LoopError, DuplicateParentError, DuplicateChildError
 
 
 class TestNode(TestCase):
@@ -28,6 +28,31 @@ class TestNode(TestCase):
         with self.assertRaises(KeyError):
             self.tree["South-America"]  # noqa
 
+        self.tree._check_integrity()
+
+    def test_add_child(self):
+        new_node = Node(identifier="New World")
+        self.tree.add_child(new_node)
+        self.assertEqual(new_node, self.tree["New World"])
+        self.tree._check_integrity()
+
+    def test_add_child_existing_parent(self):
+        """The node should be free.
+
+        Consideration: Maybe this should succeed by automatically copying the input node
+        """
+        new_node = Node(identifier="Europe")
+        new_node.parent = Node()
+
+        with self.assertRaises(DuplicateParentError):
+            self.tree.add_child(new_node)
+        self.tree._check_integrity()
+
+    def test_add_child_existing(self):
+        new_node = Node(identifier="Europe")
+
+        with self.assertRaises(DuplicateChildError):
+            self.tree.add_child(new_node)
         self.tree._check_integrity()
 
     def test_update_dict(self):
@@ -104,7 +129,7 @@ class TestNode(TestCase):
         tree = self.tree
         tree.sort_children(key=lambda node: len(node.children), recursive=True)
         tree._check_integrity()
-        result = [str(child.path) for child in tree.iter_descendants()][:5]
+        result = [str(child.path) for child, _ in tree.descendants.preorder()][:5]
         expected = ['/world/Africa',
                     '/world/Europe',
                     '/world/Europe/Norway',

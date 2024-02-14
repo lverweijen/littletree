@@ -20,16 +20,19 @@ class TestPerformance(TestCase):
         self.s = tree.to_newick()
 
     def test_recursion1(self):
+        nodes = self.tree.nodes
         for repeat in range(100):
-            list(self.tree.iter_nodes(order='pre'))
+            list(nodes.preorder())
 
     def test_recursion2(self):
+        nodes = self.tree.nodes
         for repeat in range(100):
-            list(self.tree.iter_nodes(order='post'))
+            list(nodes.postorder())
 
     def test_recursion3(self):
+        nodes = self.tree.nodes
         for repeat in range(100):
-            list(self.tree.iter_nodes(order='level'))
+            list(nodes.levelorder())
 
     def test_equal(self):
         copy = self.tree.copy()

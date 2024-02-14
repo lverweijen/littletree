@@ -149,7 +149,7 @@ class TestRowSerializer(TestCase):
 
         # We didn't have data, so delete it from expected
         expected = self.tree
-        for node in expected.iter_nodes():
+        for node in expected.nodes:
             node.data = {}
 
         self.assertEqual(expected.to_dict(), result.to_dict())
@@ -219,7 +219,7 @@ class TestRowSerializer(TestCase):
         result = serializer.from_rows(rows)
         result.identifier = "world"  # Set root identifier
 
-        for node in result.iter_nodes():
+        for node in result.nodes:
             if pd.isna(node.identifier):
                 node.identifier = "<empty>"
 
