@@ -1,27 +1,26 @@
-import sys
 from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
 from typing import TypeVar, Callable, Hashable, Optional
 
-from .abc import MutableTree, NodeItem
+from abstracttree import MutableTree
+
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
-from .exporters import StringExporter, DotExporter, MermaidExporter
 from .nodepath import NodePath
+from .treemixin import TreeMixin
 
 TNode = TypeVar("TNode", bound="BaseNode")
 TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
-class BaseNode(Generic[TIdentifier], MutableTree):
+class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
     """Minimalistic node class that a user can inherit from.
 
     Compared to Node this class is more primitive and less opinionated.
     This class is not made abstract, so it's possible to use a BaseNode directly.
     """
-    __slots__ = "_identifier", "_parent", "_cdict", "_cvalues", "_path"
+    __slots__ = "_identifier", "_parent", "_cdict", "_cvalues"
 
     # These can be changed in child classes
     dict_class = dict
-    path_class = NodePath
 
     def __init__(
         self: TNode,
@@ -176,11 +175,7 @@ class BaseNode(Generic[TIdentifier], MutableTree):
 
     @property
     def path(self) -> NodePath:
-        try:
-            return self._path
-        except AttributeError:
-            path = self._path = self.path_class(self)
-            return path
+        return NodePath(self)
 
     def add_child(self, node: TNode):
         if node.is_root:
@@ -292,22 +287,22 @@ class BaseNode(Generic[TIdentifier], MutableTree):
 
     def copy(self, _memo=None, keep=None) -> TNode:
         """Make a shallow copy or deepcopy if memo is passed."""
-        return self.transform(lambda _node, _item: BaseNode(), keep=keep)
+        return self.transform(lambda node: BaseNode(identifier=node.identifier), keep=keep)
 
-    def transform(self, f: Callable[[TNode, NodeItem], TNode], keep=None) -> TNode:
+    def transform(self, f: Callable[[TNode], TNode], keep=None) -> TNode:
         """Make a modified copy of a tree.
 
         :param f: How to modify each node
         :param keep: Which node and children to include
         """
-        other = f(self, NodeItem(0, 0))
+        other = f(self)
         other._identifier = self._identifier
         insert_depth = 0
-        for node, item in self.iter_descendants(keep=keep, with_item=True):
+        for node, item in self.descendants.preorder(keep):
             while insert_depth >= item.depth:
                 insert_depth -= 1
                 other = other._parent
-            other[node._identifier] = other = f(node, item)
+            other[node._identifier] = other = f(node)
             insert_depth += 1
         return other.root
 
@@ -353,7 +348,7 @@ class BaseNode(Generic[TIdentifier], MutableTree):
             self._cdict.clear()
             self._cdict.update((n._identifier, n) for n in nodes)
             if recursive:
-                for d in self.iter_descendants():
+                for d in self.descendants:
                     nodes = sorted(d.children, key=key, reverse=reverse)
                     d._cdict.clear()
                     d._cdict.update((n._identifier, n) for n in nodes)
@@ -362,14 +357,10 @@ class BaseNode(Generic[TIdentifier], MutableTree):
             self._cdict.clear()
             self._cdict.update(nodes)
             if recursive:
-                for d in self.iter_descendants():
+                for d in self.descendants:
                     nodes = sorted(d._cdict.items(), reverse=reverse)
                     d._cdict.clear()
                     d._cdict.update(nodes)
-
-    def iter_tree(self, *args, **kwargs):
-        """Alias for backward compatibility."""
-        return self.iter_nodes(*args, **kwargs)
 
     def iter_together(self, other) -> Tuple[TNode, Optional[TNode]]:
         """Yield all nodes in self with similar nodes in other.
@@ -378,7 +369,7 @@ class BaseNode(Generic[TIdentifier], MutableTree):
         """
         yield self, other
         stack = []
-        for node, item in self.iter_descendants(with_item=True):
+        for node, item in self.descendants.preorder():
             while len(stack) >= item.depth:
                 other = stack.pop(-1)
             if len(stack) < item.depth:
@@ -399,72 +390,3 @@ class BaseNode(Generic[TIdentifier], MutableTree):
             assert child.identifier == child_identifier
             assert child.parent is self
             child._check_integrity()
-
-    def show(self, formatter=None, style=None, keep=None):
-        """Print this tree. Shortcut for print(tree.to_string())."""
-        if sys.stdout:
-            if not style:
-                supports_unicode = not sys.stdout.encoding or sys.stdout.encoding.startswith('utf')
-                style = "square" if supports_unicode else "ascii"
-            self.to_string(sys.stdout, formatter=formatter, style=style, keep=keep)
-
-    def to_string(self, file=None, formatter=None, style="square", keep=None) -> Optional[str]:
-        """Convert tree to string."""
-        exporter = StringExporter(formatter, style)
-        return exporter.to_string(self, file, keep=keep)
-
-    def to_image(
-        self,
-        file=None,
-        keep=None,
-        node_attributes=None,
-        node_label=str,
-        backend="graphviz",
-        **kwargs
-    ):
-        """Convert tree to image."""
-        if node_attributes is None:
-            node_attributes = {"label": node_label}
-        if backend == "graphviz":
-            exporter = DotExporter(node_attributes=node_attributes, **kwargs)
-        elif backend == "mermaid":
-            exporter = MermaidExporter(node_label=node_label, **kwargs)
-        else:
-            raise ValueError(f"Backend should be graphviz or mermaid, not {backend}")
-        return exporter.to_image(self, file, keep=keep)
-
-    def to_dot(
-        self,
-        file=None,
-        keep=None,
-        node_attributes=None,
-        node_label=str,
-        **kwargs
-    ) -> Optional[str]:
-        """Convert tree to dot file."""
-        if node_attributes is None:
-            node_attributes = {"label": node_label}
-        exporter = DotExporter(node_attributes=node_attributes, **kwargs)
-        return exporter.to_dot(self, file, keep=keep)
-
-    def to_mermaid(self, file=None, keep=None, node_label=str, **kwargs) -> Optional[str]:
-        """Convert tree to mermaid file."""
-        exporter = MermaidExporter(node_label=node_label, **kwargs)
-        return exporter.to_mermaid(self, file, keep=keep)
-
-    def _check_loop1(self, other: TNode):
-        """Check if other is an ancestor of self."""
-        if not other.is_leaf:
-            if self is other:
-                raise LoopError(self, other)
-            if any(other is ancestor for ancestor in self.iter_ancestors()):
-                raise LoopError(self, other)
-
-    def _check_loop2(self, others: Iterable[TNode]):
-        """Check if any of others is an ancestor of self."""
-        ancestors = set(map(id, self.iter_ancestors()))
-        ancestors.add(id(self))
-
-        ancestor = next((child for child in others if id(child) in ancestors), None)
-        if ancestor:
-            raise LoopError(self, ancestor)

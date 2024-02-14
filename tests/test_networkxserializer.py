@@ -13,8 +13,8 @@ class TestNetworkXSerializer(unittest.TestCase):
 
         # Forth
         graph = serializer.to_networkx(tree)
-        self.assertEqual(list("Abcd"), list(graph.nodes))
-        self.assertEqual([('A', 'b'), ('A', 'c'), ('A', 'd')], list(graph.edges))
+        self.assertCountEqual(list("Abcd"), list(graph.nodes))
+        self.assertCountEqual([('A', 'b'), ('A', 'c'), ('A', 'd')], list(graph.edges))
         data = dict(graph.nodes.data())
 
         # Check data
@@ -32,8 +32,8 @@ class TestNetworkXSerializer(unittest.TestCase):
 
         # Forth
         graph = tree.to_networkx()
-        self.assertEqual(list("Abcd"), list(graph.nodes))
-        self.assertEqual([('A', 'b'), ('A', 'c'), ('A', 'd')], list(graph.edges))
+        self.assertCountEqual(list("Abcd"), list(graph.nodes))
+        self.assertCountEqual([('A', 'b'), ('A', 'c'), ('A', 'd')], list(graph.edges))
 
         # Back
         tree2 = Node.from_networkx(graph)

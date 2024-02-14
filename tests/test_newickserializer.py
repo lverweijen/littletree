@@ -69,7 +69,7 @@ class TestNewickSerializer(TestCase):
         recovered_tree = serializer.loads(result)
 
         # Recover from string
-        for node in recovered_tree.iter_nodes():
+        for node in recovered_tree.nodes:
             node.data = ast.literal_eval(node.data)
 
         self.assertEqual(self.tree2.to_string(), recovered_tree.to_string())

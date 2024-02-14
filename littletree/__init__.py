@@ -1,5 +1,6 @@
+from abstracttree import MaxDepth
+
 from .basenode import BaseNode
-from .maxdepth import MaxDepth
 from .node import Node
 from .route import Route
 
@@ -10,4 +11,4 @@ __all__ = [
     "Route",
 ]
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"

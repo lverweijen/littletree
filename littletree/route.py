@@ -1,8 +1,9 @@
 import itertools
 from typing import Iterator, Tuple, TypeVar
 
+from abstracttree import UpTree
+
 from .exceptions import DifferentTreeError
-from .abc import UpTree
 
 TNode = TypeVar("TNode", bound=UpTree)
 
@@ -12,10 +13,7 @@ class Route:
 
     def __init__(self, *nodes: TNode, check_tree=True):
         """Create a route through all nodes."""
-        self._paths = [
-            tuple(itertools.chain(reversed(tuple(node.iter_ancestors())), [node]))
-            for node in nodes
-        ]
+        self._paths = [list(node.path) for node in nodes]
 
         if check_tree:
             path, *other_paths = self._paths
