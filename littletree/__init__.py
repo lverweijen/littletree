@@ -7,8 +7,11 @@ from .route import Route
 __all__ = [
     "BaseNode",
     "Node",
+    "TreeMixin",
     "MaxDepth",
     "Route",
 ]
 
 __version__ = "0.8.0"
+
+from .treemixin import TreeMixin

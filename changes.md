@@ -4,15 +4,14 @@
   - Methods `tree.iter_nodes` and similar renamed to `iter(tree.nodes)`
   - Methods `tree.count_nodes` and similar renamed to `tree.nodes.count()`
   - Method `Node.to_image()` now returns `bytes`. Use `Node.to_pillow` to get an image.
-  - `littletree.export.*` is gone. Use `abstracttree.export.*` instead.
+  - `littletree.export.*` is gone. Use `abstracttree.export.*` or `TreeMixin.*` instead.
   - Methods `add_child`, `add_children` and `remove_child` have been added to `BaseNode`.
-- Move `BaseNode.path.to` to `NodeMixin.to`
-- New method:
-  - `Node.from_tree`, a generic method to import almost anything:
-    For example `Node.from_tree(Path(), identifier=str, data = lambda _: dict())`
-    will create a tree from the filesystem tree of the current directory.
+- Rename `NodeMixin` to `TreeMixin`
+- Move `BaseNode.path.to` to `TreeMixin.to`
+- New methods:
+  - `Node.from_tree`, a generic method to import almost anything
 
-## Scrapped version 0.7.0 ##
+## (Scrapped) version 0.7.0 ##
 - `NodeMixin` is gone. Instead `littletree.abc` contains multiple abstract classes.
 - Rename `tree.iter_tree()` to `tree.iter_nodes()`.
 - Some new methods:

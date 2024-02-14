@@ -12,6 +12,8 @@ TNode = TypeVar("TNode", bound="TreeMixin")
 
 
 class TreeMixin(abstracttree.Tree, metaclass=ABCMeta):
+    __slots__ = ()
+
     def show(self, *args, **kwargs):
         """Print this tree. Shortcut for print(tree.to_string())."""
         print_tree(self, *args, **kwargs)
@@ -46,7 +48,7 @@ class TreeMixin(abstracttree.Tree, metaclass=ABCMeta):
         orders = {"pre": nodes.preorder,
                   "post": nodes.postorder,
                   "level": nodes.levelorder}
-        if order_call := orders[order]:
+        if order_call := orders.get(order):
             items = order_call(keep)
         else:
             raise ValueError("Unknown order")
@@ -65,7 +67,7 @@ class TreeMixin(abstracttree.Tree, metaclass=ABCMeta):
         orders = {"pre": nodes.preorder,
                   "post": nodes.postorder,
                   "level": nodes.levelorder}
-        if order_call := orders[order]:
+        if order_call := orders.get(order):
             items = order_call(keep)
         else:
             raise ValueError("Unknown order")
