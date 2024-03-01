@@ -11,12 +11,12 @@ tree = Node({"population": 7.909}, identifier="World")
 The tree is represented by a node.
 All nodes have the following attributes:
 
-| Attribute  | Use                                                 |
-|------------|-----------------------------------------------------|
-| identifier | Indentifier of this node. Unique amongst siblings.  |
-| parent     | Node which is the parent. For root, this is `None`. |
-| children   | Nodes that are children.                            |
-| data       | Dictionary in which data can be stored.             |
+| Attribute    | Use                                                 |
+|--------------|-----------------------------------------------------|
+| `identifier` | Indentifier of this node. Unique amongst siblings.  |
+| `parent`     | Node which is the parent. For root, this is `None`. |
+| `children`   | Nodes that are children.                            |
+| `data`       | Dictionary in which data can be stored.             |
 
 ## Adding nodes
 
@@ -105,18 +105,18 @@ tree2.update([tree1["Asia"]], mode="detach")
 ## Iterators
 
 There are a few functions for iteration.
-They all return an iterator but can be converted to list using `list`.
+They all return iterators but can be converted to list using `list`.
 
-| Iterator                  | Function                            |
-|---------------------------|-------------------------------------|
-| iter(tree.children)       | Iterate over children               |
-| iter(tree.path)           | Iterate from root to self           |
-| iter(tree.nodes)          | Iterate over all nodes              |
-| iter(tree.ancestors)      | Iterate over ancestors              |
-| iter(tree.descendants)    | Iterate over descendants            |
-| iter(tree.siblings)       | Iterate over nodes with same parent |
-| tree.iter_together(tree2) | Iterate over multiple trees         |
-| iter(node1.to(node2))     | Iterate from one node to another    |
+| Iterator                    | Function                            |
+|-----------------------------|-------------------------------------|
+| iter(tree.children)         | Iterate over children               |
+| iter(tree.path)             | Iterate from root to self           |
+| iter(tree.nodes)            | Iterate over all nodes              |
+| iter(tree.ancestors)        | Iterate over ancestors              |
+| iter(tree.descendants)      | Iterate over descendants            |
+| iter(tree.siblings)         | Iterate over nodes with same parent |
+| tree.iter_together(tree2)   | Iterate over multiple trees         |
+| iter(node1.to(node2).nodes) | Iterate from one node to another    |
 
 To iterate through the nodes in a specific order, use one of the following:
 
@@ -124,8 +124,10 @@ To iterate through the nodes in a specific order, use one of the following:
 - `for node, item in tree.nodes.postorder()`
 - `for node, item in tree.nodes.levelorder()`
 
-An optional argument `keep` can be given to the above three functions.
-If passed, a node and its descendants will be skipped `if not keep(node)`.
+These three iterators also works on `tree.descendants`.
+These iterators accept an optional argument `keep`.
+If passed, a node and its descendants will be skipped `if not keep(node, item)`.
+Argument `item` is a NamedTuple of `depth` and `index`.
 Use `keep=MaxDepth(n)` to iterate at most `n` levels deep.
 
 ## Path operations
@@ -160,13 +162,6 @@ It can also be searched for:
 lisbon_nodes = tree.path.glob("**/Lisbon")
 ```
 
-Path from one node to another:
-```python
-madrid = tree.path.create("Europe/Spain/Madrid")
-madrid_to_lisbon = list(Route(madrid, lisbon))
-# => [madrid, spain, europe, portugal, lisbon]
-```
-
 ## Miscellaneous tree operations
 
 Calculate height and breadth of a tree
@@ -181,31 +176,37 @@ Find depth of a node:
 depth = node.ancestors.count()
 ```
 
-Get distance between two nodes:
+Path from one node to another:
 ```python
-distance = node1.to(node2).count_edges()
+madrid = tree.path.create("Europe/Spain/Madrid")
+madrid_to_lisbon = list(madrid.to(lisbon).nodes)
+# => [madrid, spain, europe, portugal, lisbon]
+```
+
+Number of edges between two nodes:
+```python
+distance = madrid.to(lisbon).edges.count()
 ```
 
 Find lowest common ancestor of two nodes:
 ```python
-europe = Route(madrid, lisbon).lca()
+europe = madrid.to(lisbon).lca
 ```
 
 ## Exporting and serialization
 
 Nodes have basic import and exports options with many parameters:
 
-| Format  | Function                          | Use                                     |
-|---------|-----------------------------------|-----------------------------------------|
-| Text    | to_string()                       | Pretty print the tree                   |
-| Text    | to_dot(), to_mermaid()            | Exports to dot/mermaid                  |
-| Image   | to_image(), to_pillow()           | Requires graphviz or mermaid            |
-| Nested  | from_dict() / to_dict()           | Converting to / from json-like formats  |
-| Rows    | from_rows() / to_rows()           | Converting to / from path lists         |
-| Rows    | from_relations() / to_relations() | Converting to / from parent-child lists |
-| Text    | from_newick() / to_newick()       | Converting to / from newick-format      |
-| DiGraph | from_networkx() / to_networkx()   | Converting to / from networkx-format    |
-| Tree    | from_tree()                       | Import from abstracttree (generic)      |
+| Format  | Function                                 | Use                                     |
+|---------|------------------------------------------|-----------------------------------------|
+| Text    | `to_string()`                            | Pretty print the tree                   |
+| Text    | `to_dot()`, `to_mermaid()`, `to_latex()` | Exports to dot, mermaid, latex          |
+| Image   | `to_image()`, `to_pillow()`              | Requires graphviz or mermaid            |
+| Nested  | `from_dict()` / `to_dict()`              | Converting to / from json-like formats  |
+| Rows    | `from_rows()` / `to_rows()`              | Converting to / from path lists         |
+| Rows    | `from_relations()` / `to_relations()`    | Converting to / from parent-child lists |
+| Text    | `from_newick()` / `to_newick()`          | Converting to / from newick-format      |
+| DiGraph | `from_networkx()` / `to_networkx()`      | Converting to / from networkx-format    |
 
 ```python
 family_newick = "((George, Charlotte, Louis)William,(Archie, Lilibet)Harry)'Charles III'[&&NHX:born=1948]"

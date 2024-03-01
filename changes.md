@@ -6,18 +6,12 @@
   - Method `Node.to_image()` now returns `bytes`. Use `Node.to_pillow` to get an image.
   - `littletree.export.*` is gone. Use `abstracttree.export.*` or `TreeMixin.*` instead.
   - Methods `add_child`, `add_children` and `remove_child` have been added to `BaseNode`.
+  - Change transform to match abstract signature:
+    - Possible to change identifier when transforming
+    - Function takes just a node as argument.
+  - `Route` has a slightly different api.
 - Rename `NodeMixin` to `TreeMixin`
-- Move `BaseNode.path.to` to `TreeMixin.to`
-- New methods:
-  - `Node.from_tree`, a generic method to import almost anything
-
-## (Scrapped) version 0.7.0 ##
-- `NodeMixin` is gone. Instead `littletree.abc` contains multiple abstract classes.
-- Rename `tree.iter_tree()` to `tree.iter_nodes()`.
-- Some new methods:
-  - `count` methods such as `count_nodes()`, `count_descendants()`
-  - `add_child` and `remove_child` to add a node without changing identifier
-  - `has_child`, `has_descendant`, `has_ancestor`
+- Move `BaseNode.path.to` to `TreeMixin.to`.
 
 ## Version 0.6.2 ##
 - Make better use of NodeMixin

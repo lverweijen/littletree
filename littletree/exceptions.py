@@ -29,6 +29,7 @@ class LoopError(TreeException):
         return f"{self.node} can't become parent of {self.ancestor}"
 
 
+# TODO Currently unused. It was used in old Route-class
 class DifferentTreeError(TreeException):
     def __init__(self, root1, root2):
         self.root1 = root1

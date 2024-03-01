@@ -1,8 +1,6 @@
 from unittest import TestCase
 
 from littletree import Node
-from littletree.exceptions import DifferentTreeError
-from littletree.route import Route
 
 
 class TestRoute(TestCase):
@@ -18,11 +16,11 @@ class TestRoute(TestCase):
         africa = tree.path("Africa")
         sweden = tree.path("Europe/Sweden")
 
-        self.route = Route(finland, africa)
-        self.route2 = Route(finland, sweden)
-        self.route3 = Route(finland, africa, sweden)
-        self.route4 = Route(africa, finland, sweden)
-        self.route5 = Route(sweden.parent, sweden, sweden.parent, sweden)
+        self.route = finland.to(africa)
+        self.route2 = finland.to(sweden)
+        self.route3 = finland.to(africa, sweden)
+        self.route4 = africa.to(finland, sweden)
+        self.route5 = sweden.parent.to(sweden, sweden.parent, sweden)
 
     def test_repr(self):
         result = repr(self.route)
@@ -36,7 +34,7 @@ class TestRoute(TestCase):
 
     def test_iter(self):
         tree = self.tree
-        result = list(self.route)
+        result = list(self.route.nodes)
         expected = [
             tree.path("Europe/Finland"),
             tree["Europe"],
@@ -45,7 +43,7 @@ class TestRoute(TestCase):
         ]
         self.assertEqual(expected, result)
 
-        result = list(self.route2)
+        result = list(self.route2.nodes)
         expected = [
             tree.path("Europe/Finland"),
             tree["Europe"],
@@ -53,7 +51,7 @@ class TestRoute(TestCase):
         ]
         self.assertEqual(expected, result)
 
-        result = list(self.route3)
+        result = list(self.route3.nodes)
         expected = [
             tree.path("Europe/Finland"),
             tree["Europe"],
@@ -65,7 +63,7 @@ class TestRoute(TestCase):
         ]
         self.assertEqual(expected, result)
 
-        result = list(self.route4)
+        result = list(self.route4.nodes)
         expected = [
             tree["Africa"],
             tree.root,
@@ -76,7 +74,7 @@ class TestRoute(TestCase):
         ]
         self.assertEqual(expected, result)
 
-        result = list(self.route5)
+        result = list(self.route5.nodes)
         expected = [
             tree["Europe"],
             tree.path("Europe/Sweden"),
@@ -87,7 +85,7 @@ class TestRoute(TestCase):
 
     def test_reversed(self):
         tree = self.tree
-        result = list(reversed(self.route))
+        result = list(reversed(list(self.route.nodes)))
         expected = [
             tree["Africa"],
             tree.root,
@@ -98,50 +96,41 @@ class TestRoute(TestCase):
 
     def test_lca(self):
         tree = self.tree
-        result = self.route.lca()
+        result = self.route.lca
         expected = tree.root
         self.assertEqual(expected, result)
 
-        result = self.route2.lca()
+        result = self.route2.lca
         expected = tree["Europe"]
         self.assertEqual(expected, result)
 
-        result = self.route3.lca()
+        result = self.route3.lca
         expected = tree.root
-        self.assertEqual(expected, result)
-
-    def test_iter_lca(self):
-        result = list(self.route3.iter_lca())
-        expected = [self.tree, self.tree]
-        self.assertEqual(expected, result)
-
-        result = list(self.route4.iter_lca())
-        expected = [self.tree.root, self.tree.path("Europe")]
         self.assertEqual(expected, result)
 
     def test_count_nodes(self):
         tree = self.tree
-        result = self.route.count_nodes()
+        result = self.route.nodes.count()
         self.assertEqual(4, result)
 
-        result = self.route2.count_nodes()
+        result = self.route2.nodes.count()
         self.assertEqual(3, result)
 
-        result = self.route3.count_nodes()
+        result = self.route3.nodes.count()
         self.assertEqual(7, result)
 
-        result = self.route4.count_nodes()
+        result = self.route4.nodes.count()
         self.assertEqual(6, result)
 
-        result = self.route5.count_nodes()
+        result = self.route5.nodes.count()
         self.assertEqual(4, result)
 
         deep_helsinki = tree.path(["Europe", "Finland", "Helsinki", "Helsinki", "Helsinki"])
-        route = Route(deep_helsinki, deep_helsinki)
-        route_from_route = Route(deep_helsinki.root, deep_helsinki)
-        result = route.count_nodes()
+        route = deep_helsinki.to(deep_helsinki)
+        route_from_route = deep_helsinki.root.to(deep_helsinki)
+        result = route.nodes.count()
         result2 = deep_helsinki.path.count()
-        result3 = route_from_route.count_nodes()
+        result3 = route_from_route.nodes.count()
         self.assertEqual(1, result)
         self.assertEqual(6, result2)
         self.assertEqual(6, result3)
@@ -151,6 +140,4 @@ class TestRoute(TestCase):
         tree = self.tree
         other_tree = Node(identifier='disconnected')
         self.assertIsNot(tree.root, other_tree.root)
-
-        with self.assertRaises(DifferentTreeError):
-            Route(tree, other_tree, check_tree=True)
+        self.assertIsNone(tree.to(other_tree))
