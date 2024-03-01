@@ -1,11 +1,5 @@
 import copy
-import operator
-from collections.abc import Collection
-from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Union, Iterable, \
-    Callable
-
-from abstracttree import astree, Tree
-from abstracttree.predicates import Predicate
+from typing import Mapping, Optional, Iterator, TypeVar, Generic, Hashable, Union, Iterable
 
 from .basenode import BaseNode
 from .serializers import DictSerializer
@@ -73,10 +67,11 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         """Make a shallow copy or deepcopy if memo is passed."""
         if deep or memo:
             def node(original):
-                return Node(copy.deepcopy(original.data, memo or {}))
+                return Node(identifier=original.identifier,
+                            data=copy.deepcopy(original.data, memo or {}))
         else:
             def node(original):
-                return Node(original.data)
+                return Node(identifier=original.identifier, data=original.data)
         return self.transform(node, keep=keep)
 
     def compare(self, other: TNode, keep_equal=False) -> Optional[TNode]:
@@ -89,7 +84,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         >>> tree.compare(other_tree)
         Node({'self': 'apples', 'other': 'oranges'}, identifier='fruit)
         """
-        diff_node = self.transform(lambda n: Node({'self': n.data}))
+        diff_node = self.transform(lambda n: Node(identifier=n.identifier, data={'self': n.data}))
         diff_node.data['other'] = other.data
         insert_depth = 0
         for node, item in other.iter_descendants(with_item=True):
@@ -101,16 +96,13 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             insert_depth += 1
         diff_tree = diff_node.root
         if not keep_equal:
-            to_detach = None
-            for node, _ in diff_tree.nodes.postorder():
-                if to_detach:
-                    to_detach.detach()
+            for node, _ in diff_tree.descendants.postorder():
                 if node.data.get('self') == node.data.get('other'):
                     if node.is_leaf:
-                        to_detach = node  # Should be detached next round, because of up-traversal
+                        node.detach()
                     else:
                         node.data.clear()
-            if diff_tree is to_detach:
+            if diff_tree.data.get('self') == diff_tree.data.get('other'):
                 return None  # Trees are perfectly equal
         return diff_tree
 
@@ -160,26 +152,3 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
     def to_networkx(self, **kwargs):
         exporter = NetworkXSerializer(self.__class__, data_field="data", **kwargs)
         return exporter.to_networkx(self)
-
-    @classmethod
-    def from_tree(
-        cls,
-        tree: TInput,
-        data: Callable[[Tree], TIdentifier] = None,
-        identifier: Callable[[Tree], TIdentifier] = None,
-        children: Callable[[TInput], Collection[TInput]] = None,
-        keep: Predicate = None
-    ):
-        """Copy by converting tree to abstracttree, then selecting data and identifier.
-
-        For example this imports a tree from a nested list.
-        >>> seqtree = Node.from_tree([[1, 2], [3, 4]], data=lambda t: t.node)
-        """
-        if identifier is None:
-            if hasattr(tree, 'identifier'):
-                identifier = operator.attrgetter('identifier')
-            else:
-                identifier = operator.attrgetter('nid')
-        return astree(tree, children).transform(
-            lambda n: cls(data=data(n), identifier=identifier(n)), keep=keep
-        )

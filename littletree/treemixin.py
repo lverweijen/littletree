@@ -2,16 +2,15 @@ import warnings
 from abc import ABCMeta
 from typing import TypeVar, Iterable
 
-import abstracttree
-from abstracttree import print_tree, plot_tree, to_string, to_image, to_pillow
+from abstracttree import print_tree, plot_tree, to_string, to_image, to_pillow, Route, Tree, \
+    to_latex
 
-from littletree.exceptions import DifferentTreeError, LoopError
-from littletree.route import Route
+from littletree.exceptions import LoopError
 
 TNode = TypeVar("TNode", bound="TreeMixin")
 
 
-class TreeMixin(abstracttree.Tree, metaclass=ABCMeta):
+class TreeMixin(Tree, metaclass=ABCMeta):
     __slots__ = ()
 
     def show(self, *args, **kwargs):
@@ -41,6 +40,10 @@ class TreeMixin(abstracttree.Tree, metaclass=ABCMeta):
     def to_mermaid(self, *args, **kwargs):
         """Convert tree to mermaid file."""
         return to_image(self, *args, **kwargs)
+
+    def to_latex(self, *args, **kwargs):
+        """Convert tree to latex file."""
+        return to_latex(self, *args, **kwargs)
 
     def iter_nodes(self, order="pre", keep=None, with_item=False):
         warnings.warn("This method is deprecated. Use tree.nodes instead.")
@@ -102,8 +105,8 @@ class TreeMixin(abstracttree.Tree, metaclass=ABCMeta):
         if ancestor:
             raise LoopError(self, ancestor)
 
-    def to(self, others):
+    def to(self, *others):
         try:
             return Route(self, *others)
-        except DifferentTreeError:
+        except ValueError:
             return None
