@@ -227,7 +227,7 @@ Charles III
    ├→ Archie
    ╰→ Lilibet
 ```
-![royals](royals.png)
+![royals](images/royals.png)
 
 ## Tricks
 
