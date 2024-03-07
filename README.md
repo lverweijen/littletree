@@ -55,7 +55,7 @@ World
 If [Pillow](https://pypi.org/project/pillow/) and [graphviz](https://graphviz.org/) are installed,
 it will also display the following image:
 
-![world](world.png)
+![world](images/world.png)
 
 See [tutorial](https://github.com/lverweijen/littletree/blob/main/tutorial.md) for more information.
 
