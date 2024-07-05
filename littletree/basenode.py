@@ -123,7 +123,8 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
         old_identifier = self._identifier
         if p is not None:
             if new_identifier in p._cdict:
-                raise DuplicateChildError(new_identifier, p)
+                if new_identifier != old_identifier:
+                    raise DuplicateChildError(new_identifier, p)
             else:
                 del p._cdict[old_identifier]
                 p._cdict[new_identifier] = self

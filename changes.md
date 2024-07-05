@@ -1,3 +1,7 @@
+## Version 0.8.1 ##
+- `node.identifier = node.identifier` no longer raises a DuplicateChildError.
+  It has now become a no-op.
+
 ## Version 0.8.0 ##
 - Package is now based on [AbstractTree](https://github.com/lverweijen/AbstractTree).
   The API has been revamped:

@@ -235,3 +235,10 @@ class TestNode(TestCase):
 
         self.assertEqual(europe_pruned, shallow_copy)
         self.assertEqual(europe_pruned, deep_copy)
+
+    def test_rename(self):
+        """Check if renaming nodes to themselves works"""
+        copy = self.tree.copy()
+        for node in copy.nodes:
+            node.identifier = node.identifier
+        self.assertEqual(self.tree, copy)
