@@ -1,3 +1,6 @@
+## Version 0.8.2 ##
+- `TreeMixin.to_dot` should produce dot-file, not an image.
+
 ## Version 0.8.1 ##
 - `node.identifier = node.identifier` no longer raises a DuplicateChildError.
   It has now become a no-op.

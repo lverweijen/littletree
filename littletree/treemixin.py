@@ -35,7 +35,7 @@ class TreeMixin(Tree, metaclass=ABCMeta):
 
     def to_dot(self, *args, **kwargs):
         """Convert tree to dot file."""
-        return to_image(self, *args, **kwargs)
+        return to_dot(self, *args, **kwargs)
 
     def to_mermaid(self, *args, **kwargs):
         """Convert tree to mermaid file."""
