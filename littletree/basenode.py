@@ -3,8 +3,12 @@ from fnmatch import fnmatchcase
 from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
 from typing import TypeVar, Callable, Hashable, Optional
 
-import abstracttree.treeclasses
 from abstracttree import MutableTree
+
+try:
+    from abstracttree.tree import PathView
+except ImportError:
+    from abstracttree.treeclasses import PathView
 
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from .treemixin import TreeMixin
@@ -378,7 +382,7 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
             child._check_integrity()
 
 
-class NodePath(abstracttree.treeclasses.PathView):
+class NodePath(PathView):
     __slots__ = "_node"
 
     # Can be overridden by child classes
