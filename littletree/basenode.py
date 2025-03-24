@@ -185,12 +185,12 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
     def path(self) -> "NodePath":
         return NodePath(self)
 
-    def add_child(self, node: TNode):
+    def add_child(self, node: TNode, check_loop: bool = True):
         if node.is_root:
             identifier = node.identifier
             if identifier in self:
                 raise DuplicateChildError(node, self)
-            if not node.is_leaf:
+            if check_loop and not node.is_leaf:
                 self._check_loop1(node)
             self._cdict[identifier] = node
             node._parent = self
