@@ -3,7 +3,7 @@ from abc import ABCMeta
 from typing import TypeVar, Iterable
 
 from abstracttree import print_tree, plot_tree, to_string, to_image, to_pillow, Route, Tree, \
-    to_latex
+    to_latex, to_dot
 
 from littletree.exceptions import LoopError
 
