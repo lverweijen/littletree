@@ -1,5 +1,6 @@
 import itertools
 from fnmatch import fnmatchcase
+from operator import methodcaller
 from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
 from typing import TypeVar, Callable, Hashable, Optional
 
@@ -228,62 +229,54 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
         - "copy": These nodes will be copied and remain in old tree
         - "detach": These nodes will be detached from old tree
         :param check_loop: If True, raises LoopError if a cycle is created.
-        :return: self
+        :return: None
         """
-        if mode not in ("copy", "detach"):
+        if mode == "copy":
+            _release = methodcaller("copy")
+        elif mode == "detach":
+            _release = methodcaller("detach")
+        else:
             raise ValueError('mode should be "copy" or "detach"')
+
+        _cdict = self._cdict
         if isinstance(other, Mapping):
             if check_loop:
                 self._check_loop2(other.values())
-            if mode == "detach":
-                for node in other.values():
-                    node.detach()
-            else:
-                conflict_resolutions = dict()
-                for identifier, node in other.items():
-                    if node._parent is not None:
-                        conflict_resolutions[identifier] = node.copy()
-                    node._identifier = identifier
-                if conflict_resolutions:
-                    other = dict(other)  # Don't modify input arguments
-                    other.update(conflict_resolutions)
-            self._update(other)
-        elif isinstance(other, Iterable):
-            other_dict = dict()
-            for node in other:
+            for identifier, node in other.items():
+                if old_child := _cdict.get(identifier):
+                    old_child._parent = None
                 if node._parent is not None:
-                    node = node.copy() if mode == "copy" else node.detach()
-                other_dict[node._identifier] = node
+                    node = _release(node)
+                _cdict[identifier] = node
+                node._identifier = identifier
+                node._parent = self
+        elif isinstance(other, Iterable):
             if check_loop:
-                self._check_loop2(other_dict.values())
-            self._update(other_dict)
+                if not hasattr(other, '__len__'):
+                    other = list(other)
+                self._check_loop2(other)
+            for node in other:
+                identifier = node._identifier
+                if old_child := _cdict.get(identifier):
+                    old_child._parent = None
+                if node._parent is not None:
+                    node = _release(node)
+                _cdict[identifier] = node
+                node._parent = self
         elif isinstance(other, BaseNode):
             if check_loop:
                 self._check_loop1(other)
-            if mode == "copy":
+            if mode == 'copy':
                 other = other.copy()
             other = other._cdict
-            self._update(other)
+            for identifier, node in other.items():
+                if old_child := _cdict.get(identifier):
+                    old_child._parent = None
+                node._parent = self
+            _cdict.update(other)
             other.clear()
         else:
             raise TypeError("new_children should be mapping, iterable or other node")
-
-    def _update(self, other: Mapping[TIdentifier, TNode]):
-        """Low-level update. Never use directly.
-
-        Assumptions:
-        - key, identifier already matches
-        - existing parents of nodes can be ignored
-        """
-        cdict = self._cdict
-        for identifier, child in other.items():
-            child._parent = self
-            old_child = cdict.get(identifier)
-            if old_child:
-                old_child._parent = None
-            cdict[identifier] = child
-
-    add_children = update
 
     def pop(self, identifier: TIdentifier) -> Optional[TNode]:
         """Remove and return node with identifier or None."""

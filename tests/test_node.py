@@ -103,6 +103,28 @@ class TestNode(TestCase):
         self.assertTrue(other_tree.is_leaf)
         self.assertEqual(expected, result)
 
+    def test_update_node_with_parent_copy(self):
+        """Test adding a node with existing parent in copy-mode."""
+        tree = self.tree
+        update_node = Node(identifier='old_name', parent=Node('existing_parent'))
+        tree.update({'new_name': update_node}, mode='copy')
+        node_added = tree['new_name']
+
+        self.assertIsNot(update_node, node_added)
+        self.assertEqual(update_node.identifier, "old_name")
+        self.assertEqual(node_added.identifier, "new_name")
+
+    def test_update_node_with_parent_detach(self):
+        """Test adding a node with existing parent in detach-mode."""
+        tree = self.tree
+        update_node = Node(identifier='old_name', parent=Node('existing_parent'))
+        tree.update({'new_name': update_node}, mode='detach')
+        node_added = tree['new_name']
+
+        self.assertIs(update_node, node_added)
+        self.assertEqual(update_node.identifier, "new_name")
+        self.assertEqual(node_added.identifier, "new_name")
+
     def test_reassign_children(self):
         tree = self.tree
         children = list(tree.children)
