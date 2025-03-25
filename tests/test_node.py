@@ -110,6 +110,10 @@ class TestNode(TestCase):
         tree.update({'new_name': update_node}, mode='copy')
         node_added = tree['new_name']
 
+        tree._check_integrity()
+        update_node._check_integrity()
+        node_added._check_integrity()
+
         self.assertIsNot(update_node, node_added)
         self.assertEqual(update_node.identifier, "old_name")
         self.assertEqual(node_added.identifier, "new_name")
@@ -120,6 +124,10 @@ class TestNode(TestCase):
         update_node = Node(identifier='old_name', parent=Node('existing_parent'))
         tree.update({'new_name': update_node}, mode='detach')
         node_added = tree['new_name']
+
+        tree._check_integrity()
+        update_node._check_integrity()
+        node_added._check_integrity()
 
         self.assertIs(update_node, node_added)
         self.assertEqual(update_node.identifier, "new_name")
@@ -132,12 +140,16 @@ class TestNode(TestCase):
         tree.children = children
         tree.show()
         result = [str(child.path) for child in tree.children]
+        tree._check_integrity()
+
         expected = ['/world/Africa', '/world/Europe']
         self.assertEqual(expected, result)
 
     def test_reassign_children_error(self):
         with self.assertRaises(LoopError):
             self.tree['Europe'].children = [self.tree.root]
+
+        self.tree._check_integrity()
 
     def test_sort_children1(self):
         tree = self.tree
