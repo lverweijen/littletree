@@ -1,3 +1,8 @@
+## Version 0.8.4 ##
+- Make `to_dot` work
+- Fix bug in `update` method.
+- Add parameter `check_loop` to `add_child`, so it can now be disabled.
+
 ## Version 0.8.2 ##
 - `TreeMixin.to_dot` should produce dot-file, not an image.
 
