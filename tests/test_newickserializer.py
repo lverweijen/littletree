@@ -1,7 +1,6 @@
 import ast
 import re
 from unittest import TestCase
-from unittest.util import safe_repr
 
 from littletree import Node
 from littletree.serializers.newickserializer import NewickSerializer, NewickError

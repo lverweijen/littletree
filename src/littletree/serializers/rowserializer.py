@@ -106,7 +106,7 @@ class RowSerializer:
         if with_root:
             row.append(root.identifier)
             yield row, root
-        for node, item in root.iter_descendants(order='pre', with_item=True):
+        for node, item in root.descendants.preorder():
             row = row[:item.depth + with_root - 1]
             row.append(node.identifier)
             if not leaves_only or node.is_leaf:

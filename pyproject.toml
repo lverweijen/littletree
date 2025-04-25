@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "littletree"
-dynamic = ["version"]
+version = "0.8.5"
 authors = [
     {name = "lverweijen", email = "lauwerund@gmail.com"}
 ]
 description = "Tree library"
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 keywords = [
     "tree",
     "datastructure",
@@ -25,13 +25,13 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
 dependencies = [
-    "abstracttree >= 0.0.4",
+    "abstracttree >= 0.0.4, < 0.2.0",
 ]
 license = "Apache-2.0"
 
@@ -48,9 +48,3 @@ Documentation = "https://github.com/lverweijen/littletree/blob/main/tutorial.md"
 Repository = "https://github.com/lverweijen/littletree"
 Issues = "https://github.com/lverweijen/littletree/issues"
 Changelog = "https://github.com/lverweijen/littletree/blob/main/changes.md"
-
-[tool.setuptools.packages.find]
-include = ["littletree*"]
-
-[tool.setuptools.dynamic]
-version = {attr = "littletree.__version__"}

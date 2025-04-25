@@ -131,7 +131,7 @@ class DictSerializer:
         last_mapping = {self.node_name: tree.identifier}
         last_mapping.update(get_data(tree))
         stack = [last_mapping]
-        for node, item in tree.iter_descendants(order="pre", with_item=True):
+        for node, item in tree.descendants.preorder():
             if item.depth > len(stack):
                 stack.append(last_mapping)
             else:
@@ -152,7 +152,7 @@ class DictSerializer:
 
         last_mapping = dict(get_data(tree))
         stack = [last_mapping]
-        for node, item in tree.iter_descendants(order="pre", with_item=True):
+        for node, item in tree.descendants.preorder():
             if item.depth > len(stack):
                 stack.append(last_mapping)
             else:

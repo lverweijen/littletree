@@ -75,7 +75,7 @@ class RelationSerializer:
     def to_relations(self, root: TNode):
         editor = self.editor
         child_name, parent_name = self.child_name, self.parent_name
-        for node in root.iter_descendants():
+        for node, _ in root.descendants.preorder():
             relation = {child_name: node.identifier, parent_name: node.parent.identifier}
             relation.update(editor.get_attributes(node))
             yield relation
