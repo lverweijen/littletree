@@ -19,9 +19,9 @@ class TestNodeMixin(unittest.TestCase):
         node = self.tree.path('Europe/Finland')
         leaf = self.tree.path('Africa')
 
-        self.assertEqual(root, root.root)
-        self.assertEqual(root, node.root)
-        self.assertEqual(root, leaf.root)
+        self.assertIs(root, root.root)
+        self.assertIs(root, node.root)
+        self.assertIs(root, leaf.root)
 
     # Iterators
     def test_iter_children(self):

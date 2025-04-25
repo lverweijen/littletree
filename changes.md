@@ -1,3 +1,7 @@
+## Version 0.8.5 ##
+- Add method `n1.similar_to(n2)` to compare nodes by value and structure.
+  In a future version, the behaviour of `n1 == n2` might change to compare by identity.
+
 ## Version 0.8.4 ##
 - Make `to_dot` work
 - Fix bug in `update` method.

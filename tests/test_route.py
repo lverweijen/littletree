@@ -98,15 +98,15 @@ class TestRoute(TestCase):
         tree = self.tree
         result = self.route.lca
         expected = tree.root
-        self.assertEqual(expected, result)
+        self.assertIs(expected, result)
 
         result = self.route2.lca
         expected = tree["Europe"]
-        self.assertEqual(expected, result)
+        self.assertIs(expected, result)
 
         result = self.route3.lca
         expected = tree.root
-        self.assertEqual(expected, result)
+        self.assertIs(expected, result)
 
     def test_count_nodes(self):
         tree = self.tree

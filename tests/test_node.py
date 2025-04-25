@@ -33,7 +33,7 @@ class TestNode(TestCase):
     def test_add_child(self):
         new_node = Node(identifier="New World")
         self.tree.add_child(new_node)
-        self.assertEqual(new_node, self.tree["New World"])
+        self.assertIs(new_node, self.tree["New World"])
         self.tree._check_integrity()
 
     def test_add_child_existing_parent(self):
@@ -236,9 +236,9 @@ class TestNode(TestCase):
         self.assertEqual(expected, result)
         self.assertEqual(expected2, result2)
         self.assertEqual(expected3, result3)
-        self.assertNotEqual(tree, other_tree)
-        self.assertNotEqual(other_tree, tree)
-        self.assertEqual(tree, copy_tree)
+        self.assertFalse(tree.similar_to(other_tree))
+        self.assertFalse(other_tree.similar_to(tree))
+        self.assertTrue(tree.similar_to(copy_tree))
 
     def test_copy(self):
         europe = self.tree["Europe"]
@@ -248,8 +248,8 @@ class TestNode(TestCase):
         shallow_copy._check_integrity()
         deep_copy._check_integrity()
 
-        self.assertEqual(europe, shallow_copy)
-        self.assertEqual(europe, deep_copy)
+        self.assertTrue(europe.similar_to(shallow_copy))
+        self.assertTrue(europe.similar_to(deep_copy))
 
     def test_copy_depth(self):
         europe = self.tree["Europe"]
@@ -267,12 +267,12 @@ class TestNode(TestCase):
         shallow_copy._check_integrity()
         deep_copy._check_integrity()
 
-        self.assertEqual(europe_pruned, shallow_copy)
-        self.assertEqual(europe_pruned, deep_copy)
+        self.assertTrue(europe_pruned.similar_to(shallow_copy))
+        self.assertTrue(europe_pruned.similar_to(deep_copy))
 
     def test_rename(self):
         """Check if renaming nodes to themselves works"""
         copy = self.tree.copy()
         for node in copy.nodes:
             node.identifier = node.identifier
-        self.assertEqual(self.tree, copy)
+        self.assertIsNone(self.tree.compare(copy))

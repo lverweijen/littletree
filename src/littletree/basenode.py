@@ -63,10 +63,15 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
         output = [self.__class__.__name__, f"({self.identifier!r})"]
         return "".join(output)
 
-    def __eq__(self: TNode, other: TNode):
-        """Check if two trees are equal.
+    def similar_to(self: TNode, other: TNode) -> bool:
+        """Check if two trees are similar.
 
-        Trees are equal if they have the same structure.
+        Trees are similar if they have the same structure.
+        - All attributes are the same
+        - All descendants have the same identifier
+        - Root may have a different identifier
+
+        This is the same as `tree.compare(tree2) is None`.
 
         Change from version 0.5.0:
         - Two trees can now be equal if the roots have a different identifier.
@@ -77,6 +82,13 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
             return all(n1._cdict.keys() == n2._cdict.keys() for n1, n2 in self.iter_together(other))
         else:
             return NotImplemented
+
+    def __eq__(self: TNode, other: TNode):
+        """Same as tree.similar_to(tree2).
+
+        In a future update, the behaviour of `n1 == n2` might change to compare by identity.
+        """
+        return self.similar_to(other)
 
     def __getitem__(self, identifier: TIdentifier) -> TNode:
         """Get child by identifier."""

@@ -47,10 +47,10 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         else:
             return f"{self.identifier}\n{self.data}"
 
-    def __eq__(self: TNode, other: TNode):
-        """Check if two trees are equal.
+    def similar_to(self: TNode, other: TNode):
+        """Check if two trees are similar.
 
-        Trees are equal if they have the same structure and the same data.
+        Trees are similar if they have the same structure and the same data.
 
         Change from version 0.5.0:
         - Two trees can now be equal if the roots have a different identifier.
@@ -87,7 +87,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         diff_node = self.transform(lambda n: Node(identifier=n.identifier, data={'self': n.data}))
         diff_node.data['other'] = other.data
         insert_depth = 0
-        for node, item in other.iter_descendants(with_item=True):
+        for node, item in other.descendants.preorder():
             while insert_depth >= item.depth:
                 insert_depth -= 1
                 diff_node = diff_node.parent

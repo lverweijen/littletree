@@ -1,8 +1,3 @@
-from abstracttree import MaxDepth
-
-from .basenode import BaseNode
-from .node import Node
-
 __all__ = [
     "BaseNode",
     "Node",
@@ -10,6 +5,10 @@ __all__ = [
     "MaxDepth",
 ]
 
-__version__ = "0.8.4"
+__version__ = "0.8.5"
 
+from abstracttree import MaxDepth
+
+from .basenode import BaseNode
+from .node import Node
 from .treemixin import TreeMixin

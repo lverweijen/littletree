@@ -120,8 +120,7 @@ class TestDictSerializer(TestCase):
         result = serializer.from_dict(self.compact_dict)
         result.identifier = "world"  # Needs to be updated by hand
         expected = self.tree
-        result._check_integrity()
-        self.assertEqual(expected, result)
+        self.assertIsNone(expected.compare(result))
 
     def test_from_dict2(self):
         """Verbose but extensible serialization."""
@@ -130,7 +129,7 @@ class TestDictSerializer(TestCase):
         result = serializer.from_dict(self.verbose_dict)
         expected = self.tree
         result._check_integrity()
-        self.assertEqual(expected, result)
+        self.assertIsNone(expected.compare(result))
 
     def test_from_dict3(self):
         """Verbose but extensible serialization."""
@@ -139,7 +138,7 @@ class TestDictSerializer(TestCase):
         result = serializer.from_dict(self.verbose_data_dict)
         expected = self.tree2
         result._check_integrity()
-        self.assertEqual(expected, result)
+        self.assertIsNone(expected.compare(result))
 
     def test_from_dict4(self):
         """Verbose but extensible serialization."""
@@ -149,4 +148,4 @@ class TestDictSerializer(TestCase):
         result.identifier = 'world'
         expected = self.tree2
         result._check_integrity()
-        self.assertEqual(expected, result)
+        self.assertIsNone(expected.compare(result))

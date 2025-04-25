@@ -35,7 +35,7 @@ class TestNewickSerializer(TestCase):
         self.assertEqual(expected, result)
 
         back_tree = serializer.loads(expected)
-        self.assertEqual(self.tree, back_tree)
+        self.assertTrue(self.tree.similar_to(back_tree))
 
     def test_to_newick2(self):
         """Test without quoting."""
@@ -47,7 +47,7 @@ class TestNewickSerializer(TestCase):
         self.assertEqual(expected, result)
 
         back_tree = serializer.loads(expected)
-        self.assertEqual(self.tree, back_tree)
+        self.assertTrue(self.tree.similar_to(back_tree))
 
     def test_to_newick3(self):
         """Test with data."""
@@ -103,7 +103,7 @@ class TestNewickSerializer(TestCase):
         serializer = NewickSerializer()
         tree = serializer.loads("(A,B,(C,D));")
         result = tree.to_string()
-        descendants = list(tree.iter_descendants())
+        descendants = list(tree.descendants)
         self.assertEqual(5, len(descendants))
         self.assertEqual(3, len(tree.children))
 
@@ -164,4 +164,4 @@ class TestNewickSerializer(TestCase):
         nwk = tree.to_newick(escape_comments=True)
         self.assertEqual("'simple_node'[&&NHX:closing=&rsqb;];", nwk)
         tree_restored = Node.from_newick(nwk)
-        self.assertEqual(tree, tree_restored)
+        self.assertTrue(tree.similar_to(tree_restored))

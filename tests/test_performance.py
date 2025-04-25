@@ -34,10 +34,10 @@ class TestPerformance(TestCase):
         for repeat in range(100):
             list(nodes.levelorder())
 
-    def test_equal(self):
+    def test_similar_to(self):
         copy = self.tree.copy()
         for repeat in range(100):
-            self.tree == copy
+            self.tree.similar_to(copy)
 
     def test_copy(self):
         for repeat in range(10):
