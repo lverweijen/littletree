@@ -192,10 +192,26 @@ class TestNode(TestCase):
         other_tree['Europe'] = Node(data="something great")
         other_tree['Asia'] = Node()
         other_tree['Australia'] = Node(data="here be kangaroos")
+
+        # With keep_equal
         compare_tree = tree.compare(other_tree, keep_equal=True)
         result = compare_tree.to_string()
         expected = ('world\n'
                     "{'self': {}, 'other': {}}\n"
+                    '├─ Europe\n'
+                    "│  {'self': 'first', 'other': 'something great'}\n"
+                    '├─ Africa\n'
+                    "│  {'self': 'very big'}\n"
+                    '├─ Asia\n'
+                    "│  {'other': {}}\n"
+                    '└─ Australia\n'
+                    "   {'other': 'here be kangaroos'}\n")
+        self.assertEqual(expected, result)
+
+        # Without keep_equal
+        compare_tree = tree.compare(other_tree, keep_equal=False)
+        result = compare_tree.to_string()
+        expected = ('world\n'
                     '├─ Europe\n'
                     "│  {'self': 'first', 'other': 'something great'}\n"
                     '├─ Africa\n'

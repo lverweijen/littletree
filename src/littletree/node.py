@@ -96,13 +96,13 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             insert_depth += 1
         diff_tree = diff_node.root
         if not keep_equal:
-            for node, _ in diff_tree.descendants.postorder():
+            for node, _ in diff_tree.nodes.postorder():
                 if node.data.get('self') == node.data.get('other'):
                     if node.is_leaf:
                         node.detach()
                     else:
                         node.data.clear()
-            if diff_tree.data.get('self') == diff_tree.data.get('other'):
+            if diff_tree.is_leaf and diff_tree.data.get('self') == diff_tree.data.get('other'):
                 return None  # Trees are perfectly equal
         return diff_tree
 

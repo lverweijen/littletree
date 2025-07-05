@@ -5,7 +5,7 @@ __all__ = [
     "MaxDepth",
 ]
 
-__version__ = "0.8.5"
+__version__ = "0.8.7"
 
 from abstracttree import MaxDepth
 

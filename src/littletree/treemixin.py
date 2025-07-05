@@ -5,7 +5,7 @@ from typing import TypeVar, Iterable
 from abstracttree import print_tree, plot_tree, to_string, to_image, to_pillow, Route, Tree, \
     to_latex, to_dot
 
-from src.littletree.exceptions import LoopError
+from littletree.exceptions import LoopError
 
 TNode = TypeVar("TNode", bound="TreeMixin")
 

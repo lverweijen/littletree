@@ -102,7 +102,6 @@ class TestNewickSerializer(TestCase):
         # wikipedia example
         serializer = NewickSerializer()
         tree = serializer.loads("(A,B,(C,D));")
-        result = tree.to_string()
         descendants = list(tree.descendants)
         self.assertEqual(5, len(descendants))
         self.assertEqual(3, len(tree.children))

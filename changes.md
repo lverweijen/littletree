@@ -1,3 +1,14 @@
+## Version 0.8.7 ##
+
+Fix bug in `node.compare`:
+- Old behaviour: Return `None` if both roots have the same data.
+- New behaviour: Only return `None` if roots have the same data and there are no differences further down.
+  Otherwise, a difference tree should be returned.
+
+## Version 0.8.6 ##
+
+Fix bug caused by moving everything to src-directory.
+
 ## Version 0.8.5 ##
 - Add method `n1.similar_to(n2)` to compare nodes by value and structure.
   In a future version, the behaviour of `n1 == n2` might change to compare by identity.
