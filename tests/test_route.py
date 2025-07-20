@@ -24,13 +24,13 @@ class TestRoute(TestCase):
 
     def test_repr(self):
         result = repr(self.route)
-        self.assertEqual("Route(Finland, Africa)", result)
+        self.assertEqual("Route(Node({}, identifier='Finland'), Node({}, identifier='Africa'))", result)
 
         result = repr(self.route2)
-        self.assertEqual("Route(Finland, Sweden)", result)
+        self.assertEqual("Route(Node({}, identifier='Finland'), Node({}, identifier='Sweden'))", result)
 
         result = repr(self.route3)
-        self.assertEqual("Route(Finland, Africa, Sweden)", result)
+        self.assertEqual("Route(Node({}, identifier='Finland'), Node({}, identifier='Africa'), Node({}, identifier='Sweden'))", result)
 
     def test_iter(self):
         tree = self.tree

@@ -1,8 +1,15 @@
+## Version 0.8.8 ##
+
+- Upgrade to abstracttree 0.2.0.
+- When using `for node, item in tree.preorder()`, then `item.index` is now equal to `None` for `root`.
+- Native implementations of `node.root` and `node.is_leaf` should speed up these operations.
+- Readd support for python 3.10
+
 ## Version 0.8.7 ##
 
 Fix bug in `node.compare`:
-- Old behaviour: Return `None` if both roots have the same data.
-- New behaviour: Only return `None` if roots have the same data and there are no differences further down.
+- Old erroneous behaviour: Return `None` if both roots have the same data.
+- New correct behaviour: Only return `None` if roots have the same data and there are no differences further down.
   Otherwise, a difference tree should be returned.
 
 ## Version 0.8.6 ##

@@ -13,6 +13,11 @@ TNode = TypeVar("TNode", bound="TreeMixin")
 class TreeMixin(Tree, metaclass=ABCMeta):
     __slots__ = ()
 
+    def eqv(self, other):
+        if not isinstance(other, Tree):
+            return False
+        return self.nid == other.nid
+
     def show(self, *args, **kwargs):
         """Print this tree. Shortcut for print(tree.to_string())."""
         print_tree(self, *args, **kwargs)

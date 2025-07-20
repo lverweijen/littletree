@@ -49,7 +49,7 @@ class TestNodeMixin(unittest.TestCase):
     def test_iter_tree2(self):
         """Iterate only through nodes which are first-child."""
         def is_first_child(_, item):
-            return item.index == 0
+            return item.index == 0 or item.index is None
 
         result = [str(child.path) for (child, _) in self.tree.nodes.preorder(keep=is_first_child)]
         expected = [

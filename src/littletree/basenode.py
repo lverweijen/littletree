@@ -1,4 +1,5 @@
 import itertools
+import operator
 from fnmatch import fnmatchcase
 from operator import methodcaller
 from typing import Mapping, Iterable, Union, Any, Generic, ValuesView, Tuple
@@ -6,10 +7,7 @@ from typing import TypeVar, Callable, Hashable, Optional
 
 from abstracttree import MutableTree
 
-try:
-    from abstracttree.tree import PathView
-except ImportError:
-    from abstracttree.treeclasses import PathView
+from abstracttree.mixins.views import PathView
 
 from .exceptions import DuplicateParentError, DuplicateChildError, LoopError
 from .treemixin import TreeMixin
@@ -170,6 +168,19 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
     @parent.deleter
     def parent(self):
         self.detach()
+
+    @property
+    def root(self) -> TNode:
+        # Reimplemented for performance
+        node, maybe_parent = self, self._parent
+        while maybe_parent is not None:
+            node, maybe_parent = maybe_parent, maybe_parent.parent
+        return node
+
+    @property
+    def is_leaf(self) -> bool:
+        # Reimplemented for performance
+        return not self._cdict
 
     @property
     def children(self) -> ValuesView[TNode]:
@@ -388,15 +399,10 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
 
 
 class NodePath(PathView):
-    __slots__ = "_node"
+    __slots__ = ()
 
     # Can be overridden by child classes
     separator = "/"
-
-    def __init__(self, node: TNode):
-        """Do not instantiate directly, use node.path instead."""
-        super().__init__(node)
-        self._node = node
 
     def __eq__(self, other):
         if not isinstance(other, NodePath):
@@ -410,6 +416,12 @@ class NodePath(PathView):
         return separator + separator.join([str(node.identifier) for node in self])
 
     def __call__(self, path) -> TNode:
+        """Navigate to a descendant.
+
+        path should either be a string like "child/subchild/subsubchild"
+        or a list like ["child", "subchild", "subsubchild"].
+        """
+
         if isinstance(path, str):
             path = path.split(self.separator)
         node = self._node
@@ -487,3 +499,13 @@ class NodePath(PathView):
     def _is_pattern(segment) -> bool:
         """Check if segment is a pattern. If not direct access is much faster."""
         return isinstance(segment, str) and any(char in segment for char in "*?[")
+
+
+# Apply a few optimisations
+from abstracttree import generics as _generics
+
+_generics.parent.register(BaseNode, operator.attrgetter("_parent"))
+_generics.children.register(BaseNode, BaseNode.children.fget)
+_generics.root.register(BaseNode, BaseNode.root.fget)
+_generics.label.register(BaseNode, str)
+_generics.nid.register(BaseNode, id)
