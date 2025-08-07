@@ -5,15 +5,14 @@ It can be used to represent file systems, taxonomies and much more.
 ## Features ##
 
 - Intuitive basic creation and modification of trees.
-- Efficient implementation of common tree operations and traversals.
-  Works on trees that are 10 000 layers deep.
-- Extensible. Subclass from `BaseNode` if you need more freedom.
+- Efficient implementation of common tree operations and traversals
+  that still work on trees that are more than 10,000 layers deep.
+- Extensible: either subclass from `Node` or `BaseNode`.
 - Can be imported / exported to many different formats (nested dict, rows, relations, graphviz, mermaid, newick, networkx).
 - Purely written in Python.
 
-## Limitations ##
+## Limitation ##
 - Each node has at most one parent. (It's a tree not a graph!)
-- Nodes cannot be their own ancestor.
 
 ## Installing ##
 
@@ -39,7 +38,7 @@ tree["Europe"] = Node()
 tree.show()
 
 # Show tree as an image
-tree.to_image().show()
+tree.to_pillow().show()
 ```
 
 The resulting tree is printed like this:
@@ -63,4 +62,3 @@ See further:
 [Pypi](https://pypi.org/project/littletree/) |
 [Github](https://github.com/lverweijen/littletree) |
 [Issues](https://github.com/lverweijen/littletree/issues)
-

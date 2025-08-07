@@ -47,7 +47,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         else:
             return f"{self.identifier}\n{self.data}"
 
-    def similar_to(self: TNode, other: TNode):
+    def similar_to(self: TNode, other: TNode) -> bool:
         """Check if two trees are similar.
 
         Trees are similar if they have the same structure and the same data.
@@ -57,11 +57,19 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
         """
         if self is other:
             return True
-        elif isinstance(other, self.__class__):
-            return all(n1.data == n2.data and n1._cdict.keys() == n2._cdict.keys()
-                       for n1, n2 in self.iter_together(other))
-        else:
-            return NotImplemented
+        elif not isinstance(other, type(self)):
+            return False
+        return all(n1.data == n2.data and n1._cdict.keys() == n2._cdict.keys()
+                   for n1, n2 in self.iter_together(other))
+
+    def equals(self: TNode, other: TNode) -> bool:
+        """Recursively check if two (sub)trees are the same.
+
+        Each node in the subtree must have the same identifier and same data.
+        """
+        if not isinstance(other, type(self)):
+            return False
+        return self.identifier == other.identifier and self.similar_to(other)
 
     def copy(self, memo=None, *, keep=None, deep=False) -> TNode:
         """Make a shallow copy or deepcopy if memo is passed."""

@@ -1,9 +1,18 @@
+## Version 0.9.0 ##
+
+- Instances of `Node` and `BaseNode` are hashable now. They can be stored in a `set`.
+- The `__eq__` methods of `Node` and `BaseNode` now compare by identity.
+  To compare nodes the old way, use `node.similar_to(other_node)`.
+- Add `equals` method on `Node` to compare nodes by value.
+  This method is stricter than `similar_to`, because it requires `self` and `other` to have the same identifier.
+- Remove `similar_to` method from `BaseNode` to simplify subclassing.
+
 ## Version 0.8.8 ##
 
 - Upgrade to abstracttree 0.2.0.
 - When using `for node, item in tree.preorder()`, then `item.index` is now equal to `None` for `root`.
 - Native implementations of `node.root` and `node.is_leaf` should speed up these operations.
-- Readd support for python 3.10
+- Add support for python 3.10
 
 ## Version 0.8.7 ##
 
