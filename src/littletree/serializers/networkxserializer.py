@@ -7,6 +7,7 @@ TNode = TypeVar("TNode", bound=BaseNode)
 
 
 class NetworkXSerializer:
+    """Serializer to/from a networkx graph."""
     def __init__(
         self,
         factory: Callable[[], TNode] = None,

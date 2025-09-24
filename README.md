@@ -30,9 +30,11 @@ from littletree import Node
 
 tree = Node(identifier="World")
 tree["Asia"] = Node()
-tree["Africa"] = Node()
+tree["Africa"] = Node(data={"surface_area": 30.37e6})
 tree["America"] = Node()
-tree["Europe"] = Node()
+
+# Alternative way of adding a node
+tree.add_child(Node(identifier="Europe"))
 
 # Print tree to console
 tree.show()
@@ -56,9 +58,10 @@ it will also display the following image:
 
 ![world](images/world.png)
 
-See [tutorial](https://github.com/lverweijen/littletree/blob/main/tutorial.md) for more information.
+See [tutorial](https://lverweijen.github.io/littletree/tutorial.html) for more information.
 
 See further:
 [Pypi](https://pypi.org/project/littletree/) |
 [Github](https://github.com/lverweijen/littletree) |
-[Issues](https://github.com/lverweijen/littletree/issues)
+[Issues](https://github.com/lverweijen/littletree/issues) |
+[Documentation](https://lverweijen.github.io/littletree)

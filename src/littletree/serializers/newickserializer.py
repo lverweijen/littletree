@@ -40,10 +40,11 @@ class NewickSerializer:
     A formal description is here: http://biowiki.org/wiki/index.php/Newick_Format
 
     A few dialects are supported (default: safe-nhx):
-    - newick is the most basic dialect without extra features
-    - nhx enables an extension called New Hampshire X format
-    This extension is described here: https://www.cs.mcgill.ca/~birch/doc/forester/NHX.pdf
-    - safe-nhx is similar to nhx, but xml-escaping is applied on reserved newick characters
+
+    - ``newick`` is the most basic dialect without extra features
+    - ``nhx`` enables an extension called New Hampshire X format
+        This extension is described here: https://www.cs.mcgill.ca/~birch/doc/forester/NHX.pdf
+    - ``safe-nhx`` is similar to nhx, but xml-escaping is applied on reserved newick characters
     """
     def __init__(
         self,

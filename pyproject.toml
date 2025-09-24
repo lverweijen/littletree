@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "littletree"
-version = "0.9.0"
+version = "0.9.1"
 authors = [
     {name = "lverweijen", email = "lauwerund@gmail.com"}
 ]
@@ -45,7 +45,7 @@ export = [
 
 [project.urls]
 Homepage = "https://github.com/lverweijen/littletree"
-Documentation = "https://github.com/lverweijen/littletree/blob/main/tutorial.md"
+Documentation = "https://lverweijen.github.io/littletree"
 Repository = "https://github.com/lverweijen/littletree"
 Issues = "https://github.com/lverweijen/littletree/issues"
-Changelog = "https://github.com/lverweijen/littletree/blob/main/changes.md"
+Changelog = "https://lverweijen.github.io/littletree/changelog.html"

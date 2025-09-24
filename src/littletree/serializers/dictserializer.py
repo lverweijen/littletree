@@ -8,6 +8,7 @@ TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
 class DictSerializer:
+    """Serializer to/from a nested dictionary."""
     __slots__ = "factory", "node_name", "children_name", "editor"
 
     def __init__(

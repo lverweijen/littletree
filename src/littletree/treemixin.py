@@ -23,7 +23,7 @@ class TreeMixin(Tree, metaclass=ABCMeta):
         print_tree(self, *args, **kwargs)
 
     def plot(self, *args, **kwargs):
-        """Print this tree. Shortcut for print(tree.to_string())."""
+        """Plot this tree using matplotlib."""
         plot_tree(self, *args, **kwargs)
 
     def to_string(self, *args, **kwargs):
@@ -31,11 +31,14 @@ class TreeMixin(Tree, metaclass=ABCMeta):
         return to_string(self, *args, **kwargs)
 
     def to_image(self, *args, **kwargs):
-        """Convert tree to image."""
+        """Convert tree to image.
+
+        This return bytes. Use ``to_pillow`` for an Image abstraction.
+        """
         return to_image(self, *args, **kwargs)
 
     def to_pillow(self, *args, **kwargs):
-        """Convert tree to image."""
+        """Convert tree to Pillow / PIL image object."""
         return to_pillow(self, *args, **kwargs)
 
     def to_dot(self, *args, **kwargs):
@@ -47,7 +50,7 @@ class TreeMixin(Tree, metaclass=ABCMeta):
         return to_image(self, *args, **kwargs)
 
     def to_latex(self, *args, **kwargs):
-        """Convert tree to latex file."""
+        """Convert tree to latex. Requires the tikz-package if compiling the latex document."""
         return to_latex(self, *args, **kwargs)
 
     def iter_nodes(self, order="pre", keep=None, with_item=False):

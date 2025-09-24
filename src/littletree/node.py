@@ -116,29 +116,36 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     @classmethod
     def from_dict(cls, data, data_field="data", **kwargs) -> TNode:
+        """Import from nested dictionary."""
         return DictSerializer(cls, data_field=data_field, **kwargs).from_dict(data)
 
     def to_dict(self, data_field="data", **kwargs) -> Mapping:
+        """Export to nested dictionary."""
         return DictSerializer(self.__class__, data_field=data_field, **kwargs).to_dict(self)
 
     @classmethod
     def from_rows(cls, rows, root=None, data_field="data", **kwargs) -> TNode:
+        """Import from list of path-rows."""
         return RowSerializer(cls, data_field=data_field, **kwargs).from_rows(rows, root)
 
     def to_rows(self, data_field="data", **kwargs) -> Iterator[Mapping]:
+        """Export to list of path-rows."""
         return RowSerializer(self.__class__, data_field=data_field, **kwargs).to_rows(self)
 
     @classmethod
     def from_relations(cls, relations, root=None, data_field="data", **kwargs) -> TNode:
+        """Import from parent-child list."""
         serializer = RelationSerializer(cls, data_field=data_field, **kwargs)
         return serializer.from_relations(relations, root)
 
     def to_relations(self, data_field="data", **kwargs):
+        """Export to parent-child list."""
         serializer = RelationSerializer(self.__class__, data_field=data_field, **kwargs)
         return serializer.to_relations(self)
 
     @classmethod
     def from_newick(cls, newick, root=None, data_field="data", **kwargs) -> TNode:
+        """Import from newick."""
         serializer = NewickSerializer(cls, data_field=data_field, **kwargs)
         if isinstance(newick, (str, bytes, bytearray)):
             return serializer.loads(newick, root)
@@ -146,6 +153,7 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
             return serializer.load(newick, root)
 
     def to_newick(self, file=None, data_field="data", **kwargs) -> Optional[str]:
+        """Export to newick."""
         serializer = NewickSerializer(self.__class__, data_field=data_field, **kwargs)
         if file:
             return serializer.dump(self, file)
@@ -154,9 +162,11 @@ class Node(BaseNode[TIdentifier], Generic[TIdentifier, TData]):
 
     @classmethod
     def from_networkx(cls, graph, **kwargs):
+        """Import from networkx graph."""
         exporter = NetworkXSerializer(cls, data_field="data", **kwargs)
         return exporter.from_networkx(graph)
 
     def to_networkx(self, **kwargs):
+        """Export to networkx graph."""
         exporter = NetworkXSerializer(self.__class__, data_field="data", **kwargs)
         return exporter.to_networkx(self)

@@ -8,8 +8,9 @@ TNode = TypeVar("TNode", bound=BaseNode)
 
 
 class RowSerializer:
-    __slots__ = "path_name", "sep", "factory", "editor"
     """Serializes a tree to a list of dicts containing path and data."""
+
+    __slots__ = "path_name", "sep", "factory", "editor"
     def __init__(
         self,
         factory: Callable[[], TNode] = None,

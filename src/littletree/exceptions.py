@@ -1,8 +1,10 @@
 class TreeException(Exception):
+    """Base tree exceptions."""
     pass
 
 
 class DuplicateParentError(TreeException):
+    """Operation would add multiple parents to a node."""
     def __init__(self, node):
         self.node = node
 
@@ -12,6 +14,7 @@ class DuplicateParentError(TreeException):
 
 
 class DuplicateChildError(TreeException):
+    """Operation would add multiple children with the same identifier to the same parent."""
     def __init__(self, node, identifier):
         self.node = node
         self.identifier = identifier
@@ -21,6 +24,7 @@ class DuplicateChildError(TreeException):
 
 
 class LoopError(TreeException):
+    """Operation would create a loop."""
     def __init__(self, node, ancestor):
         self.node = node
         self.ancestor = ancestor

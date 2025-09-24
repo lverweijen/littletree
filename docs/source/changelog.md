@@ -1,3 +1,9 @@
+# Changelog #
+
+## Version 0.9.1 ##
+
+Clarify documentation and docstrings.
+
 ## Version 0.9.0 ##
 
 - Instances of `Node` and `BaseNode` are hashable now. They can be stored in a `set`.

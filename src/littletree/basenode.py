@@ -17,10 +17,14 @@ TIdentifier = TypeVar("TIdentifier", bound=Hashable)
 
 
 class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
-    """Minimalistic node class that a user can inherit from.
+    """
+    A basic tree node that can have a single parent and multiple children.
 
-    Compared to Node this class is more primitive and less opinionated.
-    This class is not made abstract, so it's possible to use a BaseNode directly.
+    The ``BaseNode`` forms the foundation for building hierarchical tree structures.
+    Each node can be uniquely identified by its name within its parent's scope
+    and can be navigated via ``NodePath`` objects.
+
+    Compared to ``Node`` this class is more basic and useful for subclassing.
     """
     __slots__ = "_identifier", "_parent", "_cdict", "_cvalues"
 
@@ -68,10 +72,10 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
     def __setitem__(self, new_identifier: TIdentifier, new_node: TNode):
         """Add child to this tree.
 
-        If new_node already has a parent, throws UniqueParentError.
-        To move an existing node use newtree["node"] = bound_node.detach()
-        If new_node already has an identifier, it will be renamed.
-        If a node with the same identifier exists, it will be detached first.
+        If new_node already has a parent, throws ``DuplicateParentError``.
+        To move an existing node use ``newtree["node"] = bound_node.detach()``.
+        The new node will get the identifier given. If it already has an identifier, it will be renamed.
+        If a node with the same identifier already exists, it will be detached.
 
         :param new_identifier: Identifier for new node
         :param new_node: The node to add
@@ -105,6 +109,7 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
 
     @property
     def identifier(self) -> Any:
+        """Key to identify this node. This can not be equal to an identifier of a sibling."""
         return self._identifier
 
     @identifier.setter
@@ -121,7 +126,8 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
         self._identifier = new_identifier
 
     @property
-    def parent(self) -> TNode:
+    def parent(self) -> Optional[TNode]:
+        """Parent of this node or None."""
         return self._parent
 
     @parent.setter
@@ -181,9 +187,21 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
 
     @property
     def path(self) -> "NodePath":
+        """Path object for access to parent or navigating forward."""
         return NodePath(self)
 
     def add_child(self, node: TNode, check_loop: bool = True):
+        """
+        Add a single child node.
+
+        The child's parent will be set to this node. A ``DuplicateChildError``
+        is raised if another child with the same name already exists.
+        A ``DuplicateParentError`` will be raised if this child already has a parent.
+
+        :param node: Child to add.
+        :param check_loop: Whether to check if adding child results in a loop.
+        :return:
+        """
         if node.is_root:
             identifier = node.identifier
             if identifier in self:
@@ -209,23 +227,26 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
     ) -> None:
         """Add multiple nodes at once.
 
-        This is much faster than setitem when adding multiple children at once.
+        This is faster than repeatedly calling setitem when adding many children at once.
 
         About time complexity:
-        Let n be the number of nodes added, d be the depth of the tree, C be copy time
-        T(n) = O(nC + d) if check_loop and not consume
-        T(n) = O(n + d) if check_loop and (consume or no child has a parent)
-        T(n) = O(nC) if not check_loop and not consume
-        T(n) = O(n) if not check_loop and (consume or no child has a parent)
+        Let n be the number of nodes added, d be the depth of the tree, C be copy time:
+
+        - T(n) = O(nC + d) if ``check_loop`` and not ``consume``;
+        - T(n) = O(n + d) if ``check_loop`` and (``consume`` or no child has a parent);
+        - T(n) = O(nC) if not ``check_loop`` and not ``consume``;
+        - T(n) = O(n) if not ``check_loop`` and (``consume`` or no child has a parent).
 
         :param other: Source of other nodes.
-        Other could be:
-        - mapping Keys will become new identifiers
-        - iterable Nodes will be added
-        - node Same as self.update(other.children) but implemented more efficiently.
-        :param mode: How to handle nodes that already have a parent
-        - "copy": These nodes will be copied and remain in old tree
-        - "detach": These nodes will be detached from old tree
+            Other could be:
+
+                - mapping Keys will become new identifiers
+                - iterable Nodes will be added
+                - node Same as self.update(other.children) but implemented more efficiently.
+        :param mode: How to handle nodes that already have a parent:
+
+            - "copy": These nodes will be copied and remain in old tree
+            - "detach": These nodes will be detached from old tree
         :param check_loop: If True, raises LoopError if a cycle is created.
         :return: None
         """
@@ -322,7 +343,6 @@ class BaseNode(Generic[TIdentifier], MutableTree, TreeMixin):
         :param key: Function to sort by. If not given, sort on identifier.
         :param recursive: Whether all descendants should be sorted or just children.
         :param reverse: Whether to sort in reverse order
-        :return: self
         """
         if key:
             nodes = sorted(self.children, key=key, reverse=reverse)
@@ -442,7 +462,8 @@ class NodePath(PathView):
         Find nodes by globbing patterns.
 
         For example to find all nodes that start with 'a':
-            node.path.glob("**/a*")
+
+        >>> node.path.glob("**/a*")
         """
 
         if isinstance(path, str):
