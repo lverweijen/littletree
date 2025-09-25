@@ -46,4 +46,6 @@ myst_enable_extensions = ["colon_fence"]
 import sys
 from pathlib import Path
 src_folder = Path(__file__).parent.parent.parent / "src"
+print("sys.path:", sys.path)
+print("Exists:", src_folder.exists())
 sys.path.insert(0, str(src_folder.resolve(strict=True)))
