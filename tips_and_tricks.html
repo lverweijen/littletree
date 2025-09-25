@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tips and tricks &mdash; littletree stable documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=ea3bebfc"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            littletree
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips and tricks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#accessing-child-nodes-by-index">Accessing child nodes by index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#always-sorted-child-nodes">Always-sorted child nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#node-aliases-with-shared-data">Node aliases with shared data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">littletree</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tips and tricks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tips_and_tricks.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tips-and-tricks">
+<h1>Tips and tricks<a class="headerlink" href="#tips-and-tricks" title="Link to this heading"></a></h1>
+<section id="accessing-child-nodes-by-index">
+<h2>Accessing child nodes by index<a class="headerlink" href="#accessing-child-nodes-by-index" title="Link to this heading"></a></h2>
+<p>To make child nodes accessible by index, install <a class="reference external" href="https://pypi.org/project/indexed/">indexed</a>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>indexed
+</pre></div>
+</div>
+<p>Then create a subclass of <code class="docutils literal notranslate"><span class="pre">Node</span></code> that uses <code class="docutils literal notranslate"><span class="pre">indexed.Dict</span></code> for its internal mapping:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">indexed</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">IndexedNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">dict_class</span> <span class="o">=</span> <span class="n">indexed</span><span class="o">.</span><span class="n">Dict</span>
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">IndexedNode</span><span class="p">()</span>
+<span class="n">tree</span><span class="p">[</span><span class="s2">&quot;Asia&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IndexedNode</span><span class="p">()</span>
+
+<span class="k">assert</span> <span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">tree</span><span class="p">[</span><span class="s2">&quot;Asia&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This works because <code class="docutils literal notranslate"><span class="pre">dict_class</span></code> can be set to any mapping type that behaves like <code class="docutils literal notranslate"><span class="pre">dict</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">children</span></code> property uses the <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict-views">value-view</a> of the mapping.
+In the case of <code class="docutils literal notranslate"><span class="pre">indexed.Dict</span></code>, this view additionally supports indexing.
+As a result, <code class="docutils literal notranslate"><span class="pre">tree.children[0]</span></code> works as expected.</p>
+</section>
+<hr class="docutils" />
+<section id="always-sorted-child-nodes">
+<h2>Always-sorted child nodes<a class="headerlink" href="#always-sorted-child-nodes" title="Link to this heading"></a></h2>
+<p>To ensure children are always sorted by their identifier, install <a class="reference external" href="https://grantjenks.com/docs/sortedcontainers/">sortedcontainers</a>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>sortedcontainers
+</pre></div>
+</div>
+<p>Then subclass <code class="docutils literal notranslate"><span class="pre">Node</span></code> to use <code class="docutils literal notranslate"><span class="pre">SortedDict</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sortedcontainers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SortedDict</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SortedNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">dict_class</span> <span class="o">=</span> <span class="n">SortedDict</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">sort_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument key is not supported. &quot;</span>
+                             <span class="s2">&quot;Nodes are always sorted by identifier.&quot;</span><span class="p">)</span>
+        <span class="c1"># No-op, since children are already sorted.</span>
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">SortedNode</span><span class="p">()</span>
+<span class="n">tree</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SortedNode</span><span class="p">()</span>
+<span class="n">tree</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SortedNode</span><span class="p">()</span>
+<span class="n">tree</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SortedNode</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>  <span class="c1"># Prints &quot;a&quot;, then &quot;b&quot;, then &quot;c&quot;</span>
+
+<span class="c1"># With a regular Node, children would appear in insertion order (b, c, a).</span>
+</pre></div>
+</div>
+<p>This works because <code class="docutils literal notranslate"><span class="pre">SortedDict</span></code> always keeps its items sorted by key.
+Since <code class="docutils literal notranslate"><span class="pre">Node</span></code> uses the identifier as the key, the children are automatically sorted.
+By contrast, iteration over a regular <code class="docutils literal notranslate"><span class="pre">dict</span></code> (and therefore a regular <code class="docutils literal notranslate"><span class="pre">Node</span></code>) follows insertion order.</p>
+</section>
+<hr class="docutils" />
+<section id="node-aliases-with-shared-data">
+<h2>Node aliases with shared data<a class="headerlink" href="#node-aliases-with-shared-data" title="Link to this heading"></a></h2>
+<p>You can also create nodes that act as aliases of each other.
+Aliases share the same <code class="docutils literal notranslate"><span class="pre">data</span></code> object, but may have different parents or children:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AliasNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">&quot;_aliases&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_alias</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">new_alias</span> <span class="o">=</span> <span class="n">AliasNode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># data is shared by reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">new_alias</span><span class="p">)]</span> <span class="o">=</span> <span class="n">new_alias</span>
+        <span class="n">new_alias</span><span class="o">.</span><span class="n">_aliases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span>
+        <span class="k">return</span> <span class="n">new_alias</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">alias</span> <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aliases</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">alias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">]</span>
+
+
+<span class="n">node1</span> <span class="o">=</span> <span class="n">AliasNode</span><span class="p">({</span><span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+<span class="n">node2</span> <span class="o">=</span> <span class="n">node1</span><span class="o">.</span><span class="n">make_alias</span><span class="p">()</span>
+
+<span class="n">node2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;more_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">node2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">])</span>        <span class="c1"># 5</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">node1</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;more_info&#39;</span><span class="p">])</span>   <span class="c1"># 6</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">node1</span><span class="o">.</span><span class="n">aliases</span><span class="p">)</span>  <span class="c1"># [node2]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">node2</span><span class="o">.</span><span class="n">aliases</span><span class="p">)</span>  <span class="c1"># [node1]</span>
+</pre></div>
+</div>
+<p>This works because the <code class="docutils literal notranslate"><span class="pre">data</span></code> parameter of <code class="docutils literal notranslate"><span class="pre">Node</span></code> is <a class="reference external" href="https://www.geeksforgeeks.org/python/pass-by-reference-vs-value-in-python/">passed by object reference</a>.
+When multiple nodes are created with the same <code class="docutils literal notranslate"><span class="pre">data</span></code> object, they all share the same underlying dictionary.
+This makes it possible to create aliases that stay in sync.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Laurent Verweijen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
