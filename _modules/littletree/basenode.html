@@ -1,0 +1,662 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>littletree.basenode &mdash; littletree stable documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=ea3bebfc"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            littletree
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips_and_tricks.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">littletree</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">littletree.basenode</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for littletree.basenode</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fnmatch</span><span class="w"> </span><span class="kn">import</span> <span class="n">fnmatchcase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">methodcaller</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">ValuesView</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Hashable</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abstracttree</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableTree</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abstracttree.mixins.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathView</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DuplicateParentError</span><span class="p">,</span> <span class="n">DuplicateChildError</span><span class="p">,</span> <span class="n">LoopError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.treemixin</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeMixin</span>
+
+<span class="n">TNode</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TNode&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;BaseNode&quot;</span><span class="p">)</span>
+<span class="n">TIdentifier</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TIdentifier&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Hashable</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BaseNode">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseNode</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TIdentifier</span><span class="p">],</span> <span class="n">MutableTree</span><span class="p">,</span> <span class="n">TreeMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A basic tree node that can have a single parent and multiple children.</span>
+
+<span class="sd">    The ``BaseNode`` forms the foundation for building hierarchical tree structures.</span>
+<span class="sd">    Each node can be uniquely identified by its name within its parent&#39;s scope</span>
+<span class="sd">    and can be navigated via ``NodePath`` objects.</span>
+
+<span class="sd">    Compared to ``Node`` this class is more basic and useful for subclassing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s2">&quot;_identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;_parent&quot;</span><span class="p">,</span> <span class="s2">&quot;_cdict&quot;</span><span class="p">,</span> <span class="s2">&quot;_cvalues&quot;</span>
+
+    <span class="c1"># These can be changed in child classes</span>
+    <span class="n">dict_class</span> <span class="o">=</span> <span class="nb">dict</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">TNode</span><span class="p">,</span>
+        <span class="n">identifier</span><span class="p">:</span> <span class="n">TIdentifier</span> <span class="o">=</span> <span class="s2">&quot;node&quot;</span><span class="p">,</span>
+        <span class="n">children</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="n">TIdentifier</span><span class="p">,</span> <span class="n">TNode</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">TNode</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TNode</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a Node</span>
+
+<span class="sd">        :param identifier: Identifier for this node</span>
+<span class="sd">        :param parent: Immediately assign a parent</span>
+<span class="sd">        :param children: Children to add</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict_class</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">children</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">_check_loop2</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">parent</span><span class="o">.</span><span class="n">_cdict</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">DuplicateChildError</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">check_loop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pdict</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">_cdict</span>
+            <span class="k">if</span> <span class="n">identifier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pdict</span><span class="p">:</span>
+                <span class="n">pdict</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DuplicateChildError</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="n">TIdentifier</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get child by identifier.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_identifier</span><span class="p">:</span> <span class="n">TIdentifier</span><span class="p">,</span> <span class="n">new_node</span><span class="p">:</span> <span class="n">TNode</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add child to this tree.</span>
+
+<span class="sd">        If new_node already has a parent, throws ``DuplicateParentError``.</span>
+<span class="sd">        To move an existing node use ``newtree[&quot;node&quot;] = bound_node.detach()``.</span>
+<span class="sd">        The new node will get the identifier given. If it already has an identifier, it will be renamed.</span>
+<span class="sd">        If a node with the same identifier already exists, it will be detached.</span>
+
+<span class="sd">        :param new_identifier: Identifier for new node</span>
+<span class="sd">        :param new_node: The node to add</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_identifier</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_node</span><span class="o">.</span><span class="n">_parent</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">old_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">new_node</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DuplicateParentError</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_loop1</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">old_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">old_node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">new_identifier</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_node</span>
+            <span class="n">new_node</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> <span class="n">new_identifier</span>
+            <span class="n">new_node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="n">TIdentifier</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a child from this tree.&quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node with </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> doesn&#39;t exist&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if node with identifier exists.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span>
+
+    <span class="c1"># Disabled, because python would default to an implementation that results in an error.</span>
+    <span class="c1"># Not sure what it should even do, so it&#39;s left undefined.</span>
+    <span class="fm">__iter__</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Key to identify this node. This can not be equal to an identifier of a sibling.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span>
+
+    <span class="nd">@identifier</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_identifier</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+        <span class="n">old_identifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">new_identifier</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">_cdict</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">new_identifier</span> <span class="o">!=</span> <span class="n">old_identifier</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">DuplicateChildError</span><span class="p">(</span><span class="n">new_identifier</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">p</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">old_identifier</span><span class="p">]</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">new_identifier</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> <span class="n">new_identifier</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TNode</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parent of this node or None.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+
+    <span class="nd">@parent</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_parent</span><span class="p">):</span>
+        <span class="n">old_parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+        <span class="k">if</span> <span class="n">old_parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">new_parent</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span>
+            <span class="k">if</span> <span class="n">new_parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">new_parent</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DuplicateChildError</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">new_parent</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_loop1</span><span class="p">(</span><span class="n">new_parent</span><span class="p">)</span>
+                <span class="n">new_parent</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">new_parent</span>
+            <span class="k">if</span> <span class="n">old_parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">old_parent</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+
+    <span class="nd">@parent</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+        <span class="c1"># Reimplemented for performance</span>
+        <span class="n">node</span><span class="p">,</span> <span class="n">maybe_parent</span> <span class="o">=</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+        <span class="k">while</span> <span class="n">maybe_parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span><span class="p">,</span> <span class="n">maybe_parent</span> <span class="o">=</span> <span class="n">maybe_parent</span><span class="p">,</span> <span class="n">maybe_parent</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">return</span> <span class="n">node</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_leaf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Reimplemented for performance</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValuesView</span><span class="p">[</span><span class="n">TNode</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cvalues</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cvalues</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">children</span>
+
+    <span class="nd">@children</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_children</span><span class="p">):</span>
+        <span class="n">old_children</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_children</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">LoopError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">old_children</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">err</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="nd">@children</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NodePath&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Path object for access to parent or navigating forward.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">NodePath</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseNode.add_child">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.add_child">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">TNode</span><span class="p">,</span> <span class="n">check_loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a single child node.</span>
+
+<span class="sd">        The child&#39;s parent will be set to this node. A ``DuplicateChildError``</span>
+<span class="sd">        is raised if another child with the same name already exists.</span>
+<span class="sd">        A ``DuplicateParentError`` will be raised if this child already has a parent.</span>
+
+<span class="sd">        :param node: Child to add.</span>
+<span class="sd">        :param check_loop: Whether to check if adding child results in a loop.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span><span class="p">:</span>
+            <span class="n">identifier</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">identifier</span>
+            <span class="k">if</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DuplicateChildError</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">check_loop</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_loop1</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DuplicateParentError</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.remove_child">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.remove_child">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">TNode</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not a child&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.update">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="n">TIdentifier</span><span class="p">,</span> <span class="n">TNode</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">TNode</span><span class="p">],</span> <span class="n">TNode</span><span class="p">],</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+        <span class="n">check_loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add multiple nodes at once.</span>
+
+<span class="sd">        This is faster than repeatedly calling setitem when adding many children at once.</span>
+
+<span class="sd">        About time complexity:</span>
+<span class="sd">        Let n be the number of nodes added, d be the depth of the tree, C be copy time:</span>
+
+<span class="sd">        - T(n) = O(nC + d) if ``check_loop`` and not ``consume``;</span>
+<span class="sd">        - T(n) = O(n + d) if ``check_loop`` and (``consume`` or no child has a parent);</span>
+<span class="sd">        - T(n) = O(nC) if not ``check_loop`` and not ``consume``;</span>
+<span class="sd">        - T(n) = O(n) if not ``check_loop`` and (``consume`` or no child has a parent).</span>
+
+<span class="sd">        :param other: Source of other nodes.</span>
+<span class="sd">            Other could be:</span>
+
+<span class="sd">                - mapping Keys will become new identifiers</span>
+<span class="sd">                - iterable Nodes will be added</span>
+<span class="sd">                - node Same as self.update(other.children) but implemented more efficiently.</span>
+<span class="sd">        :param mode: How to handle nodes that already have a parent:</span>
+
+<span class="sd">            - &quot;copy&quot;: These nodes will be copied and remain in old tree</span>
+<span class="sd">            - &quot;detach&quot;: These nodes will be detached from old tree</span>
+<span class="sd">        :param check_loop: If True, raises LoopError if a cycle is created.</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;copy&quot;</span><span class="p">:</span>
+            <span class="n">_release</span> <span class="o">=</span> <span class="n">methodcaller</span><span class="p">(</span><span class="s2">&quot;copy&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;detach&quot;</span><span class="p">:</span>
+            <span class="n">_release</span> <span class="o">=</span> <span class="n">methodcaller</span><span class="p">(</span><span class="s2">&quot;detach&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;mode should be &quot;copy&quot; or &quot;detach&quot;&#39;</span><span class="p">)</span>
+
+        <span class="n">_cdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">check_loop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_loop2</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">old_child</span> <span class="o">:=</span> <span class="n">_cdict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
+                    <span class="n">old_child</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">node</span> <span class="o">=</span> <span class="n">_release</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">_cdict</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">check_loop</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+                    <span class="n">other</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_loop2</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">other</span><span class="p">:</span>
+                <span class="n">identifier</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">_identifier</span>
+                <span class="k">if</span> <span class="n">old_child</span> <span class="o">:=</span> <span class="n">_cdict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
+                    <span class="n">old_child</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">node</span> <span class="o">=</span> <span class="n">_release</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">_cdict</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">BaseNode</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">check_loop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_loop1</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;copy&#39;</span><span class="p">:</span>
+                <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_cdict</span>
+            <span class="k">for</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">old_child</span> <span class="o">:=</span> <span class="n">_cdict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
+                    <span class="n">old_child</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="n">_cdict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;new_children should be mapping, iterable or other node&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.pop">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.pop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="n">TIdentifier</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TNode</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove and return node with identifier or None.&quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">node</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.copy">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_memo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a shallow copy or deepcopy if memo is passed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">identifier</span><span class="p">),</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">memo</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseNode.detach">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.detach">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detach</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove node from its parent.</span>
+
+<span class="sd">        This is especially useful when moving the node to a different tree or branch.</span>
+<span class="sd">        :return: self</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">p</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.clear">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.clear">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all children.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.sort_children">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.sort_children">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sort_children</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">TNode</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recursive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sort children</span>
+
+<span class="sd">        :param key: Function to sort by. If not given, sort on identifier.</span>
+<span class="sd">        :param recursive: Whether all descendants should be sorted or just children.</span>
+<span class="sd">        :param reverse: Whether to sort in reverse order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">n</span><span class="o">.</span><span class="n">_identifier</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">descendants</span><span class="p">:</span>
+                    <span class="n">nodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">n</span><span class="o">.</span><span class="n">_identifier</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">descendants</span><span class="p">:</span>
+                    <span class="n">nodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseNode.iter_together">
+<a class="viewcode-back" href="../../api.html#littletree.BaseNode.iter_together">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_together</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TNode</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TNode</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield all nodes in self with similar nodes in other.</span>
+
+<span class="sd">        If no equivalent node can be found in other, yield node from self with None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">descendants</span><span class="o">.</span><span class="n">preorder</span><span class="p">():</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">item</span><span class="o">.</span><span class="n">depth</span><span class="p">:</span>
+                <span class="n">other</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">item</span><span class="o">.</span><span class="n">depth</span><span class="p">:</span>
+                <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">other</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">_identifier</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">other</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">yield</span> <span class="n">node</span><span class="p">,</span> <span class="n">other</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_integrity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively check integrity of each parent with its children.</span>
+
+<span class="sd">        Used for testing purposes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child_identifier</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">assert</span> <span class="n">child</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">child_identifier</span>
+            <span class="k">assert</span> <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="bp">self</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">_check_integrity</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="NodePath">
+<a class="viewcode-back" href="../../api.html#littletree.NodePath">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NodePath</span><span class="p">(</span><span class="n">PathView</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="c1"># Can be overridden by child classes</span>
+    <span class="n">separator</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">NodePath</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">count</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">s2</span><span class="o">.</span><span class="n">identifier</span> <span class="k">for</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">zip_longest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">separator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">separator</span>
+        <span class="k">return</span> <span class="n">separator</span> <span class="o">+</span> <span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Navigate to a descendant.</span>
+
+<span class="sd">        path should either be a string like &quot;child/subchild/subsubchild&quot;</span>
+<span class="sd">        or a list like [&quot;child&quot;, &quot;subchild&quot;, &quot;subsubchild&quot;].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="p">)</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span>
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">_cdict</span><span class="p">[</span><span class="n">segment</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">node</span>
+
+<div class="viewcode-block" id="NodePath.get">
+<a class="viewcode-back" href="../../api.html#littletree.NodePath.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TNode</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Like calling path, but return None if node is missing.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="NodePath.create">
+<a class="viewcode-back" href="../../api.html#littletree.NodePath.create">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Like get, but create missing nodes.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="p">)</span>
+
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="n">segment</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_node</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">segment</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_node</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">segment</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">node</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">TNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subclasses can overwrite this if the construction of a Node is different.&quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="k">return</span> <span class="n">node</span>
+
+<div class="viewcode-block" id="NodePath.glob">
+<a class="viewcode-back" href="../../api.html#littletree.NodePath.glob">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">glob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">TNode</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find nodes by globbing patterns.</span>
+
+<span class="sd">        For example to find all nodes that start with &#39;a&#39;:</span>
+
+<span class="sd">        &gt;&gt;&gt; node.path.glob(&quot;**/a*&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="p">)</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">segment</span> <span class="o">==</span> <span class="s2">&quot;**&quot;</span><span class="p">:</span>
+                <span class="n">nodes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">):</span> <span class="n">node</span>
+                         <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">nodes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">candidate</span><span class="o">.</span><span class="n">nodes</span><span class="p">}</span>
+            <span class="k">elif</span> <span class="n">segment</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">nodes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">):</span> <span class="n">node</span>
+                         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                         <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">}</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_pattern</span><span class="p">(</span><span class="n">segment</span><span class="p">):</span>
+                <span class="n">nodes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">node</span><span class="p">):</span> <span class="n">node</span>
+                         <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">nodes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">candidate</span><span class="o">.</span><span class="n">children</span>
+                         <span class="k">if</span> <span class="n">fnmatchcase</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">identifier</span><span class="p">),</span> <span class="n">segment</span><span class="p">)}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nodes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="n">segment</span><span class="p">]):</span> <span class="n">candidate</span><span class="p">[</span><span class="n">segment</span><span class="p">]</span>
+                         <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">nodes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                         <span class="k">if</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">candidate</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">nodes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_pattern</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if segment is a pattern. If not direct access is much faster.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">char</span> <span class="ow">in</span> <span class="n">segment</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s2">&quot;*?[&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Apply a few optimisations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abstracttree</span><span class="w"> </span><span class="kn">import</span> <span class="n">generics</span> <span class="k">as</span> <span class="n">_generics</span>
+
+<span class="n">_generics</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">attrgetter</span><span class="p">(</span><span class="s2">&quot;_parent&quot;</span><span class="p">))</span>
+<span class="n">_generics</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">,</span> <span class="n">BaseNode</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">fget</span><span class="p">)</span>
+<span class="n">_generics</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">,</span> <span class="n">BaseNode</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">fget</span><span class="p">)</span>
+<span class="n">_generics</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+<span class="n">_generics</span><span class="o">.</span><span class="n">nid</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Laurent Verweijen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

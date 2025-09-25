@@ -48,9 +48,81 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and tricks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#node-classes">Node classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#serializers">Serializers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-littletree">Node classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.BaseNode"><code class="docutils literal notranslate"><span class="pre">BaseNode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.add_child"><code class="docutils literal notranslate"><span class="pre">BaseNode.add_child()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.children"><code class="docutils literal notranslate"><span class="pre">BaseNode.children</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.clear"><code class="docutils literal notranslate"><span class="pre">BaseNode.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.copy"><code class="docutils literal notranslate"><span class="pre">BaseNode.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.detach"><code class="docutils literal notranslate"><span class="pre">BaseNode.detach()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.dict_class"><code class="docutils literal notranslate"><span class="pre">BaseNode.dict_class</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.identifier"><code class="docutils literal notranslate"><span class="pre">BaseNode.identifier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.is_leaf"><code class="docutils literal notranslate"><span class="pre">BaseNode.is_leaf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.iter_together"><code class="docutils literal notranslate"><span class="pre">BaseNode.iter_together()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.parent"><code class="docutils literal notranslate"><span class="pre">BaseNode.parent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.path"><code class="docutils literal notranslate"><span class="pre">BaseNode.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.pop"><code class="docutils literal notranslate"><span class="pre">BaseNode.pop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.remove_child"><code class="docutils literal notranslate"><span class="pre">BaseNode.remove_child()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.root"><code class="docutils literal notranslate"><span class="pre">BaseNode.root</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.sort_children"><code class="docutils literal notranslate"><span class="pre">BaseNode.sort_children()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.BaseNode.update"><code class="docutils literal notranslate"><span class="pre">BaseNode.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.compare"><code class="docutils literal notranslate"><span class="pre">Node.compare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.copy"><code class="docutils literal notranslate"><span class="pre">Node.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.equals"><code class="docutils literal notranslate"><span class="pre">Node.equals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.from_dict"><code class="docutils literal notranslate"><span class="pre">Node.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.from_networkx"><code class="docutils literal notranslate"><span class="pre">Node.from_networkx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.from_newick"><code class="docutils literal notranslate"><span class="pre">Node.from_newick()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.from_relations"><code class="docutils literal notranslate"><span class="pre">Node.from_relations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.from_rows"><code class="docutils literal notranslate"><span class="pre">Node.from_rows()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.similar_to"><code class="docutils literal notranslate"><span class="pre">Node.similar_to()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.to_dict"><code class="docutils literal notranslate"><span class="pre">Node.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.to_networkx"><code class="docutils literal notranslate"><span class="pre">Node.to_networkx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.to_newick"><code class="docutils literal notranslate"><span class="pre">Node.to_newick()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.to_relations"><code class="docutils literal notranslate"><span class="pre">Node.to_relations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.Node.to_rows"><code class="docutils literal notranslate"><span class="pre">Node.to_rows()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.TreeMixin"><code class="docutils literal notranslate"><span class="pre">TreeMixin</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.plot"><code class="docutils literal notranslate"><span class="pre">TreeMixin.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.show"><code class="docutils literal notranslate"><span class="pre">TreeMixin.show()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.to_dot"><code class="docutils literal notranslate"><span class="pre">TreeMixin.to_dot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.to_image"><code class="docutils literal notranslate"><span class="pre">TreeMixin.to_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.to_latex"><code class="docutils literal notranslate"><span class="pre">TreeMixin.to_latex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.to_mermaid"><code class="docutils literal notranslate"><span class="pre">TreeMixin.to_mermaid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.to_pillow"><code class="docutils literal notranslate"><span class="pre">TreeMixin.to_pillow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.TreeMixin.to_string"><code class="docutils literal notranslate"><span class="pre">TreeMixin.to_string()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.basenode.NodePath"><code class="docutils literal notranslate"><span class="pre">NodePath</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.basenode.NodePath.get"><code class="docutils literal notranslate"><span class="pre">NodePath.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.basenode.NodePath.create"><code class="docutils literal notranslate"><span class="pre">NodePath.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.basenode.NodePath.glob"><code class="docutils literal notranslate"><span class="pre">NodePath.glob()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-littletree.serializers">Serializers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.serializers.DictSerializer"><code class="docutils literal notranslate"><span class="pre">DictSerializer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.serializers.DictSerializer.from_dict"><code class="docutils literal notranslate"><span class="pre">DictSerializer.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#littletree.serializers.DictSerializer.to_dict"><code class="docutils literal notranslate"><span class="pre">DictSerializer.to_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.serializers.NetworkXSerializer"><code class="docutils literal notranslate"><span class="pre">NetworkXSerializer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.serializers.NewickSerializer"><code class="docutils literal notranslate"><span class="pre">NewickSerializer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.serializers.RelationSerializer"><code class="docutils literal notranslate"><span class="pre">RelationSerializer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.serializers.RowSerializer"><code class="docutils literal notranslate"><span class="pre">RowSerializer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-littletree.exceptions">Exceptions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.exceptions.TreeException"><code class="docutils literal notranslate"><span class="pre">TreeException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.exceptions.DuplicateParentError"><code class="docutils literal notranslate"><span class="pre">DuplicateParentError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.exceptions.DuplicateChildError"><code class="docutils literal notranslate"><span class="pre">DuplicateChildError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#littletree.exceptions.LoopError"><code class="docutils literal notranslate"><span class="pre">LoopError</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
@@ -82,14 +154,674 @@
              
   <section id="api">
 <h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
-<section id="node-classes">
-<h2>Node classes<a class="headerlink" href="#node-classes" title="Link to this heading"></a></h2>
+<section id="module-littletree">
+<span id="node-classes"></span><h2>Node classes<a class="headerlink" href="#module-littletree" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.BaseNode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.</span></span><span class="sig-name descname"><span class="pre">BaseNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'node'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">TIdentifier</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">MutableTree</span></code>, <a class="reference internal" href="#littletree.TreeMixin" title="littletree.treemixin.TreeMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeMixin</span></code></a></p>
+<p>A basic tree node that can have a single parent and multiple children.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">BaseNode</span></code> forms the foundation for building hierarchical tree structures.
+Each node can be uniquely identified by its name within its parent’s scope
+and can be navigated via <code class="docutils literal notranslate"><span class="pre">NodePath</span></code> objects.</p>
+<p>Compared to <code class="docutils literal notranslate"><span class="pre">Node</span></code> this class is more basic and useful for subclassing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>identifier</strong> (<em>TIdentifier</em>)</p></li>
+<li><p><strong>children</strong> (<em>Mapping</em><em>[</em><em>TIdentifier</em><em>, </em><em>TNode</em><em>] </em><em>| </em><em>Iterable</em><em>[</em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>parent</strong> (<em>TNode</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.add_child">
+<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_loop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.add_child"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.add_child" title="Link to this definition"></a></dt>
+<dd><p>Add a single child node.</p>
+<p>The child’s parent will be set to this node. A <code class="docutils literal notranslate"><span class="pre">DuplicateChildError</span></code>
+is raised if another child with the same name already exists.
+A <code class="docutils literal notranslate"><span class="pre">DuplicateParentError</span></code> will be raised if this child already has a parent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>TNode</em>) – Child to add.</p></li>
+<li><p><strong>check_loop</strong> (<em>bool</em>) – Whether to check if adding child results in a loop.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="littletree.BaseNode.children">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">children</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ValuesView</span><span class="p"><span class="pre">[</span></span><span class="pre">TNode</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#littletree.BaseNode.children" title="Link to this definition"></a></dt>
+<dd><p>Children of this node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.clear" title="Link to this definition"></a></dt>
+<dd><p>Remove all children.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_memo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.copy" title="Link to this definition"></a></dt>
+<dd><p>Make a shallow copy or deepcopy if memo is passed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.detach">
+<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.detach"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.detach" title="Link to this definition"></a></dt>
+<dd><p>Remove node from its parent.</p>
+<p>This is especially useful when moving the node to a different tree or branch.
+:return: self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="littletree.BaseNode.dict_class">
+<span class="sig-name descname"><span class="pre">dict_class</span></span><a class="headerlink" href="#littletree.BaseNode.dict_class" title="Link to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="littletree.BaseNode.identifier">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identifier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#littletree.BaseNode.identifier" title="Link to this definition"></a></dt>
+<dd><p>Key to identify this node. This can not be equal to an identifier of a sibling.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="littletree.BaseNode.is_leaf">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_leaf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#littletree.BaseNode.is_leaf" title="Link to this definition"></a></dt>
+<dd><p>Whether this node is a leaf (does not have children).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.iter_together">
+<span class="sig-name descname"><span class="pre">iter_together</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.iter_together"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.iter_together" title="Link to this definition"></a></dt>
+<dd><p>Yield all nodes in self with similar nodes in other.</p>
+<p>If no equivalent node can be found in other, yield node from self with None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Tuple</em>[<em>TNode</em>, <em>TNode</em> | None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="littletree.BaseNode.parent">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TNode</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#littletree.BaseNode.parent" title="Link to this definition"></a></dt>
+<dd><p>Parent of this node or None.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="littletree.BaseNode.path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#littletree.basenode.NodePath" title="littletree.basenode.NodePath"><span class="pre">NodePath</span></a></em><a class="headerlink" href="#littletree.BaseNode.path" title="Link to this definition"></a></dt>
+<dd><p>Path object for access to parent or navigating forward.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.pop" title="Link to this definition"></a></dt>
+<dd><p>Remove and return node with identifier or None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>identifier</strong> (<em>TIdentifier</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>TNode</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.remove_child">
+<span class="sig-name descname"><span class="pre">remove_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.remove_child"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.remove_child" title="Link to this definition"></a></dt>
+<dd><p>Remove node from children.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<em>TNode</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="littletree.BaseNode.root">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TNode</span></em><a class="headerlink" href="#littletree.BaseNode.root" title="Link to this definition"></a></dt>
+<dd><p>Root of tree.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.sort_children">
+<span class="sig-name descname"><span class="pre">sort_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.sort_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.sort_children" title="Link to this definition"></a></dt>
+<dd><p>Sort children</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>Callable</em><em>[</em><em>[</em><em>TNode</em><em>]</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em>) – Function to sort by. If not given, sort on identifier.</p></li>
+<li><p><strong>recursive</strong> (<em>bool</em>) – Whether all descendants should be sorted or just children.</p></li>
+<li><p><strong>reverse</strong> (<em>bool</em>) – Whether to sort in reverse order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.BaseNode.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_loop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#BaseNode.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.BaseNode.update" title="Link to this definition"></a></dt>
+<dd><p>Add multiple nodes at once.</p>
+<p>This is faster than repeatedly calling setitem when adding many children at once.</p>
+<p>About time complexity:
+Let n be the number of nodes added, d be the depth of the tree, C be copy time:</p>
+<ul class="simple">
+<li><p>T(n) = O(nC + d) if <code class="docutils literal notranslate"><span class="pre">check_loop</span></code> and not <code class="docutils literal notranslate"><span class="pre">consume</span></code>;</p></li>
+<li><p>T(n) = O(n + d) if <code class="docutils literal notranslate"><span class="pre">check_loop</span></code> and (<code class="docutils literal notranslate"><span class="pre">consume</span></code> or no child has a parent);</p></li>
+<li><p>T(n) = O(nC) if not <code class="docutils literal notranslate"><span class="pre">check_loop</span></code> and not <code class="docutils literal notranslate"><span class="pre">consume</span></code>;</p></li>
+<li><p>T(n) = O(n) if not <code class="docutils literal notranslate"><span class="pre">check_loop</span></code> and (<code class="docutils literal notranslate"><span class="pre">consume</span></code> or no child has a parent).</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> (<em>Mapping</em><em>[</em><em>TIdentifier</em><em>, </em><em>TNode</em><em>] </em><em>| </em><em>Iterable</em><em>[</em><em>TNode</em><em>] </em><em>| </em><em>TNode</em>) – <p>Source of other nodes.
+Other could be:</p>
+<blockquote>
+<div><ul>
+<li><p>mapping Keys will become new identifiers</p></li>
+<li><p>iterable Nodes will be added</p></li>
+<li><p>node Same as self.update(other.children) but implemented more efficiently.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – <p>How to handle nodes that already have a parent:</p>
+<ul>
+<li><p>”copy”: These nodes will be copied and remain in old tree</p></li>
+<li><p>”detach”: These nodes will be detached from old tree</p></li>
+</ul>
+</p></li>
+<li><p><strong>check_loop</strong> (<em>bool</em>) – If True, raises LoopError if a cycle is created.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.Node">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#littletree.BaseNode" title="littletree.basenode.BaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseNode</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">TIdentifier</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">TIdentifier</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">TData</span></code>]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>TData</em>)</p></li>
+<li><p><strong>identifier</strong> (<em>TIdentifier</em>)</p></li>
+<li><p><strong>children</strong> (<em>Mapping</em><em>[</em><em>TIdentifier</em><em>, </em><em>TNode</em><em>] </em><em>| </em><em>Iterable</em><em>[</em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>parent</strong> (<em>TNode</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.compare">
+<span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_equal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.compare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.compare" title="Link to this definition"></a></dt>
+<dd><p>Compare two trees to one another.</p>
+<p>If keep_equal is False (default), all nodes where data is equal will be removed.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s1">&#39;apples&#39;</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="s1">&#39;fruit&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">other_tree</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="s1">&#39;oranges&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">other_tree</span><span class="p">)</span>
+<span class="go">Node({&#39;self&#39;: &#39;apples&#39;, &#39;other&#39;: &#39;oranges&#39;}, identifier=&#39;fruit)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<em>TNode</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>TNode</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.copy" title="Link to this definition"></a></dt>
+<dd><p>Make a shallow copy or deepcopy if memo is passed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.equals">
+<span class="sig-name descname"><span class="pre">equals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.equals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.equals" title="Link to this definition"></a></dt>
+<dd><p>Recursively check if two (sub)trees are the same.</p>
+<p>Each node in the subtree must have the same identifier and same data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>TNode</em>)</p></li>
+<li><p><strong>other</strong> (<em>TNode</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Import from nested dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.from_networkx">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_networkx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.from_networkx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.from_networkx" title="Link to this definition"></a></dt>
+<dd><p>Import from networkx graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.from_newick">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_newick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newick</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.from_newick"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.from_newick" title="Link to this definition"></a></dt>
+<dd><p>Import from newick.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.from_relations">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_relations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.from_relations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.from_relations" title="Link to this definition"></a></dt>
+<dd><p>Import from parent-child list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.from_rows">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.from_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.from_rows" title="Link to this definition"></a></dt>
+<dd><p>Import from list of path-rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.similar_to">
+<span class="sig-name descname"><span class="pre">similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.similar_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.similar_to" title="Link to this definition"></a></dt>
+<dd><p>Check if two trees are similar.</p>
+<p>Trees are similar if they have the same structure and the same data.</p>
+<p>Change from version 0.5.0:
+- Two trees can now be equal if the roots have a different identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>TNode</em>)</p></li>
+<li><p><strong>other</strong> (<em>TNode</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Export to nested dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Mapping</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.to_networkx">
+<span class="sig-name descname"><span class="pre">to_networkx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.to_networkx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.to_networkx" title="Link to this definition"></a></dt>
+<dd><p>Export to networkx graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.to_newick">
+<span class="sig-name descname"><span class="pre">to_newick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.to_newick"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.to_newick" title="Link to this definition"></a></dt>
+<dd><p>Export to newick.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.to_relations">
+<span class="sig-name descname"><span class="pre">to_relations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.to_relations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.to_relations" title="Link to this definition"></a></dt>
+<dd><p>Export to parent-child list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.Node.to_rows">
+<span class="sig-name descname"><span class="pre">to_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'data'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/node.html#Node.to_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.Node.to_rows" title="Link to this definition"></a></dt>
+<dd><p>Export to list of path-rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Iterator</em>[<em>Mapping</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.TreeMixin">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.</span></span><span class="sig-name descname"><span class="pre">TreeMixin</span></span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Tree</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.plot" title="Link to this definition"></a></dt>
+<dd><p>Plot this tree using matplotlib.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.show"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.show" title="Link to this definition"></a></dt>
+<dd><p>Print this tree. Shortcut for print(tree.to_string()).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.to_dot">
+<span class="sig-name descname"><span class="pre">to_dot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.to_dot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.to_dot" title="Link to this definition"></a></dt>
+<dd><p>Convert tree to dot file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.to_image">
+<span class="sig-name descname"><span class="pre">to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.to_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.to_image" title="Link to this definition"></a></dt>
+<dd><p>Convert tree to image.</p>
+<p>This return bytes. Use <code class="docutils literal notranslate"><span class="pre">to_pillow</span></code> for an Image abstraction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.to_latex">
+<span class="sig-name descname"><span class="pre">to_latex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.to_latex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.to_latex" title="Link to this definition"></a></dt>
+<dd><p>Convert tree to latex. Requires the tikz-package if compiling the latex document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.to_mermaid">
+<span class="sig-name descname"><span class="pre">to_mermaid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.to_mermaid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.to_mermaid" title="Link to this definition"></a></dt>
+<dd><p>Convert tree to mermaid file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.to_pillow">
+<span class="sig-name descname"><span class="pre">to_pillow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.to_pillow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.to_pillow" title="Link to this definition"></a></dt>
+<dd><p>Convert tree to Pillow / PIL image object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.TreeMixin.to_string">
+<span class="sig-name descname"><span class="pre">to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/treemixin.html#TreeMixin.to_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.TreeMixin.to_string" title="Link to this definition"></a></dt>
+<dd><p>Convert tree to string.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.basenode.NodePath">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.basenode.</span></span><span class="sig-name descname"><span class="pre">NodePath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#NodePath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.basenode.NodePath" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PathView</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<em>T</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.basenode.NodePath.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#NodePath.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.basenode.NodePath.get" title="Link to this definition"></a></dt>
+<dd><p>Like calling path, but return None if node is missing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.basenode.NodePath.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#NodePath.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.basenode.NodePath.create" title="Link to this definition"></a></dt>
+<dd><p>Like get, but create missing nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.basenode.NodePath.glob">
+<span class="sig-name descname"><span class="pre">glob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/basenode.html#NodePath.glob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.basenode.NodePath.glob" title="Link to this definition"></a></dt>
+<dd><p>Find nodes by globbing patterns.</p>
+<p>For example to find all nodes that start with ‘a’:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">node</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;**/a*&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Iterable</em>[<em>TNode</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="serializers">
-<h2>Serializers<a class="headerlink" href="#serializers" title="Link to this heading"></a></h2>
+<section id="module-littletree.serializers">
+<span id="serializers"></span><h2>Serializers<a class="headerlink" href="#module-littletree.serializers" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.serializers.DictSerializer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.serializers.</span></span><span class="sig-name descname"><span class="pre">DictSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'identifier'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'children'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/dictserializer.html#DictSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.DictSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Serializer to/from a nested dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factory</strong> (<em>Type</em><em>[</em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>identifier_name</strong> (<em>TIdentifier</em>)</p></li>
+<li><p><strong>children_name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>fields</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>data_field</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.serializers.DictSerializer.from_dict">
+<span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/dictserializer.html#DictSerializer.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.DictSerializer.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Load tree from data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Mapping</em>) – Dictionary in which tree is stored</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Root node of new tree</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>TNode</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="littletree.serializers.DictSerializer.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/dictserializer.html#DictSerializer.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.DictSerializer.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert Node to a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tree</strong> (<em>TNode</em>) – Node to convert</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nested dictionary of node and children</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Mapping</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.serializers.NetworkXSerializer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.serializers.</span></span><span class="sig-name descname"><span class="pre">NetworkXSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/networkxserializer.html#NetworkXSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.NetworkXSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Serializer to/from a networkx graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factory</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>fields</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>data_field</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.serializers.NewickSerializer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.serializers.</span></span><span class="sig-name descname"><span class="pre">NewickSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/newickserializer.html#NewickSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.NewickSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Serialize to/from the newick tree format.
+A formal description is here: <a class="reference external" href="http://biowiki.org/wiki/index.php/Newick_Format">http://biowiki.org/wiki/index.php/Newick_Format</a></p>
+<p>A few dialects are supported (default: safe-nhx):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">newick</span></code> is the most basic dialect without extra features</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">nhx</span></code> enables an extension called New Hampshire X format</dt><dd><p>This extension is described here: <a class="reference external" href="https://www.cs.mcgill.ca/~birch/doc/forester/NHX.pdf">https://www.cs.mcgill.ca/~birch/doc/forester/NHX.pdf</a></p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">safe-nhx</span></code> is similar to nhx, but xml-escaping is applied on reserved newick characters</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factory</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>fields</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>data_field</strong> (<em>str</em>)</p></li>
+<li><p><strong>dialect</strong> (<em>str</em><em> | </em><em>Dialect</em><em> | </em><em>Mapping</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.serializers.RelationSerializer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.serializers.</span></span><span class="sig-name descname"><span class="pre">RelationSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'identifier'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'parent'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/relationserializer.html#RelationSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.RelationSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Serializes a tree to a list of parent-children relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factory</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>child_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>parent_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>fields</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>data_field</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="littletree.serializers.RowSerializer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.serializers.</span></span><span class="sig-name descname"><span class="pre">RowSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'path'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/serializers/rowserializer.html#RowSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.serializers.RowSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Serializes a tree to a list of dicts containing path and data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factory</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><em>TNode</em><em>]</em>)</p></li>
+<li><p><strong>path_name</strong> (<em>str</em><em> | </em><em>Sequence</em><em>[</em><em>str</em><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>sep</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>fields</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>data_field</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="exceptions">
-<h2>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading"></a></h2>
+<section id="module-littletree.exceptions">
+<span id="exceptions"></span><h2>Exceptions<a class="headerlink" href="#module-littletree.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="littletree.exceptions.TreeException">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.exceptions.</span></span><span class="sig-name descname"><span class="pre">TreeException</span></span><a class="reference internal" href="_modules/littletree/exceptions.html#TreeException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.exceptions.TreeException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base tree exceptions.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="littletree.exceptions.DuplicateParentError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.exceptions.</span></span><span class="sig-name descname"><span class="pre">DuplicateParentError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/exceptions.html#DuplicateParentError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.exceptions.DuplicateParentError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#littletree.exceptions.TreeException" title="littletree.exceptions.TreeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeException</span></code></a></p>
+<p>Operation would add multiple parents to a node.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="littletree.exceptions.DuplicateChildError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.exceptions.</span></span><span class="sig-name descname"><span class="pre">DuplicateChildError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/exceptions.html#DuplicateChildError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.exceptions.DuplicateChildError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#littletree.exceptions.TreeException" title="littletree.exceptions.TreeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeException</span></code></a></p>
+<p>Operation would add multiple children with the same identifier to the same parent.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="littletree.exceptions.LoopError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">littletree.exceptions.</span></span><span class="sig-name descname"><span class="pre">LoopError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ancestor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/littletree/exceptions.html#LoopError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#littletree.exceptions.LoopError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#littletree.exceptions.TreeException" title="littletree.exceptions.TreeException"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeException</span></code></a></p>
+<p>Operation would create a loop.</p>
+</dd></dl>
+
 </section>
 </section>
 
