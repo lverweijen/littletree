@@ -10,8 +10,23 @@ jobs:
       id-token: write
     steps:
     - uses: actions/checkout@v4
+#    - name: Build HTML
+#      uses: ammaraskar/sphinx-action@dev
+# It looks as if https://hub.docker.com/r/sphinxdoc/sphinx is unavailable
+
+# Start work-around
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        pip install sphinx
+        pip install -r docs/requirements.txt
     - name: Build HTML
-      uses: ammaraskar/sphinx-action@dev
+      run: sphinx-build -b html docs/source docs/build/html
+# End work-around
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
